@@ -391,6 +391,54 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          category: string
+          cost: number
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          price: number
+          quantity_in_stock: number
+          reorder_level: number
+          sku: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          cost?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          price?: number
+          quantity_in_stock?: number
+          reorder_level?: number
+          sku?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cost?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          price?: number
+          quantity_in_stock?: number
+          reorder_level?: number
+          sku?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rooms: {
         Row: {
           created_at: string
