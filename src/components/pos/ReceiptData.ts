@@ -16,6 +16,17 @@ export interface TreatmentSummary {
   machineSettings?: string;
 }
 
+export interface PackageStatus {
+  packageName: string;
+  sessionsRemaining: number;
+  sessionsTotal: number;
+}
+
+export interface MembershipStatus {
+  tierName: string;
+  nextBillingDate: string;
+}
+
 export interface ReceiptData {
   id: string;
   receiptNumber: string;
@@ -58,6 +69,11 @@ export interface ReceiptData {
   googleReviewUrl: string;
   notes?: string;
   createdAt: Date;
+  
+  // Package & Membership Status
+  packageStatus?: PackageStatus;
+  membershipStatus?: MembershipStatus;
+  nextRecommendedBooking?: string;
 }
 
 export interface BusinessInfo {

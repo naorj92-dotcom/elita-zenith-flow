@@ -16,9 +16,12 @@ import {
   ReceiptData, 
   RetailItem, 
   TreatmentSummary, 
+  PackageStatus,
+  MembershipStatus,
   generateReceiptNumber, 
   ELITE_MEDSPA_INFO 
 } from '@/components/pos/ReceiptData';
+import { addDays, format } from 'date-fns';
 
 interface CartItem {
   type: 'service' | 'product';
@@ -161,6 +164,63 @@ export function POSPage() {
 
       const receiptNumber = generateReceiptNumber();
 
+      // Fetch client package status
+      let packageStatus: PackageStatus | undefined;
+      const { data: clientPackages } = await supabase
+        .from('client_packages')
+        .select('*, packages(name)')
+        .eq('client_id', selectedClient)
+        .eq('status', 'active')
+        .limit(1);
+      
+      if (clientPackages && clientPackages.length > 0) {
+        const pkg = clientPackages[0];
+        packageStatus = {
+          packageName: (pkg.packages as { name: string } | null)?.name || 'Package',
+          sessionsRemaining: pkg.sessions_total - pkg.sessions_used,
+          sessionsTotal: pkg.sessions_total,
+        };
+      }
+
+      // Fetch client membership status
+      let membershipStatus: MembershipStatus | undefined;
+      const { data: clientMemberships } = await supabase
+        .from('client_memberships')
+        .select('*, memberships(name)')
+        .eq('client_id', selectedClient)
+        .eq('status', 'active')
+        .limit(1);
+      
+      if (clientMemberships && clientMemberships.length > 0) {
+        const membership = clientMemberships[0];
+        membershipStatus = {
+          tierName: (membership.memberships as { name: string } | null)?.name || 'Member',
+          nextBillingDate: membership.next_billing_date 
+            ? format(new Date(membership.next_billing_date), 'MMM d, yyyy')
+            : 'N/A',
+        };
+      }
+
+      // Calculate next recommended booking based on machine/service type
+      let nextRecommendedBooking: string | undefined;
+      if (serviceItem?.machineUsed) {
+        const machineName = serviceItem.machineUsed.toLowerCase();
+        let daysUntilNext = 7; // Default 7 days
+        
+        // Adjust recommendation based on treatment type
+        if (machineName.includes('contour') || machineName.includes('rf') || machineName.includes('body')) {
+          daysUntilNext = 7; // Body treatments: weekly
+        } else if (machineName.includes('laser') || machineName.includes('ipl')) {
+          daysUntilNext = 28; // Laser: monthly
+        } else if (machineName.includes('hydra') || machineName.includes('facial')) {
+          daysUntilNext = 14; // Facials: bi-weekly
+        } else if (machineName.includes('cool') || machineName.includes('cryo')) {
+          daysUntilNext = 30; // Coolsculpting: monthly
+        }
+        
+        nextRecommendedBooking = format(addDays(new Date(), daysUntilNext), 'EEEE, MMMM d, yyyy');
+      }
+
       // Create receipt in database
       const { data: receiptData, error: receiptError } = await supabase
         .from('receipts')
@@ -244,6 +304,9 @@ export function POSPage() {
         receiptFormat: 'standard',
         googleReviewUrl: ELITE_MEDSPA_INFO.googleReviewUrl,
         createdAt: new Date(),
+        packageStatus,
+        membershipStatus,
+        nextRecommendedBooking,
       };
 
       setGeneratedReceipt(receipt);

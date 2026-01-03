@@ -200,6 +200,52 @@ export const StandardReceipt = forwardRef<HTMLDivElement, StandardReceiptProps>(
           </div>
         </div>
 
+        {/* Package & Membership Status Footer */}
+        {(receipt.packageStatus || receipt.membershipStatus || receipt.nextRecommendedBooking) && (
+          <>
+            <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6" />
+            
+            <div className="bg-muted/30 rounded-lg p-6 mb-8">
+              <h3 className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground mb-4 text-center">
+                Statement of Value
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                {receipt.packageStatus && (
+                  <div className="flex items-center justify-between md:justify-start md:gap-3 p-3 bg-background rounded-lg border border-border/50">
+                    <span className="text-muted-foreground">Package:</span>
+                    <span className="font-medium">{receipt.packageStatus.packageName}</span>
+                    <span className="text-muted-foreground mx-2">|</span>
+                    <span className="text-muted-foreground">Sessions Remaining:</span>
+                    <span className="font-heading font-semibold text-primary">
+                      {receipt.packageStatus.sessionsRemaining}
+                    </span>
+                  </div>
+                )}
+                
+                {receipt.membershipStatus && (
+                  <div className="flex items-center justify-between md:justify-start md:gap-3 p-3 bg-background rounded-lg border border-border/50">
+                    <span className="text-muted-foreground">Member Status:</span>
+                    <span className="font-medium">{receipt.membershipStatus.tierName}</span>
+                    <span className="text-muted-foreground mx-2">|</span>
+                    <span className="text-muted-foreground">Next Billing:</span>
+                    <span className="font-medium">{receipt.membershipStatus.nextBillingDate}</span>
+                  </div>
+                )}
+              </div>
+              
+              {receipt.nextRecommendedBooking && (
+                <div className="mt-4 text-center">
+                  <p className="text-sm italic text-muted-foreground">
+                    <span className="font-medium text-foreground">Next Recommended Booking: </span>
+                    {receipt.nextRecommendedBooking}
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
         <Separator className="mb-8" />
 
         {/* Footer with QR Code */}
