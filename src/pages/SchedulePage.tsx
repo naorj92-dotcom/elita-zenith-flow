@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar as CalendarIcon, 
@@ -10,94 +10,25 @@ import {
   Filter
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AppointmentWithDetails, AppointmentStatus } from '@/types';
+import { AppointmentStatus } from '@/types';
 
-// Mock appointments data
-const mockAppointments: AppointmentWithDetails[] = [
-  {
-    id: '1',
-    client_id: '1',
-    staff_id: '1',
-    service_id: '1',
-    date: new Date().toISOString().split('T')[0],
-    start_time: '10:00',
-    status: 'confirmed',
-    notes: '',
-    consent_signed: true,
-    intake_completed: true,
-    created_at: new Date().toISOString(),
-    client_name: 'Jennifer Adams',
-    client_email: 'jennifer@email.com',
-    staff_name: 'Dr. Sarah Mitchell',
-    service_name: 'Botox Treatment',
-    service_price: 450,
-    duration_minutes: 45,
-    room_name: 'Suite A',
-  },
-  {
-    id: '2',
-    client_id: '2',
-    staff_id: '1',
-    service_id: '2',
-    date: new Date().toISOString().split('T')[0],
-    start_time: '11:30',
-    status: 'scheduled',
-    notes: '',
-    consent_signed: false,
-    intake_completed: false,
-    created_at: new Date().toISOString(),
-    client_name: 'Maria Santos',
-    client_email: 'maria@email.com',
-    staff_name: 'Dr. Sarah Mitchell',
-    service_name: 'HydraFacial',
-    service_price: 250,
-    duration_minutes: 60,
-    room_name: 'Suite B',
-  },
-  {
-    id: '3',
-    client_id: '3',
-    staff_id: '2',
-    service_id: '3',
-    date: new Date().toISOString().split('T')[0],
-    start_time: '14:00',
-    status: 'scheduled',
-    notes: '',
-    consent_signed: false,
-    intake_completed: true,
-    created_at: new Date().toISOString(),
-    client_name: 'Lisa Chen',
-    client_email: 'lisa@email.com',
-    staff_name: 'Emma Rodriguez',
-    service_name: 'Laser Hair Removal',
-    service_price: 350,
-    duration_minutes: 30,
-    room_name: 'Suite C',
-  },
-  {
-    id: '4',
-    client_id: '4',
-    staff_id: '1',
-    service_id: '4',
-    date: new Date().toISOString().split('T')[0],
-    start_time: '15:30',
-    status: 'confirmed',
-    notes: 'First time client',
-    consent_signed: true,
-    intake_completed: true,
-    created_at: new Date().toISOString(),
-    client_name: 'Amanda Williams',
-    client_email: 'amanda@email.com',
-    staff_name: 'Dr. Sarah Mitchell',
-    service_name: 'Dermal Fillers',
-    service_price: 650,
-    duration_minutes: 60,
-    room_name: 'Suite A',
-  },
-];
+interface ScheduleAppointment {
+  id: string;
+  scheduled_at: string;
+  duration_minutes: number;
+  status: AppointmentStatus;
+  notes: string | null;
+  total_amount: number;
+  client_name: string;
+  service_name: string;
+  staff_name: string;
+  room_name: string | null;
+}
 
 const getStatusStyle = (status: AppointmentStatus): string => {
   const styles: Record<AppointmentStatus, string> = {
@@ -113,8 +44,61 @@ const getStatusStyle = (status: AppointmentStatus): string => {
 };
 
 export function SchedulePage() {
+  const { staff } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
+  const [appointments, setAppointments] = useState<ScheduleAppointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      if (!staff) return;
+
+      setIsLoading(true);
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          scheduled_at,
+          duration_minutes,
+          status,
+          notes,
+          total_amount,
+          clients (first_name, last_name),
+          services (name),
+          staff (first_name, last_name),
+          rooms (name)
+        `)
+        .gte('scheduled_at', startOfDay.toISOString())
+        .lte('scheduled_at', endOfDay.toISOString())
+        .order('scheduled_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching appointments:', error);
+      } else if (data) {
+        const formatted: ScheduleAppointment[] = data.map((apt: any) => ({
+          id: apt.id,
+          scheduled_at: apt.scheduled_at,
+          duration_minutes: apt.duration_minutes,
+          status: apt.status as AppointmentStatus,
+          notes: apt.notes,
+          total_amount: apt.total_amount,
+          client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown',
+          service_name: apt.services?.name || 'Unknown Service',
+          staff_name: apt.staff ? `${apt.staff.first_name} ${apt.staff.last_name}` : 'Unknown',
+          room_name: apt.rooms?.name || null,
+        }));
+        setAppointments(formatted);
+      }
+      setIsLoading(false);
+    };
+
+    fetchAppointments();
+  }, [staff, selectedDate]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -122,13 +106,6 @@ export function SchedulePage() {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
-    });
-  };
-
-  const formatShortDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      day: 'numeric',
     });
   };
 
@@ -152,7 +129,6 @@ export function SchedulePage() {
     setSelectedDate(new Date());
   };
 
-  // Generate week days for week selector
   const getWeekDays = () => {
     const days = [];
     const startOfWeek = new Date(selectedDate);
@@ -173,6 +149,10 @@ export function SchedulePage() {
 
   const isSelected = (date: Date) => {
     return date.toDateString() === selectedDate.toDateString();
+  };
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -264,7 +244,7 @@ export function SchedulePage() {
               </CardTitle>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  {mockAppointments.length} appointments
+                  {appointments.length} appointments
                 </span>
                 <Button variant="ghost" size="icon">
                   <Filter className="w-4 h-4" />
@@ -273,7 +253,12 @@ export function SchedulePage() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            {mockAppointments.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+                <p className="text-muted-foreground">Loading appointments...</p>
+              </div>
+            ) : appointments.length === 0 ? (
               <div className="text-center py-12">
                 <CalendarIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <h3 className="font-heading text-xl text-foreground mb-2">No appointments</h3>
@@ -287,7 +272,7 @@ export function SchedulePage() {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {mockAppointments.map((apt, index) => (
+                {appointments.map((apt, index) => (
                   <motion.div
                     key={apt.id}
                     initial={{ opacity: 0, x: -20 }}
@@ -301,7 +286,7 @@ export function SchedulePage() {
                       {/* Time Column */}
                       <div className="text-center min-w-[70px]">
                         <p className="text-lg font-semibold text-foreground">
-                          {apt.start_time}
+                          {formatTime(apt.scheduled_at)}
                         </p>
                         <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                           <Clock className="w-3 h-3" />
@@ -337,26 +322,7 @@ export function SchedulePage() {
                             <span>Room: {apt.room_name}</span>
                           )}
                           <span className="font-medium text-foreground">
-                            ${apt.service_price}
-                          </span>
-                        </div>
-                        {/* Status Indicators */}
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className={cn(
-                            "px-2 py-0.5 rounded text-xs",
-                            apt.consent_signed 
-                              ? "bg-success/10 text-success" 
-                              : "bg-warning/10 text-warning"
-                          )}>
-                            {apt.consent_signed ? '✓ Consent' : 'Consent Needed'}
-                          </span>
-                          <span className={cn(
-                            "px-2 py-0.5 rounded text-xs",
-                            apt.intake_completed 
-                              ? "bg-success/10 text-success" 
-                              : "bg-warning/10 text-warning"
-                          )}>
-                            {apt.intake_completed ? '✓ Intake' : 'Intake Needed'}
+                            ${Number(apt.total_amount).toLocaleString()}
                           </span>
                         </div>
                       </div>

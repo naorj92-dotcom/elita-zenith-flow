@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar, 
@@ -12,50 +12,110 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { AppointmentWithDetails, AppointmentStatus } from '@/types';
 
-// Mock data for demo
-const mockTodayAppointments = [
-  {
-    id: '1',
-    time: '10:00 AM',
-    client_name: 'Jennifer Adams',
-    service_name: 'Botox Treatment',
-    status: 'confirmed' as const,
-    duration: 45,
-  },
-  {
-    id: '2',
-    time: '11:30 AM',
-    client_name: 'Maria Santos',
-    service_name: 'HydraFacial',
-    status: 'scheduled' as const,
-    duration: 60,
-  },
-  {
-    id: '3',
-    time: '2:00 PM',
-    client_name: 'Lisa Chen',
-    service_name: 'Laser Hair Removal',
-    status: 'scheduled' as const,
-    duration: 30,
-  },
-];
-
-const mockMetrics = {
-  today_appointments: 5,
-  today_sales: 2450,
-  week_sales: 12800,
-  month_commission: 3840,
-  hours_today: 4.5,
-};
+interface TodayAppointment {
+  id: string;
+  time: string;
+  client_name: string;
+  service_name: string;
+  status: AppointmentStatus;
+  duration: number;
+}
 
 export function Dashboard() {
   const { staff, clockStatus, clockIn, clockOut, isLoading } = useAuth();
   const { toast } = useToast();
+  const [appointments, setAppointments] = useState<TodayAppointment[]>([]);
+  const [metrics, setMetrics] = useState({
+    today_appointments: 0,
+    today_sales: 0,
+    week_sales: 0,
+    month_commission: 0,
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!staff) return;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(today);
+      todayEnd.setHours(23, 59, 59, 999);
+
+      // Fetch today's appointments
+      const { data: appointmentsData } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          scheduled_at,
+          duration_minutes,
+          status,
+          clients (first_name, last_name),
+          services (name)
+        `)
+        .eq('staff_id', staff.id)
+        .gte('scheduled_at', today.toISOString())
+        .lte('scheduled_at', todayEnd.toISOString())
+        .order('scheduled_at', { ascending: true });
+
+      if (appointmentsData) {
+        const formattedAppointments: TodayAppointment[] = appointmentsData.map((apt: any) => ({
+          id: apt.id,
+          time: new Date(apt.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown',
+          service_name: apt.services?.name || 'Unknown Service',
+          status: apt.status as AppointmentStatus,
+          duration: apt.duration_minutes,
+        }));
+        setAppointments(formattedAppointments);
+        setMetrics(prev => ({ ...prev, today_appointments: formattedAppointments.length }));
+      }
+
+      // Fetch sales metrics
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - today.getDay());
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      const { data: transactions } = await supabase
+        .from('transactions')
+        .select('amount, commission_amount, transaction_date')
+        .eq('staff_id', staff.id)
+        .gte('transaction_date', monthStart.toISOString());
+
+      if (transactions) {
+        let todaySales = 0;
+        let weekSales = 0;
+        let monthCommission = 0;
+
+        transactions.forEach(t => {
+          const tDate = new Date(t.transaction_date);
+          monthCommission += Number(t.commission_amount) || 0;
+          
+          if (tDate >= today && tDate <= todayEnd) {
+            todaySales += Number(t.amount);
+          }
+          if (tDate >= weekStart) {
+            weekSales += Number(t.amount);
+          }
+        });
+
+        setMetrics(prev => ({
+          ...prev,
+          today_sales: todaySales,
+          week_sales: weekSales,
+          month_commission: monthCommission,
+        }));
+      }
+    };
+
+    fetchDashboardData();
+  }, [staff]);
 
   const handleClockAction = async () => {
     if (clockStatus?.is_clocked_in) {
@@ -87,6 +147,8 @@ export function Dashboard() {
     }
   };
 
+  const firstName = staff?.first_name || 'there';
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -96,7 +158,7 @@ export function Dashboard() {
         className="mb-8"
       >
         <h1 className="font-heading text-3xl md:text-4xl text-foreground mb-2">
-          Welcome back, {staff?.name.split(' ')[0]}
+          Welcome back, {firstName}
         </h1>
         <p className="text-muted-foreground">
           {new Date().toLocaleDateString('en-US', { 
@@ -174,28 +236,28 @@ export function Dashboard() {
         {[
           { 
             label: 'Today\'s Appointments', 
-            value: mockMetrics.today_appointments, 
+            value: metrics.today_appointments, 
             icon: Calendar,
             color: 'text-primary',
             bg: 'bg-primary/10'
           },
           { 
             label: 'Today\'s Sales', 
-            value: `$${mockMetrics.today_sales.toLocaleString()}`, 
+            value: `$${metrics.today_sales.toLocaleString()}`, 
             icon: DollarSign,
             color: 'text-success',
             bg: 'bg-success/10'
           },
           { 
             label: 'Week Sales', 
-            value: `$${mockMetrics.week_sales.toLocaleString()}`, 
+            value: `$${metrics.week_sales.toLocaleString()}`, 
             icon: TrendingUp,
             color: 'text-info',
             bg: 'bg-info/10'
           },
           { 
             label: 'Month Commission', 
-            value: `$${mockMetrics.month_commission.toLocaleString()}`, 
+            value: `$${metrics.month_commission.toLocaleString()}`, 
             icon: DollarSign,
             color: 'text-warning',
             bg: 'bg-warning/10'
@@ -238,13 +300,13 @@ export function Dashboard() {
             </Link>
           </CardHeader>
           <CardContent className="space-y-3">
-            {mockTodayAppointments.length === 0 ? (
+            {appointments.length === 0 ? (
               <div className="text-center py-8">
                 <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground">No appointments today</p>
               </div>
             ) : (
-              mockTodayAppointments.map((apt, index) => (
+              appointments.map((apt, index) => (
                 <motion.div
                   key={apt.id}
                   initial={{ opacity: 0, x: -20 }}

@@ -14,16 +14,400 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          duration_minutes: number
+          id: string
+          notes: string | null
+          room_id: string | null
+          scheduled_at: string
+          service_id: string | null
+          staff_id: string | null
+          status: Database["public"]["Enums"]["appointment_status"]
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          room_id?: string | null
+          scheduled_at: string
+          service_id?: string | null
+          staff_id?: string | null
+          status?: Database["public"]["Enums"]["appointment_status"]
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          room_id?: string | null
+          scheduled_at?: string
+          service_id?: string | null
+          staff_id?: string | null
+          status?: Database["public"]["Enums"]["appointment_status"]
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          first_name: string
+          id: string
+          is_vip: boolean
+          last_name: string
+          last_visit_date: string | null
+          notes: string | null
+          phone: string | null
+          state: string | null
+          total_spent: number
+          updated_at: string
+          visit_count: number
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          is_vip?: boolean
+          last_name: string
+          last_visit_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          total_spent?: number
+          updated_at?: string
+          visit_count?: number
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          is_vip?: boolean
+          last_name?: string
+          last_visit_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          total_spent?: number
+          updated_at?: string
+          visit_count?: number
+          zip?: string | null
+        }
+        Relationships: []
+      }
+      rooms: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          requires_consent: boolean
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          requires_consent?: boolean
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          requires_consent?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      staff: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          first_name: string
+          hire_date: string
+          hourly_rate: number | null
+          id: string
+          is_active: boolean
+          last_name: string
+          phone: string | null
+          pin: string
+          retail_commission_rate: number | null
+          role: Database["public"]["Enums"]["staff_role"]
+          service_commission_tier1: number | null
+          service_commission_tier2: number | null
+          service_commission_tier3: number | null
+          service_tier1_threshold: number | null
+          service_tier2_threshold: number | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          first_name: string
+          hire_date?: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean
+          last_name: string
+          phone?: string | null
+          pin: string
+          retail_commission_rate?: number | null
+          role?: Database["public"]["Enums"]["staff_role"]
+          service_commission_tier1?: number | null
+          service_commission_tier2?: number | null
+          service_commission_tier3?: number | null
+          service_tier1_threshold?: number | null
+          service_tier2_threshold?: number | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          hire_date?: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean
+          last_name?: string
+          phone?: string | null
+          pin?: string
+          retail_commission_rate?: number | null
+          role?: Database["public"]["Enums"]["staff_role"]
+          service_commission_tier1?: number | null
+          service_commission_tier2?: number | null
+          service_commission_tier3?: number | null
+          service_tier1_threshold?: number | null
+          service_tier2_threshold?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      time_clock: {
+        Row: {
+          break_minutes: number
+          clock_in: string
+          clock_out: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          staff_id: string
+        }
+        Insert: {
+          break_minutes?: number
+          clock_in: string
+          clock_out?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          staff_id: string
+        }
+        Update: {
+          break_minutes?: number
+          clock_in?: string
+          clock_out?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_clock_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          client_id: string | null
+          commission_amount: number | null
+          commission_rate: number | null
+          created_at: string
+          description: string | null
+          id: string
+          staff_id: string | null
+          transaction_date: string
+          transaction_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          client_id?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          staff_id?: string | null
+          transaction_date?: string
+          transaction_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          client_id?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          staff_id?: string | null
+          transaction_date?: string
+          transaction_type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_commission: {
+        Args: {
+          p_amount: number
+          p_period_start?: string
+          p_staff_id: string
+          p_transaction_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Returns: number
+      }
     }
     Enums: {
-      [_ in never]: never
+      appointment_status:
+        | "scheduled"
+        | "confirmed"
+        | "checked_in"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+        | "no_show"
+      staff_role: "admin" | "provider" | "front_desk"
+      transaction_type: "service" | "retail" | "refund"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +534,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      appointment_status: [
+        "scheduled",
+        "confirmed",
+        "checked_in",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "no_show",
+      ],
+      staff_role: ["admin", "provider", "front_desk"],
+      transaction_type: ["service", "retail", "refund"],
+    },
   },
 } as const

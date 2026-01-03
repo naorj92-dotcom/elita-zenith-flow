@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Staff, ClockStatus } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { Staff, TimeClock, ClockStatus, StaffRole } from '@/types';
 
 interface AuthContextType {
   staff: Staff | null;
@@ -15,81 +16,68 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock staff data for demo (will be replaced with Supabase)
-const mockStaffData: Staff[] = [
-  {
-    id: '1',
-    name: 'Dr. Sarah Mitchell',
-    email: 'sarah@elitamedspa.com',
-    role: 'provider',
-    pin: '1234',
-    hourly_base_pay: 0,
-    active: true,
-    avatar_url: undefined,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Emma Rodriguez',
-    email: 'emma@elitamedspa.com',
-    role: 'esthetician',
-    pin: '5678',
-    hourly_base_pay: 25,
-    active: true,
-    avatar_url: undefined,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Admin User',
-    email: 'admin@elitamedspa.com',
-    role: 'admin',
-    pin: '0000',
-    hourly_base_pay: 35,
-    active: true,
-    avatar_url: undefined,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    name: 'Rachel Kim',
-    email: 'rachel@elitamedspa.com',
-    role: 'receptionist',
-    pin: '1111',
-    hourly_base_pay: 20,
-    active: true,
-    avatar_url: undefined,
-    created_at: new Date().toISOString(),
-  },
-];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [staff, setStaff] = useState<Staff | null>(null);
   const [clockStatus, setClockStatus] = useState<ClockStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const fetchClockStatus = useCallback(async (staffId: string) => {
+    const { data, error } = await supabase
+      .from('time_clock')
+      .select('*')
+      .eq('staff_id', staffId)
+      .is('clock_out', null)
+      .order('clock_in', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching clock status:', error);
+      return;
+    }
+
+    if (data) {
+      setClockStatus({
+        is_clocked_in: true,
+        clock_entry: data as TimeClock,
+      });
+    } else {
+      setClockStatus({
+        is_clocked_in: false,
+        clock_entry: undefined,
+      });
+    }
+  }, []);
+
   const login = useCallback(async (pin: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const foundStaff = mockStaffData.find(s => s.pin === pin && s.active);
-      
-      if (foundStaff) {
-        setStaff(foundStaff);
-        // Initialize clock status
-        setClockStatus({
-          is_clocked_in: false,
-          clock_entry: undefined,
-        });
+      const { data, error } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('pin', pin)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Login error:', error);
+        return false;
+      }
+
+      if (data) {
+        const staffData: Staff = {
+          ...data,
+          role: data.role as StaffRole,
+        };
+        setStaff(staffData);
+        await fetchClockStatus(data.id);
         return true;
       }
       return false;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchClockStatus]);
 
   const logout = useCallback(() => {
     setStaff(null);
@@ -101,16 +89,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      setClockStatus({
-        is_clocked_in: true,
-        clock_entry: {
-          id: crypto.randomUUID(),
+      const { data, error } = await supabase
+        .from('time_clock')
+        .insert({
           staff_id: staff.id,
           clock_in: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-        },
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Clock in error:', error);
+        return false;
+      }
+
+      setClockStatus({
+        is_clocked_in: true,
+        clock_entry: data as TimeClock,
       });
       return true;
     } finally {
@@ -123,19 +118,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const clockOutTime = new Date();
-      const clockInTime = new Date(clockStatus.clock_entry.clock_in);
-      const totalHours = (clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
-      
+      const { data, error } = await supabase
+        .from('time_clock')
+        .update({
+          clock_out: new Date().toISOString(),
+        })
+        .eq('id', clockStatus.clock_entry.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Clock out error:', error);
+        return false;
+      }
+
       setClockStatus({
         is_clocked_in: false,
-        clock_entry: {
-          ...clockStatus.clock_entry,
-          clock_out: clockOutTime.toISOString(),
-          total_hours: parseFloat(totalHours.toFixed(2)),
-        },
+        clock_entry: data as TimeClock,
       });
       return true;
     } finally {
@@ -144,8 +143,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [staff, clockStatus]);
 
   const refreshClockStatus = useCallback(async () => {
-    // Will be implemented with Supabase
-  }, []);
+    if (staff) {
+      await fetchClockStatus(staff.id);
+    }
+  }, [staff, fetchClockStatus]);
 
   return (
     <AuthContext.Provider

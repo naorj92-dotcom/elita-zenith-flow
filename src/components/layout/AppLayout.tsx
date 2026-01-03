@@ -134,15 +134,15 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-3 px-2 py-2">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-primary font-semibold text-sm">
-                {staff?.name.split(' ').map(n => n[0]).join('')}
+                {staff?.first_name?.[0]}{staff?.last_name?.[0]}
               </span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-sidebar-foreground truncate">
-                {staff?.name}
+                {staff?.first_name} {staff?.last_name}
               </p>
               <p className="text-xs text-muted-foreground capitalize">
-                {staff?.role}
+                {staff?.role?.replace('_', ' ')}
               </p>
             </div>
             <button
