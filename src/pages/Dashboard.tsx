@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { AppointmentWithDetails, AppointmentStatus } from '@/types';
+import { LiveGoalsWidget } from '@/components/dashboard/LiveGoalsWidget';
 
 interface TodayAppointment {
   id: string;
@@ -282,12 +283,23 @@ export function Dashboard() {
         ))}
       </div>
 
-      {/* Today's Appointments */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-      >
+      {/* Live Goals Widget & Today's Schedule - Two Column Layout */}
+      <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        {/* Live Goals Widget */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <LiveGoalsWidget />
+        </motion.div>
+
+        {/* Today's Appointments */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
         <Card className="card-luxury">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="font-heading text-xl">Today's Schedule</CardTitle>
@@ -339,13 +351,14 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </motion.div>
+      </div>
 
       {/* Quick Actions */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4"
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
       >
         {[
           { label: 'New Appointment', href: '/schedule/new', icon: Calendar },

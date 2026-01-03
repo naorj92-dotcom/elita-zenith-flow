@@ -744,6 +744,50 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_goals: {
+        Row: {
+          achieved_at: string | null
+          bonus_commission_rate: number | null
+          created_at: string
+          daily_sales_goal: number
+          goal_achieved: boolean
+          goal_date: string
+          id: string
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          bonus_commission_rate?: number | null
+          created_at?: string
+          daily_sales_goal?: number
+          goal_achieved?: boolean
+          goal_date?: string
+          id?: string
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          achieved_at?: string | null
+          bonus_commission_rate?: number | null
+          created_at?: string
+          daily_sales_goal?: number
+          goal_achieved?: boolean
+          goal_date?: string
+          id?: string
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_goals_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_clock: {
         Row: {
           break_minutes: number
