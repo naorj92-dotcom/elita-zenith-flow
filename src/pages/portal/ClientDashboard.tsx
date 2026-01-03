@@ -15,6 +15,8 @@ import {
   DEMO_PRODUCT_RECOMMENDATIONS, 
   DEMO_SERVICE_RECOMMENDATIONS 
 } from '@/hooks/useDemoData';
+import { LoyaltyPointsWidget } from '@/components/portal/LoyaltyPointsWidget';
+import { MembershipStatusWidget } from '@/components/portal/MembershipStatusWidget';
 
 export function ClientDashboard() {
   const { client, isDemo } = useClientAuth();
@@ -236,6 +238,12 @@ export function ClientDashboard() {
             </CardContent>
           </Card>
         </Link>
+      </div>
+
+      {/* Membership & Loyalty Row */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <MembershipStatusWidget />
+        <LoyaltyPointsWidget />
       </div>
 
       {/* Stats */}

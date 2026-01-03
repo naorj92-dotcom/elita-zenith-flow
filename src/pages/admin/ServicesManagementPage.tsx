@@ -37,13 +37,14 @@ const initialFormData: ServiceFormData = {
 };
 
 const categories = [
-  'Facial',
-  'Injectables',
-  'Body Contouring',
-  'Laser Treatment',
+  'Facials',
+  'Body Treatments',
   'Skin Rejuvenation',
   'Chemical Peel',
-  'Wellness',
+  'LED Therapy',
+  'Massage & Wellness',
+  'Lash & Brow',
+  'Waxing',
   'Consultation',
   'Other',
 ];
@@ -169,13 +170,14 @@ export function ServicesManagementPage() {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      'Facial': 'bg-pink-500/10 text-pink-500 border-pink-500/20',
-      'Injectables': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-      'Body Contouring': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-      'Laser Treatment': 'bg-red-500/10 text-red-500 border-red-500/20',
+      'Facials': 'bg-pink-500/10 text-pink-500 border-pink-500/20',
+      'Body Treatments': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
       'Skin Rejuvenation': 'bg-green-500/10 text-green-500 border-green-500/20',
       'Chemical Peel': 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-      'Wellness': 'bg-teal-500/10 text-teal-500 border-teal-500/20',
+      'LED Therapy': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+      'Massage & Wellness': 'bg-teal-500/10 text-teal-500 border-teal-500/20',
+      'Lash & Brow': 'bg-rose-500/10 text-rose-500 border-rose-500/20',
+      'Waxing': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
       'Consultation': 'bg-gray-500/10 text-gray-500 border-gray-500/20',
     };
     return colors[category] || 'bg-primary/10 text-primary border-primary/20';
