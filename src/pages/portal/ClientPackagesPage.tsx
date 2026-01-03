@@ -6,14 +6,18 @@ import { Progress } from '@/components/ui/progress';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Package, Calendar, CheckCircle2 } from 'lucide-react';
+import { Package, Calendar, CheckCircle2, Eye } from 'lucide-react';
+import { DEMO_PACKAGES } from '@/hooks/useDemoData';
 
 export function ClientPackagesPage() {
-  const { client } = useClientAuth();
+  const { client, isDemo } = useClientAuth();
 
   const { data: packages, isLoading } = useQuery({
-    queryKey: ['client-packages', client?.id],
+    queryKey: ['client-packages', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        return DEMO_PACKAGES;
+      }
       if (!client?.id) return [];
       const { data } = await supabase
         .from('client_packages')
@@ -22,7 +26,7 @@ export function ClientPackagesPage() {
         .order('purchase_date', { ascending: false });
       return data || [];
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   const activePackages = packages?.filter(p => p.status === 'active') || [];
@@ -35,6 +39,14 @@ export function ClientPackagesPage() {
         <h1 className="text-3xl font-heading font-semibold">My Packages</h1>
         <p className="text-muted-foreground mt-1">Track your treatment packages and sessions</p>
       </div>
+
+      {/* Demo Mode Banner */}
+      {isDemo && (
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+          <Eye className="h-5 w-5 text-primary" />
+          <p className="text-sm">Viewing demo packages</p>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="grid gap-4">
