@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
   { label: 'Memberships', href: '/memberships', icon: Crown, roles: ['admin'] },
   { label: 'Gift Cards', href: '/gift-cards', icon: Gift, roles: ['admin'] },
   { label: 'Notifications', href: '/notifications', icon: Bell, roles: ['admin'] },
-  { label: 'Analytics', href: '/analytics', icon: BarChart3, roles: ['admin'] },
+  { label: 'Reports', href: '/analytics', icon: BarChart3, roles: ['admin'] },
   { label: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
   { label: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
 ];
