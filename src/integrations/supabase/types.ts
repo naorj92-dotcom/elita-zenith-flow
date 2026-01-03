@@ -149,6 +149,77 @@ export type Database = {
           },
         ]
       }
+      client_forms: {
+        Row: {
+          appointment_id: string | null
+          assigned_by: string | null
+          client_id: string
+          created_at: string
+          form_id: string
+          id: string
+          responses: Json
+          signature_data: string | null
+          signed_at: string | null
+          status: Database["public"]["Enums"]["form_status"]
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          assigned_by?: string | null
+          client_id: string
+          created_at?: string
+          form_id: string
+          id?: string
+          responses?: Json
+          signature_data?: string | null
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["form_status"]
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          assigned_by?: string | null
+          client_id?: string
+          created_at?: string
+          form_id?: string
+          id?: string
+          responses?: Json
+          signature_data?: string | null
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["form_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_forms_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_forms_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_forms_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_forms_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_packages: {
         Row: {
           client_id: string
@@ -297,6 +368,53 @@ export type Database = {
           zip?: string | null
         }
         Relationships: []
+      }
+      forms: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          fields: Json
+          form_type: Database["public"]["Enums"]["form_type"]
+          id: string
+          is_active: boolean
+          name: string
+          requires_signature: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fields?: Json
+          form_type?: Database["public"]["Enums"]["form_type"]
+          id?: string
+          is_active?: boolean
+          name: string
+          requires_signature?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fields?: Json
+          form_type?: Database["public"]["Enums"]["form_type"]
+          id?: string
+          is_active?: boolean
+          name?: string
+          requires_signature?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forms_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       packages: {
         Row: {
@@ -752,6 +870,8 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "no_show"
+      form_status: "draft" | "pending" | "completed" | "expired"
+      form_type: "intake" | "consent" | "contract" | "custom"
       staff_role: "admin" | "provider" | "front_desk"
       transaction_type: "service" | "retail" | "refund"
     }
@@ -890,6 +1010,8 @@ export const Constants = {
         "cancelled",
         "no_show",
       ],
+      form_status: ["draft", "pending", "completed", "expired"],
+      form_type: ["intake", "consent", "contract", "custom"],
       staff_role: ["admin", "provider", "front_desk"],
       transaction_type: ["service", "retail", "refund"],
     },
