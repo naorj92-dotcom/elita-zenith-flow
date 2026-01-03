@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Minus, Trash2, ShoppingCart, Receipt, CreditCard, DollarSign, Gift } from 'lucide-react';
+import { Plus, Minus, Trash2, ShoppingCart, Receipt, CreditCard, DollarSign, Gift, Eye, Percent } from 'lucide-react';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
+import { LiveReceiptPreview } from '@/components/pos/LiveReceiptPreview';
 import { 
   ReceiptData, 
   RetailItem, 
@@ -38,13 +40,13 @@ export function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [tipAmount, setTipAmount] = useState<number>(0);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const [taxRate, setTaxRate] = useState<number>(8.25);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'cash' | 'gift_card' | 'split'>('card');
   const [treatmentSummary, setTreatmentSummary] = useState<TreatmentSummary>({});
   const [showReceipt, setShowReceipt] = useState(false);
   const [generatedReceipt, setGeneratedReceipt] = useState<ReceiptData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const TAX_RATE = 8.25;
+  const [rightPanelTab, setRightPanelTab] = useState<'cart' | 'preview'>('cart');
 
   // Fetch clients
   const { data: clients = [] } = useQuery({
@@ -133,8 +135,40 @@ export function POSPage() {
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const taxableSubtotal = subtotal - discountAmount;
-  const taxAmount = (taxableSubtotal * TAX_RATE) / 100;
+  const taxAmount = (taxableSubtotal * taxRate) / 100;
   const totalAmount = taxableSubtotal + taxAmount + tipAmount;
+
+  // Build live preview data
+  const livePreviewData = useMemo(() => {
+    const client = clients.find((c) => c.id === selectedClient);
+    const provider = staff.find((s) => s.id === selectedStaff);
+    const serviceItem = cart.find((item) => item.type === 'service');
+    const retailItems: RetailItem[] = cart
+      .filter((item) => item.type === 'product')
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+      }));
+
+    return {
+      clientName: client ? `${client.first_name} ${client.last_name}` : undefined,
+      providerName: provider ? `${provider.first_name} ${provider.last_name}` : undefined,
+      serviceName: serviceItem?.name,
+      servicePrice: serviceItem ? serviceItem.price * serviceItem.quantity : 0,
+      machineUsed: serviceItem?.machineUsed,
+      treatmentSummary,
+      retailItems,
+      retailTotal: retailItems.reduce((sum, item) => sum + item.total, 0),
+      subtotal,
+      taxAmount,
+      tipAmount,
+      discountAmount,
+      totalAmount,
+    };
+  }, [cart, clients, staff, selectedClient, selectedStaff, treatmentSummary, subtotal, taxAmount, tipAmount, discountAmount, totalAmount]);
 
   const handleCheckout = async () => {
     if (!selectedClient || !selectedStaff) {
@@ -235,7 +269,7 @@ export function POSPage() {
           retail_items: JSON.parse(JSON.stringify(retailItems)),
           retail_total: retailItems.reduce((sum, item) => sum + item.total, 0),
           subtotal: subtotal,
-          tax_rate: TAX_RATE,
+          tax_rate: taxRate,
           tax_amount: taxAmount,
           tip_amount: tipAmount,
           discount_amount: discountAmount,
@@ -295,7 +329,7 @@ export function POSPage() {
         retailItems: retailItems,
         retailTotal: retailItems.reduce((sum, item) => sum + item.total, 0),
         subtotal: subtotal,
-        taxRate: TAX_RATE,
+        taxRate: taxRate,
         taxAmount: taxAmount,
         tipAmount: tipAmount,
         discountAmount: discountAmount,
@@ -510,161 +544,194 @@ export function POSPage() {
           )}
         </div>
 
-        {/* Right Column - Cart */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg font-heading">
-                <ShoppingCart className="h-5 w-5" />
+        {/* Right Column - Cart & Preview */}
+        <div className="space-y-4">
+          <Tabs value={rightPanelTab} onValueChange={(v) => setRightPanelTab(v as 'cart' | 'preview')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="cart" className="gap-2">
+                <ShoppingCart className="h-4 w-4" />
                 Cart
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {cart.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">Cart is empty</p>
-              ) : (
-                <div className="space-y-3">
-                  {cart.map((item) => (
-                    <div
-                      key={`${item.type}-${item.id}`}
-                      className="flex items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{item.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          ${item.price.toFixed(2)} each
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {item.type === 'product' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => updateQuantity(item.id, item.type, -1)}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="w-6 text-center text-sm">{item.quantity}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => updateQuantity(item.id, item.type, 1)}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive"
-                          onClick={() => removeFromCart(item.id, item.type)}
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="gap-2">
+                <Eye className="h-4 w-4" />
+                Preview
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="cart" className="mt-4">
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  {cart.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">Cart is empty</p>
+                  ) : (
+                    <div className="space-y-3 max-h-[200px] overflow-auto">
+                      {cart.map((item) => (
+                        <div
+                          key={`${item.type}-${item.id}`}
+                          className="flex items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg"
                         >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{item.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              ${item.price.toFixed(2)} each
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {item.type === 'product' && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => updateQuantity(item.id, item.type, -1)}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-6 text-center text-sm">{item.quantity}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => updateQuantity(item.id, item.type, 1)}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive"
+                              onClick={() => removeFromCart(item.id, item.type)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
 
-              <Separator />
+                  <Separator />
 
-              {/* Tip & Discount */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">Tip</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={tipAmount || ''}
-                    onChange={(e) => setTipAmount(Number(e.target.value) || 0)}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Discount</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={discountAmount || ''}
-                    onChange={(e) => setDiscountAmount(Number(e.target.value) || 0)}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              {/* Payment Method */}
-              <div>
-                <Label className="text-xs">Payment Method</Label>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  {[
-                    { value: 'card', icon: CreditCard, label: 'Card' },
-                    { value: 'cash', icon: DollarSign, label: 'Cash' },
-                    { value: 'gift_card', icon: Gift, label: 'Gift Card' },
-                    { value: 'split', icon: Receipt, label: 'Split' },
-                  ].map(({ value, icon: Icon, label }) => (
-                    <Button
-                      key={value}
-                      variant={paymentMethod === value ? 'default' : 'outline'}
-                      size="sm"
-                      className="gap-1"
-                      onClick={() => setPaymentMethod(value as typeof paymentMethod)}
-                    >
-                      <Icon className="h-3 w-3" />
-                      {label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Totals */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-success">
-                    <span>Discount</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                  {/* Tax, Tip & Discount */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label className="text-xs flex items-center gap-1">
+                        <Percent className="h-3 w-3" />
+                        Tax %
+                      </Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="25"
+                        step="0.01"
+                        value={taxRate}
+                        onChange={(e) => setTaxRate(Number(e.target.value) || 0)}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Tip</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={tipAmount || ''}
+                        onChange={(e) => setTipAmount(Number(e.target.value) || 0)}
+                        placeholder="0.00"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Discount</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={discountAmount || ''}
+                        onChange={(e) => setDiscountAmount(Number(e.target.value) || 0)}
+                        placeholder="0.00"
+                        className="text-sm"
+                      />
+                    </div>
                   </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax ({TAX_RATE}%)</span>
-                  <span>${taxAmount.toFixed(2)}</span>
-                </div>
-                {tipAmount > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tip</span>
-                    <span>${tipAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                <Separator />
-                <div className="flex justify-between text-lg font-heading font-semibold">
-                  <span>Total</span>
-                  <span>${totalAmount.toFixed(2)}</span>
-                </div>
-              </div>
 
-              <Button
-                className="w-full gap-2"
-                size="lg"
-                onClick={handleCheckout}
-                disabled={cart.length === 0 || isProcessing}
-              >
-                <Receipt className="h-4 w-4" />
-                {isProcessing ? 'Processing...' : 'Complete Sale'}
-              </Button>
-            </CardContent>
-          </Card>
+                  {/* Payment Method */}
+                  <div>
+                    <Label className="text-xs">Payment Method</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      {[
+                        { value: 'card', icon: CreditCard, label: 'Card' },
+                        { value: 'cash', icon: DollarSign, label: 'Cash' },
+                        { value: 'gift_card', icon: Gift, label: 'Gift Card' },
+                        { value: 'split', icon: Receipt, label: 'Split' },
+                      ].map(({ value, icon: Icon, label }) => (
+                        <Button
+                          key={value}
+                          variant={paymentMethod === value ? 'default' : 'outline'}
+                          size="sm"
+                          className="gap-1"
+                          onClick={() => setPaymentMethod(value as typeof paymentMethod)}
+                        >
+                          <Icon className="h-3 w-3" />
+                          {label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Totals */}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span>${subtotal.toFixed(2)}</span>
+                    </div>
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Discount</span>
+                        <span>-${discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Tax ({taxRate}%)</span>
+                      <span>${taxAmount.toFixed(2)}</span>
+                    </div>
+                    {tipAmount > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Tip</span>
+                        <span>${tipAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <Separator />
+                    <div className="flex justify-between text-lg font-heading font-semibold">
+                      <span>Total</span>
+                      <span>${totalAmount.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full gap-2"
+                    size="lg"
+                    onClick={handleCheckout}
+                    disabled={cart.length === 0 || isProcessing}
+                  >
+                    <Receipt className="h-4 w-4" />
+                    {isProcessing ? 'Processing...' : 'Complete Sale'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="preview" className="mt-4">
+              <LiveReceiptPreview 
+                receipt={livePreviewData}
+                taxRate={taxRate}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
