@@ -52,7 +52,6 @@ const navItems: NavItem[] = [
   { label: 'Schedule', href: '/schedule', icon: Calendar },
   { label: 'Clients', href: '/clients', icon: Users },
   { label: 'Time Clock', href: '/timeclock', icon: Clock },
-  { label: 'My Reports', href: '/my-reports', icon: BarChart3 },
   { label: 'Payroll', href: '/payroll', icon: DollarSign, roles: ['admin', 'manager'] },
   { label: 'Receipts', href: '/receipts', icon: Receipt, roles: ['admin', 'front_desk'] },
   { label: 'Waitlist', href: '/waitlist', icon: ClipboardList, roles: ['admin', 'front_desk'] },
@@ -75,6 +74,17 @@ const reportSubItems: ReportSubItem[] = [
   { label: 'Expert Insights', tab: 'insights', icon: Target },
 ];
 
+interface MyReportSubItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const myReportSubItems: MyReportSubItem[] = [
+  { label: 'Overview', href: '/my-reports', icon: BarChart3 },
+  { label: 'Time Clock', href: '/timeclock', icon: Clock },
+];
+
 interface AppLayoutProps {
   children: React.ReactNode;
 }
@@ -83,14 +93,18 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { staff, logout, clockStatus } = useAuth();
   const [reportsExpanded, setReportsExpanded] = useState(location.pathname === '/analytics');
+  const [myReportsExpanded, setMyReportsExpanded] = useState(
+    location.pathname === '/my-reports' || location.pathname === '/timeclock'
+  );
 
   const isAdmin = staff?.role === 'admin';
   const isOnReports = location.pathname === '/analytics';
+  const isOnMyReports = location.pathname === '/my-reports' || location.pathname === '/timeclock';
 
   const filteredNavItems = navItems.filter(item => {
     if (!item.roles) return true;
     return staff && item.roles.includes(staff.role);
-  });
+  }).filter(item => item.href !== '/timeclock'); // Exclude Time Clock from main nav since it's in My Reports
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -145,6 +159,69 @@ export function AppLayout({ children }: AppLayoutProps) {
             );
           })}
 
+          {/* My Reports Expandable Section - All Users */}
+          <div className="pt-2">
+            <button
+              onClick={() => setMyReportsExpanded(!myReportsExpanded)}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+                isOnMyReports
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-luxury-sm"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent"
+              )}
+            >
+              <BarChart3 className={cn(
+                "w-5 h-5 transition-transform group-hover:scale-110",
+                isOnMyReports ? "" : "text-muted-foreground"
+              )} />
+              <span className="font-medium text-sm">My Reports</span>
+              <motion.div
+                animate={{ rotate: myReportsExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="ml-auto"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.div>
+            </button>
+
+            <AnimatePresence>
+              {myReportsExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pl-4 pt-1 space-y-1">
+                    {myReportSubItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      const isSubActive = location.pathname === subItem.href;
+                      return (
+                        <Link
+                          key={subItem.href}
+                          to={subItem.href}
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 group",
+                            isSubActive
+                              ? "bg-sidebar-accent text-sidebar-foreground"
+                              : "text-sidebar-foreground hover:bg-sidebar-accent"
+                          )}
+                        >
+                          <SubIcon className={cn(
+                            "w-4 h-4",
+                            isSubActive ? "text-primary" : "text-muted-foreground"
+                          )} />
+                          <span className="text-sm">{subItem.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* Reports Expandable Section - Admin Only */}
           {isAdmin && (
             <div className="pt-2">
@@ -157,7 +234,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     : "text-sidebar-foreground hover:bg-sidebar-accent"
                 )}
               >
-                <BarChart3 className={cn(
+                <TrendingUp className={cn(
                   "w-5 h-5 transition-transform group-hover:scale-110",
                   isOnReports ? "" : "text-muted-foreground"
                 )} />
