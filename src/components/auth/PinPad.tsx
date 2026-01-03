@@ -67,7 +67,7 @@ export function PinPad({
   const buttons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'delete'];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-hero p-6">
+    <div className="flex flex-col items-center justify-center flex-1 bg-gradient-hero p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

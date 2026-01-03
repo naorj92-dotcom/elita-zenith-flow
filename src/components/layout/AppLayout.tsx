@@ -11,7 +11,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  UserCog
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +31,7 @@ const navItems: NavItem[] = [
   { label: 'Time Clock', href: '/timeclock', icon: Clock },
   { label: 'Payroll', href: '/payroll', icon: DollarSign, roles: ['admin', 'manager'] },
   { label: 'Products', href: '/products', icon: Package, roles: ['admin', 'manager'] },
+  { label: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
   { label: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
 ];
 

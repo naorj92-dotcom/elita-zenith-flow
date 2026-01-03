@@ -88,6 +88,153 @@ export type Database = {
           },
         ]
       }
+      before_after_photos: {
+        Row: {
+          after_photo_url: string | null
+          appointment_id: string | null
+          before_photo_url: string | null
+          client_id: string
+          created_at: string
+          id: string
+          is_visible_to_client: boolean
+          notes: string | null
+          service_id: string | null
+          taken_date: string
+        }
+        Insert: {
+          after_photo_url?: string | null
+          appointment_id?: string | null
+          before_photo_url?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          is_visible_to_client?: boolean
+          notes?: string | null
+          service_id?: string | null
+          taken_date?: string
+        }
+        Update: {
+          after_photo_url?: string | null
+          appointment_id?: string | null
+          before_photo_url?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_visible_to_client?: boolean
+          notes?: string | null
+          service_id?: string | null
+          taken_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "before_after_photos_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "before_after_photos_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "before_after_photos_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_packages: {
+        Row: {
+          client_id: string
+          created_at: string
+          expiry_date: string | null
+          id: string
+          notes: string | null
+          package_id: string | null
+          purchase_date: string
+          sessions_total: number
+          sessions_used: number
+          status: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          package_id?: string | null
+          purchase_date?: string
+          sessions_total: number
+          sessions_used?: number
+          status?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          package_id?: string | null
+          purchase_date?: string
+          sessions_total?: number
+          sessions_used?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_packages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_packages_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_profiles: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -151,6 +298,99 @@ export type Database = {
         }
         Relationships: []
       }
+      packages: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          services: Json
+          total_sessions: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          services?: Json
+          total_sessions?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          services?: Json
+          total_sessions?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_recommendations: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          is_purchased: boolean
+          price: number | null
+          priority: string | null
+          product_description: string | null
+          product_name: string
+          product_url: string | null
+          recommended_date: string
+          staff_id: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          is_purchased?: boolean
+          price?: number | null
+          priority?: string | null
+          product_description?: string | null
+          product_name: string
+          product_url?: string | null
+          recommended_date?: string
+          staff_id?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_purchased?: boolean
+          price?: number | null
+          priority?: string | null
+          product_description?: string | null
+          product_name?: string
+          product_url?: string | null
+          recommended_date?: string
+          staff_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_recommendations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_recommendations_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rooms: {
         Row: {
           created_at: string
@@ -174,6 +414,64 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      service_recommendations: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          is_booked: boolean
+          priority: string | null
+          reason: string | null
+          recommended_date: string
+          service_id: string
+          staff_id: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          is_booked?: boolean
+          priority?: string | null
+          reason?: string | null
+          recommended_date?: string
+          service_id: string
+          staff_id?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_booked?: boolean
+          priority?: string | null
+          reason?: string | null
+          recommended_date?: string
+          service_id?: string
+          staff_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_recommendations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_recommendations_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_recommendations_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       services: {
         Row: {

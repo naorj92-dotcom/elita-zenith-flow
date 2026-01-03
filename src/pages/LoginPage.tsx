@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { PinPad } from '@/components/auth/PinPad';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -11,11 +11,21 @@ export function LoginPage() {
   }
 
   return (
-    <PinPad 
-      onSubmit={login}
-      isLoading={isLoading}
-      title="Elita MedSpa"
-      subtitle="Enter your PIN to clock in"
-    />
+    <div className="min-h-screen flex flex-col bg-gradient-hero">
+      <PinPad 
+        onSubmit={login}
+        isLoading={isLoading}
+        title="Elita MedSpa"
+        subtitle="Enter your PIN to clock in"
+      />
+      <div className="text-center pb-8">
+        <p className="text-sm text-muted-foreground">
+          Client?{' '}
+          <Link to="/portal/auth" className="text-primary hover:underline">
+            Access Client Portal
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }
