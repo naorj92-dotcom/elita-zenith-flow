@@ -52,6 +52,7 @@ const navItems: NavItem[] = [
   { label: 'Schedule', href: '/schedule', icon: Calendar },
   { label: 'Clients', href: '/clients', icon: Users },
   { label: 'Time Clock', href: '/timeclock', icon: Clock },
+  { label: 'My Reports', href: '/my-reports', icon: BarChart3 },
   { label: 'Payroll', href: '/payroll', icon: DollarSign, roles: ['admin', 'manager'] },
   { label: 'Receipts', href: '/receipts', icon: Receipt, roles: ['admin', 'front_desk'] },
   { label: 'Waitlist', href: '/waitlist', icon: ClipboardList, roles: ['admin', 'front_desk'] },

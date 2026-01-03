@@ -27,6 +27,7 @@ import { WaitlistManagementPage } from "@/pages/admin/WaitlistManagementPage";
 import { MachinesManagementPage } from "@/pages/admin/MachinesManagementPage";
 import NotificationsManagementPage from "@/pages/admin/NotificationsManagementPage";
 import ManagerAnalyticsPage from "@/pages/ManagerAnalyticsPage";
+import MyReportsPage from "@/pages/MyReportsPage";
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
@@ -65,6 +66,7 @@ function AppRoutes() {
       <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
       <Route path="/clients/:id" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
       <Route path="/timeclock" element={<ProtectedRoute><TimeClockPage /></ProtectedRoute>} />
+      <Route path="/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
       <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
       <Route path="/services" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
       <Route path="/machines" element={<ProtectedRoute><MachinesManagementPage /></ProtectedRoute>} />
