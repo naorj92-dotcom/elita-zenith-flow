@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -138,8 +137,7 @@ export default function MyReportsPage() {
   };
 
   return (
-    <AppLayout>
-      <div className="p-6 lg:p-8 space-y-8">
+    <div className="p-6 lg:p-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -441,7 +439,6 @@ export default function MyReportsPage() {
             </div>
           </div>
         )}
-      </div>
-    </AppLayout>
+    </div>
   );
 }
