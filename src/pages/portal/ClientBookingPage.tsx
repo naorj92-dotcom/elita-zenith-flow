@@ -7,9 +7,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays, setHours, setMinutes, isBefore, isAfter, startOfDay } from 'date-fns';
-import { CalendarIcon, Clock, User, Check, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { CalendarIcon, Clock, User, Check, ArrowLeft, ArrowRight, Loader2, Cpu, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useMachineAvailability } from '@/hooks/useMachineAvailability';
 
 const TIME_SLOTS = [
   { hour: 9, minute: 0 },
@@ -37,6 +38,8 @@ export function ClientBookingPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<{ hour: number; minute: number } | null>(null);
 
+  // Machine availability hook
+  const { isSlotAvailableForBooking, machines } = useMachineAvailability(selectedDate);
   // Fetch services
   const { data: services, isLoading: loadingServices } = useQuery({
     queryKey: ['booking-services'],
@@ -127,18 +130,19 @@ export function ClientBookingPage() {
     },
   });
 
-  // Check if a time slot is available
+  // Check if a time slot is available (staff + machine)
   const isSlotAvailable = (slot: { hour: number; minute: number }) => {
-    if (!selectedDate || !selectedService) return false;
+    if (!selectedDate || !selectedService || !selectedProvider) return false;
     
     const slotTime = setMinutes(setHours(selectedDate, slot.hour), slot.minute);
-    const slotEnd = new Date(slotTime.getTime() + selectedService.duration_minutes * 60000);
+    const serviceDuration = selectedService.duration_minutes + (selectedService.recovery_buffer_minutes || 0);
+    const slotEnd = new Date(slotTime.getTime() + serviceDuration * 60000);
     
     // Can't book in the past
     if (isBefore(slotTime, new Date())) return false;
 
-    // Check against existing appointments
-    return !existingAppointments?.some(apt => {
+    // Check staff availability against existing appointments
+    const staffBusy = existingAppointments?.some(apt => {
       const aptStart = new Date(apt.scheduled_at);
       const aptEnd = new Date(aptStart.getTime() + apt.duration_minutes * 60000);
       return (
@@ -148,6 +152,18 @@ export function ClientBookingPage() {
         slotTime.getTime() === aptStart.getTime()
       );
     });
+
+    if (staffBusy) return false;
+
+    // Check machine availability using the hook
+    return isSlotAvailableForBooking(selectedService.id, selectedProvider.id, slot);
+  };
+
+  // Get machine name for a service
+  const getMachineForService = (serviceId: string) => {
+    const service = services?.find(s => s.id === serviceId);
+    if (!service?.machine_type_id) return null;
+    return machines?.find(m => m.id === service.machine_type_id);
   };
 
   // Group services by category
@@ -193,11 +209,20 @@ export function ClientBookingPage() {
                           <div>
                             <h4 className="font-semibold">{service.name}</h4>
                             <p className="text-sm text-muted-foreground">{service.description}</p>
-                            <div className="flex items-center gap-3 mt-2 text-sm">
+                            <div className="flex items-center gap-3 mt-2 text-sm flex-wrap">
                               <span className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
                                 {service.duration_minutes} min
+                                {service.recovery_buffer_minutes > 0 && (
+                                  <span className="text-muted-foreground">(+{service.recovery_buffer_minutes} buffer)</span>
+                                )}
                               </span>
+                              {getMachineForService(service.id) && (
+                                <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                  <Cpu className="h-3 w-3 mr-1" />
+                                  {getMachineForService(service.id)?.machine_type}
+                                </Badge>
+                              )}
                             </div>
                           </div>
                           <div className="text-right">
@@ -308,27 +333,43 @@ export function ClientBookingPage() {
               <Card className="card-luxury">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">Select Time</CardTitle>
+                  {selectedService?.machine_type_id && getMachineForService(selectedService.id) && (
+                    <CardDescription className="flex items-center gap-1 text-xs">
+                      <Cpu className="h-3 w-3" />
+                      Requires {getMachineForService(selectedService.id)?.machine_type} machine
+                    </CardDescription>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {selectedDate ? (
-                    <div className="grid grid-cols-3 gap-2">
-                      {TIME_SLOTS.map((slot) => {
-                        const available = isSlotAvailable(slot);
-                        const isSelected = selectedTime?.hour === slot.hour && selectedTime?.minute === slot.minute;
-                        
-                        return (
-                          <Button
-                            key={`${slot.hour}-${slot.minute}`}
-                            variant={isSelected ? 'default' : 'outline'}
-                            disabled={!available}
-                            onClick={() => setSelectedTime(slot)}
-                            className={!available ? 'opacity-50' : ''}
-                          >
-                            {format(setMinutes(setHours(new Date(), slot.hour), slot.minute), 'h:mm a')}
-                          </Button>
-                        );
-                      })}
-                    </div>
+                    <>
+                      <div className="grid grid-cols-3 gap-2">
+                        {TIME_SLOTS.map((slot) => {
+                          const available = isSlotAvailable(slot);
+                          const isSelected = selectedTime?.hour === slot.hour && selectedTime?.minute === slot.minute;
+                          
+                          return (
+                            <Button
+                              key={`${slot.hour}-${slot.minute}`}
+                              variant={isSelected ? 'default' : 'outline'}
+                              disabled={!available}
+                              onClick={() => setSelectedTime(slot)}
+                              className={!available ? 'opacity-50' : ''}
+                            >
+                              {format(setMinutes(setHours(new Date(), slot.hour), slot.minute), 'h:mm a')}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      {TIME_SLOTS.every(slot => !isSlotAvailable(slot)) && (
+                        <div className="mt-4 p-3 rounded-lg bg-warning/10 border border-warning/20 flex items-start gap-2">
+                          <AlertCircle className="h-4 w-4 text-warning mt-0.5" />
+                          <p className="text-sm text-warning">
+                            No available slots for this date. All machines or providers may be fully booked.
+                          </p>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <p className="text-center text-muted-foreground py-8">
                       Please select a date first
