@@ -18,6 +18,9 @@ import { ServicesManagementPage } from "@/pages/admin/ServicesManagementPage";
 import { ProductsManagementPage } from "@/pages/admin/ProductsManagementPage";
 import { FormsManagementPage } from "@/pages/admin/FormsManagementPage";
 import { ClientPhotosManagementPage } from "@/pages/admin/ClientPhotosManagementPage";
+import { MembershipsManagementPage } from "@/pages/admin/MembershipsManagementPage";
+import { GiftCardsManagementPage } from "@/pages/admin/GiftCardsManagementPage";
+import { WaitlistManagementPage } from "@/pages/admin/WaitlistManagementPage";
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
@@ -26,6 +29,7 @@ import { ClientRecommendationsPage } from "@/pages/portal/ClientRecommendationsP
 import { ClientHistoryPage } from "@/pages/portal/ClientHistoryPage";
 import { ClientBookingPage } from "@/pages/portal/ClientBookingPage";
 import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
+import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +61,9 @@ function AppRoutes() {
       <Route path="/products" element={<ProtectedRoute><ProductsManagementPage /></ProtectedRoute>} />
       <Route path="/forms" element={<ProtectedRoute><FormsManagementPage /></ProtectedRoute>} />
       <Route path="/photos" element={<ProtectedRoute><ClientPhotosManagementPage /></ProtectedRoute>} />
+      <Route path="/memberships" element={<ProtectedRoute><MembershipsManagementPage /></ProtectedRoute>} />
+      <Route path="/gift-cards" element={<ProtectedRoute><GiftCardsManagementPage /></ProtectedRoute>} />
+      <Route path="/waitlist" element={<ProtectedRoute><WaitlistManagementPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
       
@@ -70,6 +77,7 @@ function AppRoutes() {
         <Route path="history" element={<ClientHistoryPage />} />
         <Route path="book" element={<ClientBookingPage />} />
         <Route path="forms" element={<ClientFormsPage />} />
+        <Route path="memberships" element={<ClientMembershipsPage />} />
       </Route>
       
       <Route path="*" element={<NotFound />} />

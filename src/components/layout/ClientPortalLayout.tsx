@@ -2,13 +2,14 @@ import React from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, Home, Package, Image, ShoppingBag, Calendar, Clock, LogOut, Menu, X, FileText } from 'lucide-react';
+import { Loader2, Sparkles, Home, Package, Image, ShoppingBag, Calendar, Clock, LogOut, Menu, X, FileText, Crown } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
   { href: '/portal', icon: Home, label: 'Dashboard' },
   { href: '/portal/forms', icon: FileText, label: 'My Forms' },
   { href: '/portal/packages', icon: Package, label: 'My Packages' },
+  { href: '/portal/memberships', icon: Crown, label: 'Membership' },
   { href: '/portal/photos', icon: Image, label: 'Progress Photos' },
   { href: '/portal/recommendations', icon: ShoppingBag, label: 'Recommendations' },
   { href: '/portal/history', icon: Clock, label: 'History' },

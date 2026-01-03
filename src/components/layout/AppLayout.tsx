@@ -14,7 +14,10 @@ import {
   Sparkles,
   UserCog,
   FileText,
-  Camera
+  Camera,
+  Crown,
+  Gift,
+  ClipboardList
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,10 +35,13 @@ const navItems: NavItem[] = [
   { label: 'Clients', href: '/clients', icon: Users },
   { label: 'Time Clock', href: '/timeclock', icon: Clock },
   { label: 'Payroll', href: '/payroll', icon: DollarSign, roles: ['admin', 'manager'] },
+  { label: 'Waitlist', href: '/waitlist', icon: ClipboardList, roles: ['admin', 'front_desk'] },
   { label: 'Photos', href: '/photos', icon: Camera, roles: ['admin', 'provider'] },
   { label: 'Forms', href: '/forms', icon: FileText, roles: ['admin'] },
   { label: 'Services', href: '/services', icon: Sparkles, roles: ['admin'] },
   { label: 'Products', href: '/products', icon: Package, roles: ['admin'] },
+  { label: 'Memberships', href: '/memberships', icon: Crown, roles: ['admin'] },
+  { label: 'Gift Cards', href: '/gift-cards', icon: Gift, roles: ['admin'] },
   { label: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
   { label: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
 ];

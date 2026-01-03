@@ -220,6 +220,60 @@ export type Database = {
           },
         ]
       }
+      client_memberships: {
+        Row: {
+          cancelled_at: string | null
+          client_id: string
+          created_at: string
+          id: string
+          membership_id: string
+          next_billing_date: string | null
+          remaining_credits: number
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          membership_id: string
+          next_billing_date?: string | null
+          remaining_credits?: number
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          membership_id?: string
+          next_billing_date?: string | null
+          remaining_credits?: number
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_memberships_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_memberships_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_packages: {
         Row: {
           client_id: string
@@ -415,6 +469,144 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gift_cards: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          initial_amount: number
+          is_active: boolean
+          message: string | null
+          purchased_at: string
+          purchaser_email: string | null
+          purchaser_name: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          remaining_amount: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          initial_amount: number
+          is_active?: boolean
+          message?: string | null
+          purchased_at?: string
+          purchaser_email?: string | null
+          purchaser_name?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          remaining_amount: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          initial_amount?: number
+          is_active?: boolean
+          message?: string | null
+          purchased_at?: string
+          purchaser_email?: string | null
+          purchaser_name?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          remaining_amount?: number
+        }
+        Relationships: []
+      }
+      loyalty_points: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          points: number
+          related_appointment_id: string | null
+          transaction_type: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points: number
+          related_appointment_id?: string | null
+          transaction_type: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          related_appointment_id?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_points_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_points_related_appointment_id_fkey"
+            columns: ["related_appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memberships: {
+        Row: {
+          benefits: Json
+          billing_period: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          monthly_service_credits: number
+          name: string
+          price: number
+          priority_booking: boolean | null
+          retail_discount_percent: number | null
+          updated_at: string
+        }
+        Insert: {
+          benefits?: Json
+          billing_period?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          monthly_service_credits?: number
+          name: string
+          price: number
+          priority_booking?: boolean | null
+          retail_discount_percent?: number | null
+          updated_at?: string
+        }
+        Update: {
+          benefits?: Json
+          billing_period?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          monthly_service_credits?: number
+          name?: string
+          price?: number
+          priority_booking?: boolean | null
+          retail_discount_percent?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       packages: {
         Row: {
@@ -890,6 +1082,67 @@ export type Database = {
           },
         ]
       }
+      waitlist: {
+        Row: {
+          client_id: string
+          contacted_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          preferred_date: string | null
+          preferred_staff_id: string | null
+          preferred_time_range: string | null
+          service_id: string | null
+          status: string
+        }
+        Insert: {
+          client_id: string
+          contacted_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          preferred_date?: string | null
+          preferred_staff_id?: string | null
+          preferred_time_range?: string | null
+          service_id?: string | null
+          status?: string
+        }
+        Update: {
+          client_id?: string
+          contacted_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          preferred_date?: string | null
+          preferred_staff_id?: string | null
+          preferred_time_range?: string | null
+          service_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_preferred_staff_id_fkey"
+            columns: ["preferred_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -902,6 +1155,10 @@ export type Database = {
           p_staff_id: string
           p_transaction_type: Database["public"]["Enums"]["transaction_type"]
         }
+        Returns: number
+      }
+      get_client_loyalty_balance: {
+        Args: { p_client_id: string }
         Returns: number
       }
     }
