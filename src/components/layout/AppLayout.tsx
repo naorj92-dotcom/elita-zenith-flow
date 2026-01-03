@@ -17,7 +17,8 @@ import {
   Camera,
   Crown,
   Gift,
-  ClipboardList
+  ClipboardList,
+  Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,6 +43,7 @@ const navItems: NavItem[] = [
   { label: 'Products', href: '/products', icon: Package, roles: ['admin'] },
   { label: 'Memberships', href: '/memberships', icon: Crown, roles: ['admin'] },
   { label: 'Gift Cards', href: '/gift-cards', icon: Gift, roles: ['admin'] },
+  { label: 'Notifications', href: '/notifications', icon: Bell, roles: ['admin'] },
   { label: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
   { label: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
 ];
