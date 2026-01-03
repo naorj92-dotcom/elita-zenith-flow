@@ -67,7 +67,7 @@ interface ReceiptWithClient {
   } | null;
 }
 
-type DateViewMode = 'day' | 'month' | 'year';
+type DateViewMode = 'day' | 'month' | 'year' | 'custom';
 
 export default function MyReportsPage() {
   const { staff } = useAuth();
@@ -81,6 +81,10 @@ export default function MyReportsPage() {
   const [dateViewMode, setDateViewMode] = useState<DateViewMode>('month');
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptWithClient | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<Date>(new Date());
+  const [customEndDate, setCustomEndDate] = useState<Date>(new Date());
+  const [customCalendarOpen, setCustomCalendarOpen] = useState(false);
+  const [selectingCustomEnd, setSelectingCustomEnd] = useState(false);
 
   const getDateRange = (date: Date, mode: DateViewMode) => {
     switch (mode) {
@@ -90,6 +94,8 @@ export default function MyReportsPage() {
         return { start: startOfMonth(date), end: endOfMonth(date) };
       case 'year':
         return { start: startOfYear(date), end: endOfYear(date) };
+      case 'custom':
+        return { start: startOfDay(customStartDate), end: endOfDay(customEndDate) };
     }
   };
 
@@ -101,7 +107,7 @@ export default function MyReportsPage() {
     if (staff?.id) {
       fetchData();
     }
-  }, [staff?.id, selectedDate, dateViewMode]);
+  }, [staff?.id, selectedDate, dateViewMode, customStartDate, customEndDate]);
 
   const fetchData = async () => {
     if (!staff?.id) return;
@@ -204,6 +210,8 @@ export default function MyReportsPage() {
         return format(selectedDate, 'MMMM yyyy');
       case 'year':
         return format(selectedDate, 'yyyy');
+      case 'custom':
+        return `${format(customStartDate, 'MMM d')} - ${format(customEndDate, 'MMM d, yyyy')}`;
     }
   };
 
@@ -244,41 +252,104 @@ export default function MyReportsPage() {
               <SelectItem value="day">Day</SelectItem>
               <SelectItem value="month">Month</SelectItem>
               <SelectItem value="year">Year</SelectItem>
+              <SelectItem value="custom">Custom</SelectItem>
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" onClick={() => navigateDate('prev')}>
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="min-w-[140px]">
-                  <CalendarIcon className="w-4 h-4 mr-2" />
-                  {getDateLabel()}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setSelectedDate(date);
-                      setCalendarOpen(false);
-                    }
-                  }}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <Button variant="outline" size="icon" onClick={() => navigateDate('next')}>
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+          {dateViewMode !== 'custom' ? (
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="icon" onClick={() => navigateDate('prev')}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="min-w-[140px]">
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    {getDateLabel()}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setSelectedDate(date);
+                        setCalendarOpen(false);
+                      }
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <Button variant="outline" size="icon" onClick={() => navigateDate('next')}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Popover open={customCalendarOpen && !selectingCustomEnd} onOpenChange={(open) => {
+                setCustomCalendarOpen(open);
+                setSelectingCustomEnd(false);
+              }}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="min-w-[120px]">
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    {format(customStartDate, 'MMM d, yyyy')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customStartDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setCustomStartDate(date);
+                        if (date > customEndDate) {
+                          setCustomEndDate(date);
+                        }
+                        setCustomCalendarOpen(false);
+                      }
+                    }}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <span className="text-muted-foreground">to</span>
+              
+              <Popover open={customCalendarOpen && selectingCustomEnd} onOpenChange={(open) => {
+                setCustomCalendarOpen(open);
+                setSelectingCustomEnd(true);
+              }}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="min-w-[120px]">
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    {format(customEndDate, 'MMM d, yyyy')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={customEndDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setCustomEndDate(date);
+                        setCustomCalendarOpen(false);
+                      }
+                    }}
+                    disabled={(date) => date < customStartDate}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
 
           <Badge variant="outline" className="w-fit">
             {staff?.first_name} {staff?.last_name}
