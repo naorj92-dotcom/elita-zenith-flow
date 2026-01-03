@@ -21,6 +21,7 @@ import { ClientPhotosManagementPage } from "@/pages/admin/ClientPhotosManagement
 import { MembershipsManagementPage } from "@/pages/admin/MembershipsManagementPage";
 import { GiftCardsManagementPage } from "@/pages/admin/GiftCardsManagementPage";
 import { WaitlistManagementPage } from "@/pages/admin/WaitlistManagementPage";
+import NotificationsManagementPage from "@/pages/admin/NotificationsManagementPage";
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
@@ -64,6 +65,7 @@ function AppRoutes() {
       <Route path="/memberships" element={<ProtectedRoute><MembershipsManagementPage /></ProtectedRoute>} />
       <Route path="/gift-cards" element={<ProtectedRoute><GiftCardsManagementPage /></ProtectedRoute>} />
       <Route path="/waitlist" element={<ProtectedRoute><WaitlistManagementPage /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsManagementPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
       

@@ -608,6 +608,105 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_logs: {
+        Row: {
+          body: string
+          category: string
+          client_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          recipient: string
+          sent_at: string | null
+          status: string
+          subject: string | null
+          template_id: string | null
+          type: string
+        }
+        Insert: {
+          body: string
+          category: string
+          client_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          recipient: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_id?: string | null
+          type: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          client_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          recipient?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "notification_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          subject: string | null
+          type: string
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          body: string
+          category: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          subject?: string | null
+          type: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          subject?: string | null
+          type?: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       packages: {
         Row: {
           created_at: string
