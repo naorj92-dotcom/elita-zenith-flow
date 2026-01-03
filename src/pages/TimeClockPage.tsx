@@ -1,37 +1,95 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Clock, 
   Play, 
   Square,
   Calendar,
-  TrendingUp,
-  DollarSign
+  TrendingUp
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { TimeClock } from '@/types';
 
-// Mock time clock history
-const mockTimeHistory = [
-  { date: '2024-12-20', clock_in: '09:02', clock_out: '17:30', hours: 8.47 },
-  { date: '2024-12-19', clock_in: '08:55', clock_out: '17:15', hours: 8.33 },
-  { date: '2024-12-18', clock_in: '09:10', clock_out: '18:00', hours: 8.83 },
-  { date: '2024-12-17', clock_in: '09:00', clock_out: '17:00', hours: 8.00 },
-  { date: '2024-12-16', clock_in: '08:45', clock_out: '16:45', hours: 8.00 },
-];
+interface TimeEntry {
+  date: string;
+  clock_in: string;
+  clock_out: string | null;
+  hours: number;
+}
 
-const mockWeekSummary = {
-  total_hours: 41.63,
-  total_days: 5,
-  avg_hours_per_day: 8.33,
-};
+interface WeekSummary {
+  total_hours: number;
+  total_days: number;
+  avg_hours_per_day: number;
+}
 
 export function TimeClockPage() {
   const { staff, clockStatus, clockIn, clockOut, isLoading } = useAuth();
   const { toast } = useToast();
+  const [timeHistory, setTimeHistory] = useState<TimeEntry[]>([]);
+  const [weekSummary, setWeekSummary] = useState<WeekSummary>({
+    total_hours: 0,
+    total_days: 0,
+    avg_hours_per_day: 0,
+  });
+
+  useEffect(() => {
+    const fetchTimeHistory = async () => {
+      if (!staff) return;
+
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 7);
+
+      const { data, error } = await supabase
+        .from('time_clock')
+        .select('*')
+        .eq('staff_id', staff.id)
+        .gte('clock_in', weekStart.toISOString())
+        .order('clock_in', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching time history:', error);
+        return;
+      }
+
+      if (data) {
+        const entries: TimeEntry[] = data.map((entry: TimeClock) => {
+          const clockInDate = new Date(entry.clock_in);
+          const clockOutDate = entry.clock_out ? new Date(entry.clock_out) : null;
+          const hours = clockOutDate 
+            ? (clockOutDate.getTime() - clockInDate.getTime()) / (1000 * 60 * 60) - (entry.break_minutes / 60)
+            : 0;
+
+          return {
+            date: clockInDate.toISOString().split('T')[0],
+            clock_in: clockInDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            clock_out: clockOutDate?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || null,
+            hours: parseFloat(hours.toFixed(2)),
+          };
+        });
+
+        setTimeHistory(entries.filter(e => e.clock_out !== null));
+
+        // Calculate week summary
+        const completedEntries = entries.filter(e => e.clock_out !== null);
+        const totalHours = completedEntries.reduce((sum, e) => sum + e.hours, 0);
+        const uniqueDays = new Set(completedEntries.map(e => e.date)).size;
+
+        setWeekSummary({
+          total_hours: parseFloat(totalHours.toFixed(2)),
+          total_days: uniqueDays,
+          avg_hours_per_day: uniqueDays > 0 ? parseFloat((totalHours / uniqueDays).toFixed(2)) : 0,
+        });
+      }
+    };
+
+    fetchTimeHistory();
+  }, [staff, clockStatus]);
 
   const handleClockAction = async () => {
     if (clockStatus?.is_clocked_in) {
@@ -61,9 +119,9 @@ export function TimeClockPage() {
     });
   };
 
-  const [currentTime, setCurrentTime] = React.useState(getCurrentTime());
+  const [currentTime, setCurrentTime] = useState(getCurrentTime());
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(getCurrentTime());
     }, 1000);
@@ -72,9 +130,9 @@ export function TimeClockPage() {
 
   const getElapsedTime = () => {
     if (!clockStatus?.clock_entry?.clock_in) return '0h 0m';
-    const clockIn = new Date(clockStatus.clock_entry.clock_in);
+    const clockInTime = new Date(clockStatus.clock_entry.clock_in);
     const now = new Date();
-    const diff = now.getTime() - clockIn.getTime();
+    const diff = now.getTime() - clockInTime.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
@@ -200,9 +258,9 @@ export function TimeClockPage() {
         className="grid grid-cols-3 gap-4 mb-8"
       >
         {[
-          { label: 'Week Hours', value: `${mockWeekSummary.total_hours.toFixed(1)}h`, icon: Clock },
-          { label: 'Days Worked', value: mockWeekSummary.total_days, icon: Calendar },
-          { label: 'Avg/Day', value: `${mockWeekSummary.avg_hours_per_day.toFixed(1)}h`, icon: TrendingUp },
+          { label: 'Week Hours', value: `${weekSummary.total_hours.toFixed(1)}h`, icon: Clock },
+          { label: 'Days Worked', value: weekSummary.total_days, icon: Calendar },
+          { label: 'Avg/Day', value: `${weekSummary.avg_hours_per_day.toFixed(1)}h`, icon: TrendingUp },
         ].map((stat, index) => (
           <Card key={stat.label} className="card-luxury">
             <CardContent className="p-4 text-center">
@@ -225,33 +283,40 @@ export function TimeClockPage() {
             <CardTitle className="font-heading text-xl">Recent Entries</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-border">
-              {mockTimeHistory.map((entry, index) => (
-                <motion.div
-                  key={entry.date}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + index * 0.05 }}
-                  className="flex items-center justify-between p-4"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {new Date(entry.date).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {entry.clock_in} → {entry.clock_out}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-foreground">{entry.hours.toFixed(2)}h</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {timeHistory.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No time entries yet</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {timeHistory.map((entry, index) => (
+                  <motion.div
+                    key={`${entry.date}-${index}`}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + index * 0.05 }}
+                    className="flex items-center justify-between p-4"
+                  >
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {new Date(entry.date).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {entry.clock_in} → {entry.clock_out}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-foreground">{entry.hours.toFixed(2)}h</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>

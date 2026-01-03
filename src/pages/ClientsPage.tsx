@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search, 
@@ -7,76 +7,51 @@ import {
   Phone,
   Mail,
   ChevronRight,
-  Calendar,
-  FileText
+  Crown,
+  DollarSign
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Client } from '@/types';
 
-// Mock clients data
-const mockClients: Client[] = [
-  {
-    id: '1',
-    name: 'Jennifer Adams',
-    email: 'jennifer.adams@email.com',
-    phone: '(555) 123-4567',
-    date_of_birth: '1985-03-15',
-    notes: 'Prefers morning appointments',
-    created_at: '2024-01-15T10:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Maria Santos',
-    email: 'maria.santos@email.com',
-    phone: '(555) 234-5678',
-    date_of_birth: '1990-07-22',
-    notes: 'Sensitive skin - use gentle products',
-    created_at: '2024-02-20T14:30:00Z',
-  },
-  {
-    id: '3',
-    name: 'Lisa Chen',
-    email: 'lisa.chen@email.com',
-    phone: '(555) 345-6789',
-    date_of_birth: '1988-11-08',
-    notes: 'Regular Botox client',
-    created_at: '2024-03-05T09:15:00Z',
-  },
-  {
-    id: '4',
-    name: 'Amanda Williams',
-    email: 'amanda.w@email.com',
-    phone: '(555) 456-7890',
-    date_of_birth: '1992-05-30',
-    notes: 'New client - referred by Lisa Chen',
-    created_at: '2024-06-10T11:45:00Z',
-  },
-  {
-    id: '5',
-    name: 'Sarah Johnson',
-    email: 'sarah.j@email.com',
-    phone: '(555) 567-8901',
-    date_of_birth: '1987-09-14',
-    notes: '',
-    created_at: '2024-04-18T16:20:00Z',
-  },
-];
-
 export function ClientsPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredClients = mockClients.filter(client =>
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.phone?.includes(searchQuery)
-  );
+  useEffect(() => {
+    const fetchClients = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('last_name', { ascending: true });
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+      if (error) {
+        console.error('Error fetching clients:', error);
+      } else {
+        setClients(data || []);
+      }
+      setIsLoading(false);
+    };
+
+    fetchClients();
+  }, []);
+
+  const filteredClients = clients.filter(client => {
+    const fullName = `${client.first_name} ${client.last_name}`.toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return fullName.includes(query) ||
+      client.email?.toLowerCase().includes(query) ||
+      client.phone?.includes(searchQuery);
+  });
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase();
   };
 
   return (
@@ -89,7 +64,7 @@ export function ClientsPage() {
       >
         <div>
           <h1 className="font-heading text-3xl text-foreground mb-1">Clients</h1>
-          <p className="text-muted-foreground">{mockClients.length} total clients</p>
+          <p className="text-muted-foreground">{clients.length} total clients</p>
         </div>
         <Link to="/clients/new">
           <Button className="gap-2">
@@ -125,7 +100,12 @@ export function ClientsPage() {
       >
         <Card className="card-luxury">
           <CardContent className="p-0">
-            {filteredClients.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+                <p className="text-muted-foreground">Loading clients...</p>
+              </div>
+            ) : filteredClients.length === 0 ? (
               <div className="text-center py-12">
                 <User className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <h3 className="font-heading text-xl text-foreground mb-2">No clients found</h3>
@@ -155,22 +135,38 @@ export function ClientsPage() {
                       className="flex items-center gap-4 p-5 hover:bg-secondary/50 transition-colors group"
                     >
                       {/* Avatar */}
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-primary font-semibold">
-                          {getInitials(client.name)}
-                        </span>
+                      <div className={cn(
+                        "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0",
+                        client.is_vip ? "bg-warning/20" : "bg-primary/10"
+                      )}>
+                        {client.is_vip ? (
+                          <Crown className="w-5 h-5 text-warning" />
+                        ) : (
+                          <span className="text-primary font-semibold">
+                            {getInitials(client.first_name, client.last_name)}
+                          </span>
+                        )}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {client.name}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                            {client.first_name} {client.last_name}
+                          </h3>
+                          {client.is_vip && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-warning/20 text-warning">
+                              VIP
+                            </span>
+                          )}
+                        </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {client.email}
-                          </span>
+                          {client.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              {client.email}
+                            </span>
+                          )}
                           {client.phone && (
                             <span className="flex items-center gap-1">
                               <Phone className="w-3 h-3" />
@@ -178,23 +174,21 @@ export function ClientsPage() {
                             </span>
                           )}
                         </div>
-                        {client.notes && (
-                          <p className="text-xs text-muted-foreground mt-1 truncate flex items-center gap-1">
-                            <FileText className="w-3 h-3" />
-                            {client.notes}
-                          </p>
-                        )}
                       </div>
 
-                      {/* Member Since */}
-                      <div className="hidden sm:block text-right">
-                        <p className="text-xs text-muted-foreground">Member since</p>
-                        <p className="text-sm text-foreground">
-                          {new Date(client.created_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            year: 'numeric'
-                          })}
-                        </p>
+                      {/* Stats */}
+                      <div className="hidden sm:flex items-center gap-6 text-right">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Total Spent</p>
+                          <p className="text-sm font-semibold text-foreground flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" />
+                            {Number(client.total_spent).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Visits</p>
+                          <p className="text-sm font-semibold text-foreground">{client.visit_count}</p>
+                        </div>
                       </div>
 
                       <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
