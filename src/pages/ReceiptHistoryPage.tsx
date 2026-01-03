@@ -7,14 +7,16 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { Search, Receipt, Printer, Eye } from 'lucide-react';
+import { Search, Receipt, Printer, Eye, Hash, Mail } from 'lucide-react';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
 import { ReceiptData, RetailItem, TreatmentSummary, ELITE_MEDSPA_INFO } from '@/components/pos/ReceiptData';
+import { toast } from 'sonner';
 
 export function ReceiptHistoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState<string | null>(null);
 
   const { data: receipts = [], isLoading } = useQuery({
     queryKey: ['receipts'],
@@ -37,12 +39,57 @@ export function ReceiptHistoryPage() {
     const clientName = receipt.client
       ? `${receipt.client.first_name} ${receipt.client.last_name}`.toLowerCase()
       : '';
+    // Enhanced search to include receipt number (serial number) prominently
     return (
       receipt.receipt_number.toLowerCase().includes(searchLower) ||
       clientName.includes(searchLower) ||
       (receipt.service_name && receipt.service_name.toLowerCase().includes(searchLower))
     );
   });
+
+  const handleResendEmail = async (receipt: typeof receipts[0]) => {
+    if (!receipt.client?.email) {
+      toast.error('Client has no email on file');
+      return;
+    }
+
+    setResendingEmail(receipt.id);
+    try {
+      const { error } = await supabase.functions.invoke('send-receipt-email', {
+        body: {
+          receipt_id: receipt.id,
+          client_email: receipt.client.email,
+          client_name: `${receipt.client.first_name} ${receipt.client.last_name}`,
+          receipt_number: receipt.receipt_number,
+          provider_name: receipt.staff
+            ? `${receipt.staff.first_name} ${receipt.staff.last_name}`
+            : 'Staff',
+          service_name: receipt.service_name,
+          service_price: Number(receipt.service_price),
+          retail_items: (receipt.retail_items as unknown as RetailItem[]) || [],
+          retail_total: Number(receipt.retail_total),
+          subtotal: Number(receipt.subtotal),
+          tax_rate: Number(receipt.tax_rate),
+          tax_amount: Number(receipt.tax_amount),
+          tip_amount: Number(receipt.tip_amount),
+          discount_amount: Number(receipt.discount_amount),
+          total_amount: Number(receipt.total_amount),
+          payment_method: receipt.payment_method,
+          machine_used: receipt.machine_used,
+          treatment_summary: receipt.treatment_summary,
+          created_at: receipt.created_at,
+        },
+      });
+
+      if (error) throw error;
+      toast.success('Receipt emailed to ' + receipt.client.email);
+    } catch (err) {
+      console.error('Resend email error:', err);
+      toast.error('Failed to send email');
+    } finally {
+      setResendingEmail(null);
+    }
+  };
 
   const handleViewReceipt = (receipt: typeof receipts[0]) => {
     const receiptData: ReceiptData = {
@@ -90,15 +137,21 @@ export function ReceiptHistoryPage() {
         <p className="text-muted-foreground">View and reprint past receipts</p>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by receipt #, client name, or service..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
+      {/* Search by Receipt Number */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Hash className="h-4 w-4" />
+          <span>Search by receipt number (e.g., EMS-250103-1234)</span>
+        </div>
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by receipt #, client name, or service..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 font-mono"
+          />
+        </div>
       </div>
 
       {/* Receipts List */}
@@ -120,7 +173,10 @@ export function ReceiptHistoryPage() {
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                     {/* Receipt Number & Date */}
                     <div>
-                      <p className="font-mono font-medium text-sm">{receipt.receipt_number}</p>
+                      <div className="flex items-center gap-1">
+                        <Hash className="h-3 w-3 text-muted-foreground" />
+                        <p className="font-mono font-semibold text-sm text-primary">{receipt.receipt_number}</p>
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(receipt.created_at), 'MMM d, yyyy h:mm a')}
                       </p>
@@ -193,6 +249,18 @@ export function ReceiptHistoryPage() {
                       <Printer className="h-3 w-3" />
                       Print
                     </Button>
+                    {receipt.client?.email && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => handleResendEmail(receipt)}
+                        disabled={resendingEmail === receipt.id}
+                      >
+                        <Mail className={`h-3 w-3 ${resendingEmail === receipt.id ? 'animate-pulse' : ''}`} />
+                        {resendingEmail === receipt.id ? 'Sending...' : 'Email'}
+                      </Button>
+                    )}
                   </div>
                 </div>
 
