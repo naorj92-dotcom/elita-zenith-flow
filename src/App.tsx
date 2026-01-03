@@ -16,6 +16,7 @@ import { TimeClockPage } from "@/pages/TimeClockPage";
 import { StaffManagementPage } from "@/pages/admin/StaffManagementPage";
 import { ServicesManagementPage } from "@/pages/admin/ServicesManagementPage";
 import { ProductsManagementPage } from "@/pages/admin/ProductsManagementPage";
+import { FormsManagementPage } from "@/pages/admin/FormsManagementPage";
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
@@ -23,6 +24,7 @@ import { ClientPhotosPage } from "@/pages/portal/ClientPhotosPage";
 import { ClientRecommendationsPage } from "@/pages/portal/ClientRecommendationsPage";
 import { ClientHistoryPage } from "@/pages/portal/ClientHistoryPage";
 import { ClientBookingPage } from "@/pages/portal/ClientBookingPage";
+import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,7 @@ function AppRoutes() {
       <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
       <Route path="/services" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><ProductsManagementPage /></ProtectedRoute>} />
+      <Route path="/forms" element={<ProtectedRoute><FormsManagementPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
       
@@ -64,6 +67,7 @@ function AppRoutes() {
         <Route path="recommendations" element={<ClientRecommendationsPage />} />
         <Route path="history" element={<ClientHistoryPage />} />
         <Route path="book" element={<ClientBookingPage />} />
+        <Route path="forms" element={<ClientFormsPage />} />
       </Route>
       
       <Route path="*" element={<NotFound />} />
