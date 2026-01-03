@@ -159,6 +159,41 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
           </p>
         </div>
 
+        {/* Package & Membership Status Footer */}
+        {(receipt.packageStatus || receipt.membershipStatus || receipt.nextRecommendedBooking) && (
+          <>
+            <Separator className="my-3" />
+            <div className="space-y-2">
+              <p className="text-[8px] uppercase tracking-wider text-muted-foreground text-center mb-2">
+                Your Account Status
+              </p>
+              {receipt.packageStatus && (
+                <div className="text-[9px] text-center">
+                  <span className="text-muted-foreground">Package: </span>
+                  <span className="font-medium">{receipt.packageStatus.packageName}</span>
+                  <span className="text-muted-foreground"> | Sessions: </span>
+                  <span className="font-medium">
+                    {receipt.packageStatus.sessionsRemaining}/{receipt.packageStatus.sessionsTotal}
+                  </span>
+                </div>
+              )}
+              {receipt.membershipStatus && (
+                <div className="text-[9px] text-center">
+                  <span className="text-muted-foreground">Member: </span>
+                  <span className="font-medium">{receipt.membershipStatus.tierName}</span>
+                  <span className="text-muted-foreground"> | Billing: </span>
+                  <span className="font-medium">{receipt.membershipStatus.nextBillingDate}</span>
+                </div>
+              )}
+              {receipt.nextRecommendedBooking && (
+                <div className="text-[9px] text-center italic text-muted-foreground mt-1">
+                  Next recommended booking: {receipt.nextRecommendedBooking}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
         {/* Footer */}
         <div className="mt-4 text-center text-[9px] text-muted-foreground">
           <p className="font-heading italic">"Thank you for choosing Elite MedSpa"</p>
