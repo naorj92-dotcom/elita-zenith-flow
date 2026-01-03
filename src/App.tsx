@@ -9,6 +9,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ClientPortalLayout } from "@/components/layout/ClientPortalLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { Dashboard } from "@/pages/Dashboard";
+import { PayrollPage } from "@/pages/PayrollPage";
 import { SchedulePage } from "@/pages/SchedulePage";
 import { ClientsPage } from "@/pages/ClientsPage";
 import { TimeClockPage } from "@/pages/TimeClockPage";
@@ -46,7 +47,7 @@ function AppRoutes() {
       <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
       <Route path="/clients/:id" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
       <Route path="/timeclock" element={<ProtectedRoute><TimeClockPage /></ProtectedRoute>} />
-      <Route path="/payroll" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
