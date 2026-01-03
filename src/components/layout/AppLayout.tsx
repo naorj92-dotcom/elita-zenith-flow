@@ -21,7 +21,8 @@ import {
   Bell,
   Cpu,
   ShoppingCart,
-  Receipt
+  Receipt,
+  Trophy
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,6 +37,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'POS', href: '/pos', icon: ShoppingCart },
+  { label: 'Competition', href: '/competition', icon: Trophy },
   { label: 'Schedule', href: '/schedule', icon: Calendar },
   { label: 'Clients', href: '/clients', icon: Users },
   { label: 'Time Clock', href: '/timeclock', icon: Clock },
