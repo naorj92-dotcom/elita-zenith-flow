@@ -7,13 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { DateRange } from './DateRangeFilter';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Table,
   TableBody,
   TableCell,
@@ -24,12 +17,6 @@ import {
 
 interface StaffPerformanceReportProps {
   dateRange: DateRange;
-}
-
-interface StaffMember {
-  id: string;
-  first_name: string;
-  last_name: string;
 }
 
 interface StaffPerformance {
@@ -53,13 +40,11 @@ interface StaffPerformance {
 
 export function StaffPerformanceReport({ dateRange }: StaffPerformanceReportProps) {
   const [staff, setStaff] = useState<StaffPerformance[]>([]);
-  const [allStaffMembers, setAllStaffMembers] = useState<StaffMember[]>([]);
-  const [selectedStaffId, setSelectedStaffId] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStaffPerformance();
-  }, [dateRange, selectedStaffId]);
+  }, [dateRange]);
 
   const fetchStaffPerformance = async () => {
     setLoading(true);
@@ -170,15 +155,7 @@ export function StaffPerformanceReport({ dateRange }: StaffPerformanceReportProp
         };
       }) || [];
 
-      // Store all staff members for dropdown
-      setAllStaffMembers(staffData?.map(s => ({ id: s.id, first_name: s.first_name, last_name: s.last_name })) || []);
-      
-      // Filter by selected staff if not 'all'
-      const filteredPerformance = selectedStaffId === 'all' 
-        ? performance 
-        : performance.filter(p => p.id === selectedStaffId);
-
-      setStaff(filteredPerformance.sort((a, b) => b.totalEarnings - a.totalEarnings));
+      setStaff(performance.sort((a, b) => b.totalEarnings - a.totalEarnings));
     } catch (error) {
       console.error('Error fetching staff performance:', error);
     } finally {
@@ -231,28 +208,6 @@ export function StaffPerformanceReport({ dateRange }: StaffPerformanceReportProp
 
   return (
     <div className="space-y-6">
-      {/* Staff Filter */}
-      <div className="flex items-center gap-4">
-        <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
-          <SelectTrigger className="w-[250px]">
-            <SelectValue placeholder="Select employee" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Employees</SelectItem>
-            {allStaffMembers.map(member => (
-              <SelectItem key={member.id} value={member.id}>
-                {member.first_name} {member.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {selectedStaffId !== 'all' && (
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-            Viewing individual report
-          </Badge>
-        )}
-      </div>
-
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border-border/50">

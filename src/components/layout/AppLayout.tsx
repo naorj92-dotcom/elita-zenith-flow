@@ -81,8 +81,8 @@ interface MyReportSubItem {
 }
 
 const myReportSubItems: MyReportSubItem[] = [
-  { label: 'Hours & Salary', href: '/my-reports', icon: Clock },
-  { label: 'Sales & Commission', href: '/my-reports?tab=sales', icon: TrendingUp },
+  { label: 'Overview', href: '/my-reports', icon: BarChart3 },
+  { label: 'Time Clock', href: '/timeclock', icon: Clock },
 ];
 
 interface AppLayoutProps {
@@ -94,17 +94,17 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { staff, logout, clockStatus } = useAuth();
   const [reportsExpanded, setReportsExpanded] = useState(location.pathname === '/analytics');
   const [myReportsExpanded, setMyReportsExpanded] = useState(
-    location.pathname === '/my-reports'
+    location.pathname === '/my-reports' || location.pathname === '/timeclock'
   );
 
   const isAdmin = staff?.role === 'admin';
   const isOnReports = location.pathname === '/analytics';
-  const isOnMyReports = location.pathname === '/my-reports';
+  const isOnMyReports = location.pathname === '/my-reports' || location.pathname === '/timeclock';
 
   const filteredNavItems = navItems.filter(item => {
     if (!item.roles) return true;
     return staff && item.roles.includes(staff.role);
-  });
+  }).filter(item => item.href !== '/timeclock'); // Exclude Time Clock from main nav since it's in My Reports
 
   return (
     <div className="min-h-screen bg-background flex">
