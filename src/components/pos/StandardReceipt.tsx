@@ -249,42 +249,30 @@ export const StandardReceipt = forwardRef<HTMLDivElement, StandardReceiptProps>(
 
         <Separator className="mb-8" />
 
-        {/* Footer with QR Codes */}
+        {/* Footer with Referral QR */}
         <div className="flex justify-between items-start">
           <div className="max-w-sm">
             <p className="font-heading text-lg italic mb-2">
               "Thank you for choosing Elite MedSpa"
             </p>
             <p className="text-sm text-muted-foreground">
-              We hope you had a wonderful experience. Please consider leaving us a review – 
-              your feedback helps us continue to provide exceptional service.
+              We hope you had a wonderful experience. We look forward to seeing you again soon.
             </p>
           </div>
-          <div className="flex gap-6">
-            {/* Google Review QR */}
-            <div className="text-center">
+          {/* Referral QR */}
+          {receipt.clientId && (
+            <div className="text-center bg-primary/10 rounded-lg p-3">
+              <p className="text-xs font-semibold mb-2 text-primary">Give $20, Get $20</p>
               <QRCodeSVG 
-                value={receipt.googleReviewUrl} 
-                size={80} 
-                className="mb-2"
+                value={`${window.location.origin}/refer?ref=${receipt.clientId}`} 
+                size={72} 
+                className="mx-auto mb-2"
               />
-              <p className="text-xs text-muted-foreground">Scan for Review</p>
+              <p className="text-[10px] text-muted-foreground max-w-[100px]">
+                Share with friends & earn rewards!
+              </p>
             </div>
-            {/* Referral QR */}
-            {receipt.clientId && (
-              <div className="text-center bg-primary/10 rounded-lg p-3">
-                <p className="text-xs font-semibold mb-2 text-primary">Give $20, Get $20</p>
-                <QRCodeSVG 
-                  value={`${window.location.origin}/refer?ref=${receipt.clientId}`} 
-                  size={72} 
-                  className="mx-auto mb-2"
-                />
-                <p className="text-[10px] text-muted-foreground max-w-[100px]">
-                  Share with friends & earn rewards!
-                </p>
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Bottom decorative line */}

@@ -150,18 +150,6 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
 
         <Separator className="my-4" />
 
-        {/* Google Review QR Code */}
-        <div className="text-center mb-4">
-          <QRCodeSVG 
-            value={receipt.googleReviewUrl} 
-            size={64} 
-            className="mx-auto mb-1"
-          />
-          <p className="text-[9px] text-muted-foreground">
-            Scan to leave us a review!
-          </p>
-        </div>
-
         {/* Referral QR Code */}
         {receipt.clientId && (
           <div className="text-center bg-primary/10 rounded-lg p-3 mt-3">
