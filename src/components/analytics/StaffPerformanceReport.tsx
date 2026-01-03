@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Users, DollarSign, Clock, TrendingUp, Award } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, DollarSign, Clock, TrendingUp, Award, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { DateRange } from './DateRangeFilter';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
 import {
   Select,
   SelectContent,
@@ -13,6 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -212,6 +221,155 @@ export function StaffPerformanceReport({ dateRange }: StaffPerformanceReportProp
   const totalPayroll = staff.reduce((sum, s) => sum + s.totalEarnings, 0);
   const totalServiceRevenue = staff.reduce((sum, s) => sum + s.serviceRevenue, 0);
 
+  const exportToCSV = () => {
+    try {
+      const lines: string[] = [];
+      
+      // Header
+      lines.push('Staff Performance Report');
+      lines.push(`Date Range: ${format(dateRange.startDate, 'MMM d, yyyy')} - ${format(dateRange.endDate, 'MMM d, yyyy')}`);
+      lines.push(`Generated: ${format(new Date(), 'PPpp')}`);
+      lines.push('');
+      
+      // Summary
+      lines.push('=== SUMMARY ===');
+      lines.push(`Total Payroll,${formatCurrency(totalPayroll)}`);
+      lines.push(`Total Service Revenue,${formatCurrency(totalServiceRevenue)}`);
+      lines.push(`Active Staff,${staff.length}`);
+      lines.push('');
+      
+      // Staff Data
+      lines.push('=== STAFF PERFORMANCE ===');
+      lines.push('Name,Role,Service Revenue,Retail Revenue,Upsell %,Hours,Base Pay,Service Commission,Retail Commission,Tier,Total Earnings');
+      staff.forEach(member => {
+        lines.push(`${member.name},${member.role},${formatCurrency(member.serviceRevenue)},${formatCurrency(member.retailRevenue)},${member.retailUpsellPercent.toFixed(1)}%,${member.clockedHours.toFixed(1)},${formatCurrency(member.basePay)},${formatCurrency(member.serviceCommission)},${formatCurrency(member.retailCommission)},Tier ${member.currentTier},${formatCurrency(member.totalEarnings)}`);
+      });
+      
+      const csvContent = lines.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `staff_performance_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success('CSV exported successfully');
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      toast.error('Failed to export CSV');
+    }
+  };
+
+  const exportToPDF = () => {
+    try {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast.error('Please allow popups to export PDF');
+        return;
+      }
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Staff Performance Report</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; color: #1a1a1a; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e5e5; padding-bottom: 20px; }
+            .header h1 { font-size: 24px; margin-bottom: 8px; }
+            .header p { color: #666; font-size: 14px; }
+            .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
+            .summary-card { background: #f8f9fa; border-radius: 8px; padding: 16px; text-align: center; }
+            .summary-card .label { font-size: 12px; color: #666; margin-bottom: 4px; }
+            .summary-card .value { font-size: 20px; font-weight: 600; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 20px; }
+            th, td { padding: 8px 6px; text-align: left; border-bottom: 1px solid #e5e5e5; }
+            th { background: #f8f9fa; font-weight: 600; color: #666; }
+            .text-right { text-align: right; }
+            .tier-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
+            .tier-1 { background: #f3f4f6; color: #6b7280; }
+            .tier-2 { background: #fef3c7; color: #d97706; }
+            .tier-3 { background: #dbeafe; color: #2563eb; }
+            .footer { margin-top: 40px; text-align: center; color: #999; font-size: 11px; }
+            @media print { body { padding: 20px; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Staff Performance Report</h1>
+            <p>${format(dateRange.startDate, 'MMMM d, yyyy')} - ${format(dateRange.endDate, 'MMMM d, yyyy')}</p>
+            <p style="margin-top: 4px;">Generated: ${format(new Date(), 'PPpp')}</p>
+          </div>
+          
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="label">Total Payroll</div>
+              <div class="value">${formatCurrency(totalPayroll)}</div>
+            </div>
+            <div class="summary-card">
+              <div class="label">Total Service Revenue</div>
+              <div class="value">${formatCurrency(totalServiceRevenue)}</div>
+            </div>
+            <div class="summary-card">
+              <div class="label">Active Staff</div>
+              <div class="value">${staff.length}</div>
+            </div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Staff Member</th>
+                <th class="text-right">Service Revenue</th>
+                <th class="text-right">Retail</th>
+                <th class="text-right">Hours</th>
+                <th class="text-right">Base Pay</th>
+                <th class="text-right">Service Comm.</th>
+                <th class="text-right">Retail Comm.</th>
+                <th>Tier</th>
+                <th class="text-right">Total Earnings</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${staff.map(member => `
+                <tr>
+                  <td><strong>${member.name}</strong><br><small style="color: #666;">${member.role}</small></td>
+                  <td class="text-right">${formatCurrency(member.serviceRevenue)}</td>
+                  <td class="text-right">${formatCurrency(member.retailRevenue)}</td>
+                  <td class="text-right">${member.clockedHours.toFixed(1)}h</td>
+                  <td class="text-right">${formatCurrency(member.basePay)}</td>
+                  <td class="text-right" style="color: #059669;">${formatCurrency(member.serviceCommission)}</td>
+                  <td class="text-right" style="color: #d97706;">${formatCurrency(member.retailCommission)}</td>
+                  <td><span class="tier-badge tier-${member.currentTier}">Tier ${member.currentTier} (${member.currentTier === 1 ? member.commissionRates.tier1 : member.currentTier === 2 ? member.commissionRates.tier2 : member.commissionRates.tier3}%)</span></td>
+                  <td class="text-right"><strong>${formatCurrency(member.totalEarnings)}</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="footer">
+            <p>This report was generated automatically.</p>
+          </div>
+          
+          <script>window.onload = function() { window.print(); }</script>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.write(html);
+      printWindow.document.close();
+      
+      toast.success('PDF export ready');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error('Failed to export PDF');
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -232,25 +390,46 @@ export function StaffPerformanceReport({ dateRange }: StaffPerformanceReportProp
   return (
     <div className="space-y-6">
       {/* Staff Filter */}
-      <div className="flex items-center gap-4">
-        <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
-          <SelectTrigger className="w-[250px]">
-            <SelectValue placeholder="Select employee" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Employees</SelectItem>
-            {allStaffMembers.map(member => (
-              <SelectItem key={member.id} value={member.id}>
-                {member.first_name} {member.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {selectedStaffId !== 'all' && (
-          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-            Viewing individual report
-          </Badge>
-        )}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <Select value={selectedStaffId} onValueChange={setSelectedStaffId}>
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Select employee" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Employees</SelectItem>
+              {allStaffMembers.map(member => (
+                <SelectItem key={member.id} value={member.id}>
+                  {member.first_name} {member.last_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedStaffId !== 'all' && (
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+              Viewing individual report
+            </Badge>
+          )}
+        </div>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Download className="w-4 h-4 mr-2" />
+              Export All Staff
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={exportToPDF}>
+              <FileText className="w-4 h-4 mr-2" />
+              Export as PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={exportToCSV}>
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Export as CSV
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Summary Cards */}
