@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,11 +22,27 @@ import { DateRangeFilter, DateRange } from '@/components/analytics/DateRangeFilt
 import { PDFExportButton } from '@/components/analytics/PDFExportButton';
 
 export default function ManagerAnalyticsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') || 'machines';
+  
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [dateRange, setDateRange] = useState<DateRange>({
     preset: 'this_month',
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     endDate: new Date()
   });
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['machines', 'staff', 'products', 'insights'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
+  };
 
   return (
     <AppLayout>
@@ -50,7 +67,7 @@ export default function ManagerAnalyticsPage() {
         <SalesOverview dateRange={dateRange} />
 
         {/* Tabbed Analytics Sections */}
-        <Tabs defaultValue="machines" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="bg-muted/50 p-1">
             <TabsTrigger value="machines" className="data-[state=active]:bg-background">
               <BarChart3 className="w-4 h-4 mr-2" />

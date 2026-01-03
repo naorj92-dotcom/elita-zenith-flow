@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
   Calendar, 
@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  ChevronDown,
   Sparkles,
   UserCog,
   FileText,
@@ -23,7 +24,10 @@ import {
   ShoppingCart,
   Receipt,
   Trophy,
-  BarChart3
+  BarChart3,
+  TrendingUp,
+  Target,
+  PieChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,6 +37,12 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   roles?: string[];
+}
+
+interface ReportSubItem {
+  label: string;
+  tab: string;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const navItems: NavItem[] = [
@@ -53,9 +63,15 @@ const navItems: NavItem[] = [
   { label: 'Memberships', href: '/memberships', icon: Crown, roles: ['admin'] },
   { label: 'Gift Cards', href: '/gift-cards', icon: Gift, roles: ['admin'] },
   { label: 'Notifications', href: '/notifications', icon: Bell, roles: ['admin'] },
-  { label: 'Reports', href: '/analytics', icon: BarChart3, roles: ['admin'] },
   { label: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
   { label: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
+];
+
+const reportSubItems: ReportSubItem[] = [
+  { label: 'Machine ROI', tab: 'machines', icon: Cpu },
+  { label: 'Staff Performance', tab: 'staff', icon: TrendingUp },
+  { label: 'Products & Packages', tab: 'products', icon: PieChart },
+  { label: 'Expert Insights', tab: 'insights', icon: Target },
 ];
 
 interface AppLayoutProps {
@@ -65,6 +81,10 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { staff, logout, clockStatus } = useAuth();
+  const [reportsExpanded, setReportsExpanded] = useState(location.pathname === '/analytics');
+
+  const isAdmin = staff?.role === 'admin';
+  const isOnReports = location.pathname === '/analytics';
 
   const filteredNavItems = navItems.filter(item => {
     if (!item.roles) return true;
@@ -89,7 +109,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {filteredNavItems.map((item, index) => {
             const isActive = location.pathname === item.href || 
                            location.pathname.startsWith(item.href + '/');
@@ -123,6 +143,64 @@ export function AppLayout({ children }: AppLayoutProps) {
               </motion.div>
             );
           })}
+
+          {/* Reports Expandable Section - Admin Only */}
+          {isAdmin && (
+            <div className="pt-2">
+              <button
+                onClick={() => setReportsExpanded(!reportsExpanded)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+                  isOnReports
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-luxury-sm"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent"
+                )}
+              >
+                <BarChart3 className={cn(
+                  "w-5 h-5 transition-transform group-hover:scale-110",
+                  isOnReports ? "" : "text-muted-foreground"
+                )} />
+                <span className="font-medium text-sm">Reports</span>
+                <motion.div
+                  animate={{ rotate: reportsExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="ml-auto"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </motion.div>
+              </button>
+
+              <AnimatePresence>
+                {reportsExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pl-4 pt-1 space-y-1">
+                      {reportSubItems.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        return (
+                          <Link
+                            key={subItem.tab}
+                            to={`/analytics?tab=${subItem.tab}`}
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 group text-sidebar-foreground hover:bg-sidebar-accent"
+                            )}
+                          >
+                            <SubIcon className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm">{subItem.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </nav>
 
         {/* User Section */}
