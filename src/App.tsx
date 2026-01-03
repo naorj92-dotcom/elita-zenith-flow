@@ -17,6 +17,7 @@ import { StaffManagementPage } from "@/pages/admin/StaffManagementPage";
 import { ServicesManagementPage } from "@/pages/admin/ServicesManagementPage";
 import { ProductsManagementPage } from "@/pages/admin/ProductsManagementPage";
 import { FormsManagementPage } from "@/pages/admin/FormsManagementPage";
+import { ClientPhotosManagementPage } from "@/pages/admin/ClientPhotosManagementPage";
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
@@ -55,6 +56,7 @@ function AppRoutes() {
       <Route path="/services" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><ProductsManagementPage /></ProtectedRoute>} />
       <Route path="/forms" element={<ProtectedRoute><FormsManagementPage /></ProtectedRoute>} />
+      <Route path="/photos" element={<ProtectedRoute><ClientPhotosManagementPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
       
