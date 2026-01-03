@@ -5,14 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Calendar, Clock, User, CheckCircle2 } from 'lucide-react';
+import { Calendar, Clock, User, CheckCircle2, Eye } from 'lucide-react';
+import { DEMO_APPOINTMENTS } from '@/hooks/useDemoData';
 
 export function ClientHistoryPage() {
-  const { client } = useClientAuth();
+  const { client, isDemo } = useClientAuth();
 
   const { data: appointments, isLoading } = useQuery({
-    queryKey: ['client-history', client?.id],
+    queryKey: ['client-history', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        return DEMO_APPOINTMENTS;
+      }
       if (!client?.id) return [];
       const { data } = await supabase
         .from('appointments')
@@ -21,7 +25,7 @@ export function ClientHistoryPage() {
         .order('scheduled_at', { ascending: false });
       return data || [];
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   const getStatusBadge = (status: string) => {
@@ -54,6 +58,14 @@ export function ClientHistoryPage() {
         <h1 className="text-3xl font-heading font-semibold">Treatment History</h1>
         <p className="text-muted-foreground mt-1">Your complete appointment history</p>
       </div>
+
+      {/* Demo Mode Banner */}
+      {isDemo && (
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+          <Eye className="h-5 w-5 text-primary" />
+          <p className="text-sm">Viewing demo appointment history</p>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-4">

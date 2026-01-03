@@ -6,15 +6,19 @@ import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { ShoppingBag, Sparkles, ExternalLink, Clock, Check } from 'lucide-react';
+import { ShoppingBag, Sparkles, ExternalLink, Clock, Check, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { DEMO_PRODUCT_RECOMMENDATIONS, DEMO_SERVICE_RECOMMENDATIONS } from '@/hooks/useDemoData';
 
 export function ClientRecommendationsPage() {
-  const { client } = useClientAuth();
+  const { client, isDemo } = useClientAuth();
 
   const { data: productRecs, isLoading: loadingProducts } = useQuery({
-    queryKey: ['client-product-recommendations', client?.id],
+    queryKey: ['client-product-recommendations', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        return DEMO_PRODUCT_RECOMMENDATIONS;
+      }
       if (!client?.id) return [];
       const { data } = await supabase
         .from('product_recommendations')
@@ -23,12 +27,15 @@ export function ClientRecommendationsPage() {
         .order('recommended_date', { ascending: false });
       return data || [];
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   const { data: serviceRecs, isLoading: loadingServices } = useQuery({
-    queryKey: ['client-service-recommendations', client?.id],
+    queryKey: ['client-service-recommendations', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        return DEMO_SERVICE_RECOMMENDATIONS;
+      }
       if (!client?.id) return [];
       const { data } = await supabase
         .from('service_recommendations')
@@ -37,7 +44,7 @@ export function ClientRecommendationsPage() {
         .order('recommended_date', { ascending: false });
       return data || [];
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   const isLoading = loadingProducts || loadingServices;
@@ -65,6 +72,14 @@ export function ClientRecommendationsPage() {
         <h1 className="text-3xl font-heading font-semibold">Recommendations</h1>
         <p className="text-muted-foreground mt-1">Products and services recommended for you</p>
       </div>
+
+      {/* Demo Mode Banner */}
+      {isDemo && (
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+          <Eye className="h-5 w-5 text-primary" />
+          <p className="text-sm">Viewing demo recommendations</p>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-4">

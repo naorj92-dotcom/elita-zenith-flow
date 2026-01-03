@@ -5,14 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Image, Calendar } from 'lucide-react';
+import { Image, Calendar, Eye } from 'lucide-react';
+import { DEMO_PHOTOS } from '@/hooks/useDemoData';
 
 export function ClientPhotosPage() {
-  const { client } = useClientAuth();
+  const { client, isDemo } = useClientAuth();
 
   const { data: photos, isLoading } = useQuery({
-    queryKey: ['client-photos', client?.id],
+    queryKey: ['client-photos', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        return DEMO_PHOTOS;
+      }
       if (!client?.id) return [];
       const { data } = await supabase
         .from('before_after_photos')
@@ -22,7 +26,7 @@ export function ClientPhotosPage() {
         .order('taken_date', { ascending: false });
       return data || [];
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   return (
@@ -31,6 +35,14 @@ export function ClientPhotosPage() {
         <h1 className="text-3xl font-heading font-semibold">Progress Photos</h1>
         <p className="text-muted-foreground mt-1">Your before and after treatment photos</p>
       </div>
+
+      {/* Demo Mode Banner */}
+      {isDemo && (
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+          <Eye className="h-5 w-5 text-primary" />
+          <p className="text-sm">Viewing demo progress photos</p>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2">

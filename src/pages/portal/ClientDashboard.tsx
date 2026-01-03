@@ -6,16 +6,29 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight } from 'lucide-react';
+import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { 
+  DEMO_PACKAGES, 
+  DEMO_APPOINTMENTS, 
+  DEMO_PHOTOS, 
+  DEMO_PRODUCT_RECOMMENDATIONS, 
+  DEMO_SERVICE_RECOMMENDATIONS 
+} from '@/hooks/useDemoData';
 
 export function ClientDashboard() {
-  const { client } = useClientAuth();
+  const { client, isDemo } = useClientAuth();
 
   // Fetch next appointment
   const { data: nextAppointment } = useQuery({
-    queryKey: ['client-next-appointment', client?.id],
+    queryKey: ['client-next-appointment', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        const upcoming = DEMO_APPOINTMENTS.filter(
+          a => new Date(a.scheduled_at) > new Date() && ['scheduled', 'confirmed'].includes(a.status)
+        );
+        return upcoming[0] || null;
+      }
       if (!client?.id) return null;
       const { data } = await supabase
         .from('appointments')
@@ -28,13 +41,16 @@ export function ClientDashboard() {
         .maybeSingle();
       return data;
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   // Fetch active packages count
   const { data: packagesCount } = useQuery({
-    queryKey: ['client-packages-count', client?.id],
+    queryKey: ['client-packages-count', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        return DEMO_PACKAGES.filter(p => p.status === 'active').length;
+      }
       if (!client?.id) return 0;
       const { count } = await supabase
         .from('client_packages')
@@ -43,13 +59,16 @@ export function ClientDashboard() {
         .eq('status', 'active');
       return count || 0;
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   // Fetch photos count
   const { data: photosCount } = useQuery({
-    queryKey: ['client-photos-count', client?.id],
+    queryKey: ['client-photos-count', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        return DEMO_PHOTOS.length;
+      }
       if (!client?.id) return 0;
       const { count } = await supabase
         .from('before_after_photos')
@@ -58,13 +77,18 @@ export function ClientDashboard() {
         .eq('is_visible_to_client', true);
       return count || 0;
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   // Fetch recommendations count
   const { data: recommendationsCount } = useQuery({
-    queryKey: ['client-recommendations-count', client?.id],
+    queryKey: ['client-recommendations-count', client?.id, isDemo],
     queryFn: async () => {
+      if (isDemo) {
+        const productRecs = DEMO_PRODUCT_RECOMMENDATIONS.filter(r => !r.is_purchased).length;
+        const serviceRecs = DEMO_SERVICE_RECOMMENDATIONS.filter(r => !r.is_booked).length;
+        return productRecs + serviceRecs;
+      }
       if (!client?.id) return 0;
       const { count: productCount } = await supabase
         .from('product_recommendations')
@@ -78,11 +102,22 @@ export function ClientDashboard() {
         .eq('is_booked', false);
       return (productCount || 0) + (serviceCount || 0);
     },
-    enabled: !!client?.id,
+    enabled: !!client?.id || isDemo,
   });
 
   return (
     <div className="space-y-6">
+      {/* Demo Mode Banner */}
+      {isDemo && (
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+          <Eye className="h-5 w-5 text-primary" />
+          <div>
+            <p className="font-medium text-sm">Demo Mode</p>
+            <p className="text-xs text-muted-foreground">You're viewing sample data. Sign up to access your real account.</p>
+          </div>
+        </div>
+      )}
+
       {/* Welcome Header */}
       <div className="bg-gradient-sage rounded-2xl p-8 text-primary-foreground">
         <div className="flex items-center gap-3 mb-2">
