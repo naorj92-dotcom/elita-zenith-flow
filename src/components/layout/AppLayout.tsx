@@ -30,7 +30,7 @@ const navItems: NavItem[] = [
   { label: 'Clients', href: '/clients', icon: Users },
   { label: 'Time Clock', href: '/timeclock', icon: Clock },
   { label: 'Payroll', href: '/payroll', icon: DollarSign, roles: ['admin', 'manager'] },
-  { label: 'Products', href: '/products', icon: Package, roles: ['admin', 'manager'] },
+  { label: 'Services', href: '/products', icon: Package, roles: ['admin'] },
   { label: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
   { label: 'Settings', href: '/settings', icon: Settings, roles: ['admin'] },
 ];
