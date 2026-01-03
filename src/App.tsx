@@ -15,6 +15,7 @@ import { ClientsPage } from "@/pages/ClientsPage";
 import { TimeClockPage } from "@/pages/TimeClockPage";
 import { POSPage } from "@/pages/POSPage";
 import { ReceiptHistoryPage } from "@/pages/ReceiptHistoryPage";
+import { CompetitionPage } from "@/pages/CompetitionPage";
 import { StaffManagementPage } from "@/pages/admin/StaffManagementPage";
 import { ServicesManagementPage } from "@/pages/admin/ServicesManagementPage";
 import { ProductsManagementPage } from "@/pages/admin/ProductsManagementPage";
@@ -56,6 +57,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/pos" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
+      <Route path="/competition" element={<ProtectedRoute><CompetitionPage /></ProtectedRoute>} />
       <Route path="/receipts" element={<ProtectedRoute><ReceiptHistoryPage /></ProtectedRoute>} />
       <Route path="/schedule" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
       <Route path="/schedule/:id" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
