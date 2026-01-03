@@ -151,9 +151,9 @@ export function CompetitionPage() {
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Team Sales</p>
-              <p className="text-3xl font-bold text-foreground">
-                ${totalSales.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              <p className="text-sm text-muted-foreground">Monthly Competition</p>
+              <p className="text-xl font-bold text-foreground">
+                {leaderboard.length} team member{leaderboard.length !== 1 ? 's' : ''} competing
               </p>
             </div>
             <TrendingUp className="w-12 h-12 text-primary/50" />
@@ -161,11 +161,10 @@ export function CompetitionPage() {
         </CardContent>
       </Card>
 
-      {/* Leaderboard */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5" />
+            <Trophy className="w-5 h-5" />
             Monthly Leaderboard
           </CardTitle>
         </CardHeader>
@@ -211,24 +210,9 @@ export function CompetitionPage() {
 
                   {/* Name */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground truncate">
+                    <p className="font-semibold text-foreground truncate text-lg">
                       {staff.first_name} {staff.last_name}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      {staff.transaction_count} transaction{staff.transaction_count !== 1 ? 's' : ''}
-                    </p>
-                  </div>
-
-                  {/* Sales Amount */}
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-foreground">
-                      ${staff.total_sales.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                    {rank <= 3 && totalSales > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        {((staff.total_sales / totalSales) * 100).toFixed(1)}% of total
-                      </p>
-                    )}
                   </div>
                 </motion.div>
               );
