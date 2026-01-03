@@ -14,6 +14,7 @@ import { SchedulePage } from "@/pages/SchedulePage";
 import { ClientsPage } from "@/pages/ClientsPage";
 import { TimeClockPage } from "@/pages/TimeClockPage";
 import { StaffManagementPage } from "@/pages/admin/StaffManagementPage";
+import { ServicesManagementPage } from "@/pages/admin/ServicesManagementPage";
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
@@ -48,7 +49,7 @@ function AppRoutes() {
       <Route path="/clients/:id" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
       <Route path="/timeclock" element={<ProtectedRoute><TimeClockPage /></ProtectedRoute>} />
       <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
-      <Route path="/products" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/products" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
       
