@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { ReceiptData, ELITE_MEDSPA_INFO, formatCurrency, formatDate, formatTime } from './ReceiptData';
 import { Separator } from '@/components/ui/separator';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface ThermalReceiptProps {
   receipt: ReceiptData;
@@ -149,15 +150,32 @@ export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
 
         <Separator className="my-4" />
 
-        {/* QR Code placeholder - in real implementation use a QR library */}
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto bg-foreground/10 rounded flex items-center justify-center mb-2">
-            <span className="text-[8px] text-muted-foreground">QR Code</span>
-          </div>
+        {/* Google Review QR Code */}
+        <div className="text-center mb-4">
+          <QRCodeSVG 
+            value={receipt.googleReviewUrl} 
+            size={64} 
+            className="mx-auto mb-1"
+          />
           <p className="text-[9px] text-muted-foreground">
             Scan to leave us a review!
           </p>
         </div>
+
+        {/* Referral QR Code */}
+        {receipt.clientId && (
+          <div className="text-center bg-primary/10 rounded-lg p-3 mt-3">
+            <p className="text-[10px] font-semibold mb-2">Give $20, Get $20</p>
+            <QRCodeSVG 
+              value={`${window.location.origin}/refer?ref=${receipt.clientId}`} 
+              size={56} 
+              className="mx-auto mb-1"
+            />
+            <p className="text-[8px] text-muted-foreground">
+              Share with friends & earn rewards!
+            </p>
+          </div>
+        )}
 
         {/* Package & Membership Status Footer */}
         {(receipt.packageStatus || receipt.membershipStatus || receipt.nextRecommendedBooking) && (

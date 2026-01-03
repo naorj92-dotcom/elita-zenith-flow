@@ -6,7 +6,8 @@ import {
   formatTime,
   ELITE_MEDSPA_INFO 
 } from './ReceiptData';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Gift } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface LiveReceiptPreviewProps {
   receipt: Partial<ReceiptData>;
@@ -150,6 +151,24 @@ export const LiveReceiptPreview = forwardRef<HTMLDivElement, LiveReceiptPreviewP
             </div>
           )}
         </div>
+
+        {/* Referral QR Code */}
+        {receipt.clientId && (
+          <div className="mx-4 mb-3 bg-primary/10 rounded-lg p-3 text-center">
+            <div className="flex items-center justify-center gap-1 mb-2">
+              <Gift className="h-3 w-3 text-primary" />
+              <p className="text-xs font-semibold text-primary">Give $20, Get $20</p>
+            </div>
+            <QRCodeSVG 
+              value={`${window.location.origin}/refer?ref=${receipt.clientId}`} 
+              size={64} 
+              className="mx-auto mb-2"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Share with friends & earn rewards!
+            </p>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="bg-muted/30 border-t p-3 text-center text-xs text-muted-foreground">
