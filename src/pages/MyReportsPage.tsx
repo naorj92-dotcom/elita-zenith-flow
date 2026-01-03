@@ -17,12 +17,17 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
-  Eye
+  Eye,
+  Download,
+  FileText,
+  FileSpreadsheet
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, differenceInMinutes, startOfDay, endOfDay, startOfYear, endOfYear } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useReportExport } from '@/hooks/useReportExport';
 
 interface TimeClockEntry {
   id: string;
@@ -71,6 +76,7 @@ type DateViewMode = 'day' | 'month' | 'year' | 'custom';
 
 export default function MyReportsPage() {
   const { staff } = useAuth();
+  const { exportToCSV, exportToPDF } = useReportExport();
   const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'hours';
   const [timeEntries, setTimeEntries] = useState<TimeClockEntry[]>([]);
@@ -231,6 +237,32 @@ export default function MyReportsPage() {
     setSelectedDate(newDate);
   };
 
+  const handleExport = (type: 'csv' | 'pdf') => {
+    const reportData = {
+      staffName: `${staff?.first_name || ''} ${staff?.last_name || ''}`.trim(),
+      dateRange: getDateLabel(),
+      timeEntries,
+      transactions,
+      receipts,
+      summary: {
+        totalHours,
+        totalSales,
+        serviceSales,
+        retailSales,
+        totalCommission,
+        basePay,
+        totalEarnings,
+        hourlyRate
+      }
+    };
+
+    if (type === 'csv') {
+      exportToCSV(reportData);
+    } else {
+      exportToPDF(reportData);
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-8">
       {/* Header */}
@@ -350,6 +382,25 @@ export default function MyReportsPage() {
               </Popover>
             </div>
           )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                <FileText className="w-4 h-4 mr-2" />
+                Export as PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('csv')}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Badge variant="outline" className="w-fit">
             {staff?.first_name} {staff?.last_name}
