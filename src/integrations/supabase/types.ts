@@ -878,6 +878,116 @@ export type Database = {
         }
         Relationships: []
       }
+      receipts: {
+        Row: {
+          appointment_id: string | null
+          client_id: string | null
+          created_at: string
+          discount_amount: number
+          google_review_url: string | null
+          id: string
+          machine_used: string | null
+          notes: string | null
+          payment_method: string | null
+          receipt_format: string
+          receipt_number: string
+          retail_items: Json | null
+          retail_total: number
+          service_name: string | null
+          service_price: number
+          staff_id: string | null
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          tip_amount: number
+          total_amount: number
+          transaction_id: string | null
+          treatment_summary: Json | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          discount_amount?: number
+          google_review_url?: string | null
+          id?: string
+          machine_used?: string | null
+          notes?: string | null
+          payment_method?: string | null
+          receipt_format?: string
+          receipt_number: string
+          retail_items?: Json | null
+          retail_total?: number
+          service_name?: string | null
+          service_price?: number
+          staff_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          tip_amount?: number
+          total_amount?: number
+          transaction_id?: string | null
+          treatment_summary?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          discount_amount?: number
+          google_review_url?: string | null
+          id?: string
+          machine_used?: string | null
+          notes?: string | null
+          payment_method?: string | null
+          receipt_format?: string
+          receipt_number?: string
+          retail_items?: Json | null
+          retail_total?: number
+          service_name?: string | null
+          service_price?: number
+          staff_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          tip_amount?: number
+          total_amount?: number
+          transaction_id?: string | null
+          treatment_summary?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rooms: {
         Row: {
           created_at: string
