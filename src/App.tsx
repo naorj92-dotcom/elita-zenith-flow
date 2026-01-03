@@ -21,6 +21,7 @@ import { ClientPhotosManagementPage } from "@/pages/admin/ClientPhotosManagement
 import { MembershipsManagementPage } from "@/pages/admin/MembershipsManagementPage";
 import { GiftCardsManagementPage } from "@/pages/admin/GiftCardsManagementPage";
 import { WaitlistManagementPage } from "@/pages/admin/WaitlistManagementPage";
+import { MachinesManagementPage } from "@/pages/admin/MachinesManagementPage";
 import NotificationsManagementPage from "@/pages/admin/NotificationsManagementPage";
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
@@ -59,6 +60,7 @@ function AppRoutes() {
       <Route path="/timeclock" element={<ProtectedRoute><TimeClockPage /></ProtectedRoute>} />
       <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
       <Route path="/services" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
+      <Route path="/machines" element={<ProtectedRoute><MachinesManagementPage /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><ProductsManagementPage /></ProtectedRoute>} />
       <Route path="/forms" element={<ProtectedRoute><FormsManagementPage /></ProtectedRoute>} />
       <Route path="/photos" element={<ProtectedRoute><ClientPhotosManagementPage /></ProtectedRoute>} />

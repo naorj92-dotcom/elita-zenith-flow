@@ -563,6 +563,36 @@ export type Database = {
           },
         ]
       }
+      machines: {
+        Row: {
+          created_at: string
+          id: string
+          machine_type: string
+          name: string
+          quantity: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          machine_type: string
+          name: string
+          quantity?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          machine_type?: string
+          name?: string
+          quantity?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           benefits: Json
@@ -938,8 +968,10 @@ export type Database = {
           duration_minutes: number
           id: string
           is_active: boolean
+          machine_type_id: string | null
           name: string
           price: number
+          recovery_buffer_minutes: number
           requires_consent: boolean
           updated_at: string
         }
@@ -950,8 +982,10 @@ export type Database = {
           duration_minutes?: number
           id?: string
           is_active?: boolean
+          machine_type_id?: string | null
           name: string
           price: number
+          recovery_buffer_minutes?: number
           requires_consent?: boolean
           updated_at?: string
         }
@@ -962,12 +996,22 @@ export type Database = {
           duration_minutes?: number
           id?: string
           is_active?: boolean
+          machine_type_id?: string | null
           name?: string
           price?: number
+          recovery_buffer_minutes?: number
           requires_consent?: boolean
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "services_machine_type_id_fkey"
+            columns: ["machine_type_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       staff: {
         Row: {

@@ -13,8 +13,15 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Service } from '@/types';
-import { Plus, Pencil, Clock, DollarSign, Loader2, Sparkles, Search } from 'lucide-react';
+import { Plus, Pencil, Clock, DollarSign, Loader2, Sparkles, Search, Cpu } from 'lucide-react';
+
+interface Machine {
+  id: string;
+  name: string;
+  machine_type: string;
+  quantity: number;
+  status: 'active' | 'maintenance';
+}
 
 interface ServiceFormData {
   name: string;
@@ -24,6 +31,8 @@ interface ServiceFormData {
   price: number;
   is_active: boolean;
   requires_consent: boolean;
+  machine_type_id: string | null;
+  recovery_buffer_minutes: number;
 }
 
 const initialFormData: ServiceFormData = {
@@ -34,6 +43,8 @@ const initialFormData: ServiceFormData = {
   price: 0,
   is_active: true,
   requires_consent: false,
+  machine_type_id: null,
+  recovery_buffer_minutes: 0,
 };
 
 const categories = [
@@ -54,7 +65,7 @@ export function ServicesManagementPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editingService, setEditingService] = useState<any | null>(null);
   const [formData, setFormData] = useState<ServiceFormData>(initialFormData);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -82,7 +93,20 @@ export function ServicesManagementPage() {
         .order('category', { ascending: true })
         .order('name', { ascending: true });
       if (error) throw error;
-      return data as Service[];
+      return data;
+    },
+  });
+
+  const { data: machines } = useQuery({
+    queryKey: ['admin-machines'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('machines')
+        .select('*')
+        .eq('status', 'active')
+        .order('machine_type', { ascending: true });
+      if (error) throw error;
+      return data as Machine[];
     },
   });
 
@@ -131,7 +155,7 @@ export function ServicesManagementPage() {
     setEditingService(null);
   };
 
-  const openEditDialog = (service: Service) => {
+  const openEditDialog = (service: any) => {
     setEditingService(service);
     setFormData({
       name: service.name,
@@ -141,6 +165,8 @@ export function ServicesManagementPage() {
       price: service.price,
       is_active: service.is_active,
       requires_consent: service.requires_consent,
+      machine_type_id: service.machine_type_id || null,
+      recovery_buffer_minutes: service.recovery_buffer_minutes || 0,
     });
     setIsDialogOpen(true);
   };
@@ -152,11 +178,21 @@ export function ServicesManagementPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.machine_type_id) {
+      toast({ title: 'Please select a machine type', variant: 'destructive' });
+      return;
+    }
     if (editingService) {
       updateServiceMutation.mutate({ id: editingService.id, data: formData });
     } else {
       createServiceMutation.mutate(formData);
     }
+  };
+
+  const getMachineName = (machineId: string | null) => {
+    if (!machineId) return null;
+    const machine = machines?.find(m => m.id === machineId);
+    return machine ? `${machine.name} (${machine.machine_type})` : null;
   };
 
   const filteredServices = services?.filter(service => {
@@ -260,16 +296,51 @@ export function ServicesManagementPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price">Price ($)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                  required
-                />
+                <Label htmlFor="machine_type">Associated Machine Type *</Label>
+                <Select
+                  value={formData.machine_type_id || ''}
+                  onValueChange={(value) => setFormData({ ...formData, machine_type_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select machine type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {machines?.map((machine) => (
+                      <SelectItem key={machine.id} value={machine.id}>
+                        <div className="flex items-center gap-2">
+                          <Cpu className="h-4 w-4" />
+                          {machine.name} ({machine.machine_type})
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price ($)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="recovery_buffer">Recovery Buffer (min)</Label>
+                  <Input
+                    id="recovery_buffer"
+                    type="number"
+                    min="0"
+                    step="5"
+                    value={formData.recovery_buffer_minutes}
+                    onChange={(e) => setFormData({ ...formData, recovery_buffer_minutes: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-between py-2">
@@ -359,9 +430,9 @@ export function ServicesManagementPage() {
                   <TableRow>
                     <TableHead>Service</TableHead>
                     <TableHead>Category</TableHead>
+                    <TableHead>Machine Type</TableHead>
                     <TableHead className="text-center">Duration</TableHead>
                     <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="text-center">Consent</TableHead>
                     <TableHead className="text-center">Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -382,10 +453,23 @@ export function ServicesManagementPage() {
                           {service.category}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        {getMachineName(service.machine_type_id) ? (
+                          <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+                            <Cpu className="h-3 w-3 mr-1" />
+                            {getMachineName(service.machine_type_id)}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground">
                           <Clock className="h-4 w-4" />
                           <span>{service.duration_minutes} min</span>
+                          {service.recovery_buffer_minutes > 0 && (
+                            <span className="text-xs">(+{service.recovery_buffer_minutes})</span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -393,13 +477,6 @@ export function ServicesManagementPage() {
                           <DollarSign className="h-4 w-4 text-muted-foreground" />
                           <span>{service.price.toFixed(2)}</span>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {service.requires_consent ? (
-                          <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">Required</Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         {service.is_active ? (
