@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Minus, Trash2, ShoppingCart, Receipt, CreditCard, DollarSign, Gift, Eye, Percent } from 'lucide-react';
+import { Plus, Minus, Trash2, ShoppingCart, Receipt, CreditCard, DollarSign, Gift, Percent, Star, Search, Check } from 'lucide-react';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
 import { LiveReceiptPreview } from '@/components/pos/LiveReceiptPreview';
 import { 
@@ -46,7 +45,14 @@ export function POSPage() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [generatedReceipt, setGeneratedReceipt] = useState<ReceiptData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [rightPanelTab, setRightPanelTab] = useState<'cart' | 'preview'>('cart');
+  
+  // Loyalty & Gift Card state
+  const [loyaltyPointsBalance, setLoyaltyPointsBalance] = useState<number>(0);
+  const [loyaltyPointsToRedeem, setLoyaltyPointsToRedeem] = useState<number>(0);
+  const [giftCardCode, setGiftCardCode] = useState<string>('');
+  const [giftCardBalance, setGiftCardBalance] = useState<number | null>(null);
+  const [giftCardLookupLoading, setGiftCardLookupLoading] = useState(false);
+  const [giftCardApplied, setGiftCardApplied] = useState<{ code: string; amount: number } | null>(null);
 
   // Fetch clients
   const { data: clients = [] } = useQuery({
@@ -103,6 +109,94 @@ export function POSPage() {
     },
   });
 
+  // Fetch client loyalty points when client changes
+  useEffect(() => {
+    const fetchLoyaltyBalance = async () => {
+      if (!selectedClient) {
+        setLoyaltyPointsBalance(0);
+        setLoyaltyPointsToRedeem(0);
+        return;
+      }
+      
+      const { data, error } = await supabase.rpc('get_client_loyalty_balance', {
+        p_client_id: selectedClient,
+      });
+      
+      if (!error && data !== null) {
+        setLoyaltyPointsBalance(data);
+      } else {
+        setLoyaltyPointsBalance(0);
+      }
+    };
+    
+    fetchLoyaltyBalance();
+  }, [selectedClient]);
+
+  // Gift card lookup function
+  const lookupGiftCard = async () => {
+    if (!giftCardCode.trim()) {
+      toast.error('Please enter a gift card code');
+      return;
+    }
+    
+    setGiftCardLookupLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('gift_cards')
+        .select('code, remaining_amount, is_active, expires_at')
+        .eq('code', giftCardCode.trim().toUpperCase())
+        .maybeSingle();
+      
+      if (error) throw error;
+      
+      if (!data) {
+        toast.error('Gift card not found');
+        setGiftCardBalance(null);
+      } else if (!data.is_active) {
+        toast.error('This gift card is inactive');
+        setGiftCardBalance(null);
+      } else if (data.expires_at && new Date(data.expires_at) < new Date()) {
+        toast.error('This gift card has expired');
+        setGiftCardBalance(null);
+      } else {
+        setGiftCardBalance(Number(data.remaining_amount));
+        toast.success(`Gift card balance: $${Number(data.remaining_amount).toFixed(2)}`);
+      }
+    } catch (error) {
+      console.error('Gift card lookup error:', error);
+      toast.error('Failed to lookup gift card');
+    } finally {
+      setGiftCardLookupLoading(false);
+    }
+  };
+
+  const applyGiftCard = () => {
+    if (giftCardBalance === null || giftCardBalance <= 0) {
+      toast.error('No gift card balance to apply');
+      return;
+    }
+    
+    const amountToApply = Math.min(giftCardBalance, totalAmount);
+    setGiftCardApplied({ code: giftCardCode.trim().toUpperCase(), amount: amountToApply });
+    toast.success(`Applied $${amountToApply.toFixed(2)} from gift card`);
+  };
+
+  const applyLoyaltyPoints = () => {
+    if (loyaltyPointsToRedeem <= 0) {
+      toast.error('Please enter points to redeem');
+      return;
+    }
+    if (loyaltyPointsToRedeem > loyaltyPointsBalance) {
+      toast.error('Insufficient loyalty points');
+      return;
+    }
+    // Convert points to dollars (100 points = $1)
+    const pointsDiscount = loyaltyPointsToRedeem / 100;
+    setDiscountAmount((prev) => prev + pointsDiscount);
+    toast.success(`Applied ${loyaltyPointsToRedeem} points ($${pointsDiscount.toFixed(2)} discount)`);
+    setLoyaltyPointsToRedeem(0);
+  };
+
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id && i.type === item.type);
@@ -134,9 +228,10 @@ export function POSPage() {
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const taxableSubtotal = subtotal - discountAmount;
+  const giftCardDiscount = giftCardApplied?.amount || 0;
+  const taxableSubtotal = Math.max(0, subtotal - discountAmount - giftCardDiscount);
   const taxAmount = (taxableSubtotal * taxRate) / 100;
-  const totalAmount = taxableSubtotal + taxAmount + tipAmount;
+  const totalAmount = Math.max(0, taxableSubtotal + taxAmount + tipAmount);
 
   // Build live preview data
   const livePreviewData = useMemo(() => {
@@ -544,194 +639,292 @@ export function POSPage() {
           )}
         </div>
 
-        {/* Right Column - Cart & Preview */}
+        {/* Right Column - Cart & Live Preview */}
         <div className="space-y-4">
-          <Tabs value={rightPanelTab} onValueChange={(v) => setRightPanelTab(v as 'cart' | 'preview')}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="cart" className="gap-2">
+          {/* Live Receipt Preview - Always Visible */}
+          <LiveReceiptPreview 
+            receipt={livePreviewData}
+            taxRate={taxRate}
+          />
+          
+          {/* Cart & Checkout Controls */}
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm font-heading flex items-center gap-2">
                 <ShoppingCart className="h-4 w-4" />
-                Cart
-              </TabsTrigger>
-              <TabsTrigger value="preview" className="gap-2">
-                <Eye className="h-4 w-4" />
-                Preview
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="cart" className="mt-4">
-              <Card>
-                <CardContent className="pt-6 space-y-4">
-                  {cart.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">Cart is empty</p>
-                  ) : (
-                    <div className="space-y-3 max-h-[200px] overflow-auto">
-                      {cart.map((item) => (
-                        <div
-                          key={`${item.type}-${item.id}`}
-                          className="flex items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">{item.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              ${item.price.toFixed(2)} each
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {item.type === 'product' && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => updateQuantity(item.id, item.type, -1)}
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <span className="w-6 text-center text-sm">{item.quantity}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => updateQuantity(item.id, item.type, 1)}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </>
-                            )}
+                Cart ({cart.length} items)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-0">
+              {cart.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4 text-sm">Cart is empty</p>
+              ) : (
+                <div className="space-y-2 max-h-[150px] overflow-auto">
+                  {cart.map((item) => (
+                    <div
+                      key={`${item.type}-${item.id}`}
+                      className="flex items-center justify-between gap-2 p-2 bg-muted/50 rounded-lg"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-xs truncate">{item.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          ${item.price.toFixed(2)} × {item.quantity}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {item.type === 'product' && (
+                          <>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-destructive"
-                              onClick={() => removeFromCart(item.id, item.type)}
+                              className="h-6 w-6"
+                              onClick={() => updateQuantity(item.id, item.type, -1)}
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Minus className="h-3 w-3" />
                             </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <Separator />
-
-                  {/* Tax, Tip & Discount */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <Label className="text-xs flex items-center gap-1">
-                        <Percent className="h-3 w-3" />
-                        Tax %
-                      </Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="25"
-                        step="0.01"
-                        value={taxRate}
-                        onChange={(e) => setTaxRate(Number(e.target.value) || 0)}
-                        className="text-sm"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Tip</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={tipAmount || ''}
-                        onChange={(e) => setTipAmount(Number(e.target.value) || 0)}
-                        placeholder="0.00"
-                        className="text-sm"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Discount</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={discountAmount || ''}
-                        onChange={(e) => setDiscountAmount(Number(e.target.value) || 0)}
-                        placeholder="0.00"
-                        className="text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Payment Method */}
-                  <div>
-                    <Label className="text-xs">Payment Method</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      {[
-                        { value: 'card', icon: CreditCard, label: 'Card' },
-                        { value: 'cash', icon: DollarSign, label: 'Cash' },
-                        { value: 'gift_card', icon: Gift, label: 'Gift Card' },
-                        { value: 'split', icon: Receipt, label: 'Split' },
-                      ].map(({ value, icon: Icon, label }) => (
+                            <span className="w-4 text-center text-xs">{item.quantity}</span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => updateQuantity(item.id, item.type, 1)}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </>
+                        )}
                         <Button
-                          key={value}
-                          variant={paymentMethod === value ? 'default' : 'outline'}
-                          size="sm"
-                          className="gap-1"
-                          onClick={() => setPaymentMethod(value as typeof paymentMethod)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-destructive"
+                          onClick={() => removeFromCart(item.id, item.type)}
                         >
-                          <Icon className="h-3 w-3" />
-                          {label}
+                          <Trash2 className="h-3 w-3" />
                         </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Totals */}
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span>${subtotal.toFixed(2)}</span>
-                    </div>
-                    {discountAmount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Discount</span>
-                        <span>-${discountAmount.toFixed(2)}</span>
                       </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tax ({taxRate}%)</span>
-                      <span>${taxAmount.toFixed(2)}</span>
                     </div>
-                    {tipAmount > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Tip</span>
-                        <span>${tipAmount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <Separator />
-                    <div className="flex justify-between text-lg font-heading font-semibold">
-                      <span>Total</span>
-                      <span>${totalAmount.toFixed(2)}</span>
-                    </div>
-                  </div>
+                  ))}
+                </div>
+              )}
 
+              <Separator />
+
+              {/* Tax, Tip & Discount */}
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Label className="text-xs flex items-center gap-1">
+                    <Percent className="h-3 w-3" />
+                    Tax %
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="25"
+                    step="0.01"
+                    value={taxRate}
+                    onChange={(e) => setTaxRate(Number(e.target.value) || 0)}
+                    className="text-sm h-8"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Tip</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={tipAmount || ''}
+                    onChange={(e) => setTipAmount(Number(e.target.value) || 0)}
+                    placeholder="0.00"
+                    className="text-sm h-8"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Discount</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={discountAmount || ''}
+                    onChange={(e) => setDiscountAmount(Number(e.target.value) || 0)}
+                    placeholder="0.00"
+                    className="text-sm h-8"
+                  />
+                </div>
+              </div>
+
+              {/* Loyalty Points Redemption */}
+              {selectedClient && loyaltyPointsBalance > 0 && (
+                <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-xs flex items-center gap-1 text-primary">
+                      <Star className="h-3 w-3" />
+                      Loyalty Points
+                    </Label>
+                    <Badge variant="secondary" className="text-xs">
+                      {loyaltyPointsBalance} pts available
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max={loyaltyPointsBalance}
+                      step="1"
+                      value={loyaltyPointsToRedeem || ''}
+                      onChange={(e) => setLoyaltyPointsToRedeem(Math.min(Number(e.target.value) || 0, loyaltyPointsBalance))}
+                      placeholder="Points to redeem"
+                      className="text-sm h-8 flex-1"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs"
+                      onClick={applyLoyaltyPoints}
+                      disabled={loyaltyPointsToRedeem <= 0}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    100 points = $1.00 discount
+                  </p>
+                </div>
+              )}
+
+              {/* Gift Card Lookup */}
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <Label className="text-xs flex items-center gap-1 mb-2">
+                  <Gift className="h-3 w-3" />
+                  Gift Card
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={giftCardCode}
+                    onChange={(e) => setGiftCardCode(e.target.value.toUpperCase())}
+                    placeholder="Enter gift card code"
+                    className="text-sm h-8 flex-1 uppercase"
+                  />
                   <Button
-                    className="w-full gap-2"
-                    size="lg"
-                    onClick={handleCheckout}
-                    disabled={cart.length === 0 || isProcessing}
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={lookupGiftCard}
+                    disabled={giftCardLookupLoading || !giftCardCode.trim()}
                   >
-                    <Receipt className="h-4 w-4" />
-                    {isProcessing ? 'Processing...' : 'Complete Sale'}
+                    {giftCardLookupLoading ? (
+                      <span className="animate-pulse">...</span>
+                    ) : (
+                      <Search className="h-3 w-3" />
+                    )}
                   </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+                {giftCardBalance !== null && (
+                  <div className="flex items-center justify-between mt-2 p-2 bg-background rounded border">
+                    <span className="text-xs">
+                      Balance: <span className="font-medium text-green-600">${giftCardBalance.toFixed(2)}</span>
+                    </span>
+                    {!giftCardApplied && (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="h-6 text-xs"
+                        onClick={applyGiftCard}
+                      >
+                        Apply
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {giftCardApplied && (
+                  <div className="flex items-center justify-between mt-2 p-2 bg-green-50 dark:bg-green-950/30 rounded border border-green-200 dark:border-green-900">
+                    <span className="text-xs flex items-center gap-1 text-green-700 dark:text-green-400">
+                      <Check className="h-3 w-3" />
+                      Applied: ${giftCardApplied.amount.toFixed(2)}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 text-xs text-destructive"
+                      onClick={() => setGiftCardApplied(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
 
-            <TabsContent value="preview" className="mt-4">
-              <LiveReceiptPreview 
-                receipt={livePreviewData}
-                taxRate={taxRate}
-              />
-            </TabsContent>
-          </Tabs>
+              {/* Payment Method */}
+              <div>
+                <Label className="text-xs">Payment Method</Label>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  {[
+                    { value: 'card', icon: CreditCard, label: 'Card' },
+                    { value: 'cash', icon: DollarSign, label: 'Cash' },
+                    { value: 'gift_card', icon: Gift, label: 'Gift Card' },
+                    { value: 'split', icon: Receipt, label: 'Split' },
+                  ].map(({ value, icon: Icon, label }) => (
+                    <Button
+                      key={value}
+                      variant={paymentMethod === value ? 'default' : 'outline'}
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => setPaymentMethod(value as typeof paymentMethod)}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Totals */}
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>${subtotal.toFixed(2)}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount</span>
+                    <span>-${discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                {giftCardApplied && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Gift Card</span>
+                    <span>-${giftCardApplied.amount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tax ({taxRate}%)</span>
+                  <span>${taxAmount.toFixed(2)}</span>
+                </div>
+                {tipAmount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tip</span>
+                    <span>${tipAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                <Separator />
+                <div className="flex justify-between text-lg font-heading font-semibold">
+                  <span>Total</span>
+                  <span>${totalAmount.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <Button
+                className="w-full gap-2"
+                size="lg"
+                onClick={handleCheckout}
+                disabled={cart.length === 0 || isProcessing}
+              >
+                <Receipt className="h-4 w-4" />
+                {isProcessing ? 'Processing...' : 'Complete Sale'}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
