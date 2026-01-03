@@ -2,3 +2,6 @@ project_id = "educlvjjusnhdchqdczb"
 
 [functions.send-notification]
 verify_jwt = true
+
+[functions.send-receipt-email]
+verify_jwt = false

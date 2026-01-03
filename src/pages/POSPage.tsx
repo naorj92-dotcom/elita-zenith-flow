@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Minus, Trash2, ShoppingCart, Receipt, CreditCard, DollarSign, Gift, Percent, Star, Search, Check } from 'lucide-react';
+import { Plus, Minus, Trash2, ShoppingCart, Receipt, CreditCard, DollarSign, Gift, Percent, Star, Search, Check, Mail, MailCheck } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
 import { LiveReceiptPreview } from '@/components/pos/LiveReceiptPreview';
 import { 
@@ -53,6 +54,10 @@ export function POSPage() {
   const [giftCardBalance, setGiftCardBalance] = useState<number | null>(null);
   const [giftCardLookupLoading, setGiftCardLookupLoading] = useState(false);
   const [giftCardApplied, setGiftCardApplied] = useState<{ code: string; amount: number } | null>(null);
+  
+  // Email receipt state
+  const [sendEmailReceipt, setSendEmailReceipt] = useState(true);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   // Fetch clients
   const { data: clients = [] } = useQuery({
@@ -441,6 +446,50 @@ export function POSPage() {
       setGeneratedReceipt(receipt);
       setShowReceipt(true);
       toast.success('Sale completed successfully!');
+
+      // Send email receipt if enabled and client has email
+      if (sendEmailReceipt && client?.email) {
+        setSendingEmail(true);
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-receipt-email', {
+            body: {
+              receipt_id: receiptData.id,
+              client_email: client.email,
+              client_name: `${client.first_name} ${client.last_name}`,
+              receipt_number: receiptNumber,
+              provider_name: provider ? `${provider.first_name} ${provider.last_name}` : 'Staff',
+              service_name: serviceItem?.name,
+              service_price: serviceItem ? serviceItem.price * serviceItem.quantity : 0,
+              retail_items: retailItems,
+              retail_total: retailItems.reduce((sum, item) => sum + item.total, 0),
+              subtotal,
+              tax_rate: taxRate,
+              tax_amount: taxAmount,
+              tip_amount: tipAmount,
+              discount_amount: discountAmount,
+              total_amount: totalAmount,
+              payment_method: paymentMethod,
+              machine_used: serviceItem?.machineUsed,
+              treatment_summary: treatmentSummary,
+              package_status: packageStatus,
+              membership_status: membershipStatus,
+              next_recommended_booking: nextRecommendedBooking,
+              created_at: new Date().toISOString(),
+            },
+          });
+          
+          if (emailError) {
+            console.error('Email send error:', emailError);
+            toast.error('Sale complete but failed to send email receipt');
+          } else {
+            toast.success('Email receipt sent to ' + client.email);
+          }
+        } catch (emailErr) {
+          console.error('Email send error:', emailErr);
+        } finally {
+          setSendingEmail(false);
+        }
+      }
 
       // Clear cart
       setCart([]);
@@ -914,14 +963,43 @@ export function POSPage() {
                 </div>
               </div>
 
+              {/* Email Receipt Toggle */}
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <Label className="text-sm">Email Receipt</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedClient && clients.find(c => c.id === selectedClient)?.email 
+                        ? 'Send to client email'
+                        : 'No email on file'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={sendEmailReceipt}
+                  onCheckedChange={setSendEmailReceipt}
+                  disabled={!selectedClient || !clients.find(c => c.id === selectedClient)?.email}
+                />
+              </div>
+
               <Button
                 className="w-full gap-2"
                 size="lg"
                 onClick={handleCheckout}
                 disabled={cart.length === 0 || isProcessing}
               >
-                <Receipt className="h-4 w-4" />
-                {isProcessing ? 'Processing...' : 'Complete Sale'}
+                {sendingEmail ? (
+                  <>
+                    <MailCheck className="h-4 w-4 animate-pulse" />
+                    Sending Receipt...
+                  </>
+                ) : (
+                  <>
+                    <Receipt className="h-4 w-4" />
+                    {isProcessing ? 'Processing...' : 'Complete Sale'}
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
