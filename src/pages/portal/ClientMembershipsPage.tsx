@@ -5,8 +5,10 @@ import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Check, Sparkles, Gift, Calendar } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Crown, Check, Sparkles, Gift, Calendar, History, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { MembershipUsageHistory } from '@/components/portal/MembershipUsageHistory';
 
 // Demo membership data
 const DEMO_MEMBERSHIP = {
@@ -14,18 +16,18 @@ const DEMO_MEMBERSHIP = {
   status: 'active',
   start_date: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
   next_billing_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-  remaining_credits: 1,
+  remaining_credits: 2,
   memberships: {
     id: 'demo-tier-2',
     name: 'Radiance VIP',
     description: 'Enhanced benefits for the dedicated skincare enthusiast',
     price: 299,
     billing_period: 'monthly',
-    monthly_service_credits: 2,
+    monthly_service_credits: 3,
     retail_discount_percent: 15,
     priority_booking: true,
     benefits: [
-      '2 treatments per month',
+      '3 treatments per month',
       '15% off all retail',
       'Priority booking',
       'Complimentary upgrades when available',
@@ -51,10 +53,10 @@ const DEMO_AVAILABLE_MEMBERSHIPS = [
     description: 'Enhanced benefits for the dedicated skincare enthusiast',
     price: 299,
     billing_period: 'monthly',
-    monthly_service_credits: 2,
+    monthly_service_credits: 3,
     retail_discount_percent: 15,
     priority_booking: true,
-    benefits: ['2 treatments per month', '15% off all retail', 'Priority booking', 'Complimentary upgrades when available', 'Guest passes (2/year)'],
+    benefits: ['3 treatments per month', '15% off all retail', 'Priority booking', 'Complimentary upgrades when available', 'Guest passes (2/year)'],
   },
   {
     id: 'demo-tier-3',
@@ -112,7 +114,7 @@ export function ClientMembershipsPage() {
 
   const getTierColor = (index: number, isCurrentTier: boolean) => {
     if (isCurrentTier) return 'ring-2 ring-primary bg-primary/5';
-    const colors = ['', 'border-elita-gold/30', 'bg-gradient-sage text-primary-foreground'];
+    const colors = ['', 'border-yellow-200/30', 'bg-gradient-to-br from-primary/10 to-primary/5'];
     return colors[index] || '';
   };
 
@@ -123,147 +125,202 @@ export function ClientMembershipsPage() {
         <p className="text-muted-foreground mt-1">Exclusive benefits for our valued members</p>
       </div>
 
-      {/* Current Membership Status */}
-      {currentMembership && (
-        <Card className="card-luxury border-primary/30 bg-primary/5">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-elita-gold" />
-                <CardTitle className="font-heading">Your Current Membership</CardTitle>
-              </div>
-              <Badge className="status-confirmed">{currentMembership.status}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-heading font-semibold">{currentMembership.memberships?.name}</h3>
-                <p className="text-muted-foreground">{currentMembership.memberships?.description}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-heading font-semibold">${currentMembership.memberships?.price}</p>
-                <p className="text-sm text-muted-foreground">/{currentMembership.memberships?.billing_period}</p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="p-4 bg-background rounded-lg text-center">
-                <Sparkles className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <p className="text-xl font-semibold">{currentMembership.remaining_credits}</p>
-                <p className="text-xs text-muted-foreground">Credits Remaining</p>
-              </div>
-              <div className="p-4 bg-background rounded-lg text-center">
-                <Gift className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <p className="text-xl font-semibold">{currentMembership.memberships?.retail_discount_percent}%</p>
-                <p className="text-xs text-muted-foreground">Retail Discount</p>
-              </div>
-              <div className="p-4 bg-background rounded-lg text-center">
-                <Calendar className="h-6 w-6 mx-auto mb-2 text-primary" />
-                <p className="text-xl font-semibold">
-                  {currentMembership.next_billing_date 
-                    ? format(new Date(currentMembership.next_billing_date), 'MMM d')
-                    : '—'}
-                </p>
-                <p className="text-xs text-muted-foreground">Next Billing</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Demo Mode Banner */}
+      {isDemo && (
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+          <Eye className="h-5 w-5 text-primary" />
+          <p className="text-sm">Viewing demo membership data</p>
+        </div>
       )}
 
-      {/* Available Tiers */}
-      <div>
-        <h2 className="text-xl font-heading font-semibold mb-4">
-          {currentMembership ? 'All Membership Tiers' : 'Choose Your Membership'}
-        </h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {availableMemberships?.map((tier, index) => {
-            const isCurrentTier = currentMembership?.memberships?.id === tier.id;
-            const benefits = Array.isArray(tier.benefits) ? tier.benefits as string[] : [];
-            const isTopTier = index === (availableMemberships.length - 1);
-            
-            return (
-              <Card 
-                key={tier.id} 
-                className={`card-luxury relative overflow-hidden ${getTierColor(index, isCurrentTier)} ${isTopTier && !isCurrentTier ? 'bg-gradient-sage' : ''}`}
-              >
-                {isTopTier && (
-                  <div className="absolute top-4 right-4">
-                    <Crown className="h-5 w-5 text-elita-gold" />
+      {/* Tabs for different views */}
+      <Tabs defaultValue="status" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="status" className="gap-2">
+            <Crown className="h-4 w-4" />
+            Status
+          </TabsTrigger>
+          <TabsTrigger value="usage" className="gap-2">
+            <History className="h-4 w-4" />
+            Usage History
+          </TabsTrigger>
+          <TabsTrigger value="plans" className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            All Plans
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="status" className="mt-6 space-y-6">
+          {/* Current Membership Status */}
+          {currentMembership ? (
+            <Card className="card-luxury border-primary/30 bg-primary/5">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-yellow-600" />
+                    <CardTitle className="font-heading">Your Current Membership</CardTitle>
+                  </div>
+                  <Badge className="bg-green-100 text-green-800 border-green-200">{currentMembership.status}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-heading font-semibold">{currentMembership.memberships?.name}</h3>
+                    <p className="text-muted-foreground">{currentMembership.memberships?.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-heading font-semibold">${currentMembership.memberships?.price}</p>
+                    <p className="text-sm text-muted-foreground">/{currentMembership.memberships?.billing_period}</p>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="p-4 bg-background rounded-lg text-center">
+                    <Sparkles className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <p className="text-xl font-semibold">{currentMembership.remaining_credits}</p>
+                    <p className="text-xs text-muted-foreground">Credits Remaining</p>
+                  </div>
+                  <div className="p-4 bg-background rounded-lg text-center">
+                    <Gift className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <p className="text-xl font-semibold">{currentMembership.memberships?.retail_discount_percent}%</p>
+                    <p className="text-xs text-muted-foreground">Retail Discount</p>
+                  </div>
+                  <div className="p-4 bg-background rounded-lg text-center">
+                    <Calendar className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <p className="text-xl font-semibold">
+                      {currentMembership.next_billing_date 
+                        ? format(new Date(currentMembership.next_billing_date), 'MMM d')
+                        : '—'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Next Billing</p>
+                  </div>
+                </div>
+
+                {/* Benefits list */}
+                {currentMembership.memberships?.benefits && (
+                  <div className="pt-4 border-t">
+                    <h4 className="font-medium mb-3">Your Benefits</h4>
+                    <ul className="space-y-2 text-sm">
+                      {(currentMembership.memberships.benefits as string[]).map((benefit, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-600" />
+                          <span>{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
-                {isCurrentTier && (
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-primary text-primary-foreground">Current</Badge>
-                  </div>
-                )}
-                <CardHeader className={isTopTier && !isCurrentTier ? 'text-primary-foreground' : ''}>
-                  <CardTitle className="font-heading text-xl">{tier.name}</CardTitle>
-                  <CardDescription className={isTopTier && !isCurrentTier ? 'text-primary-foreground/80' : ''}>
-                    {tier.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className={`space-y-4 ${isTopTier && !isCurrentTier ? 'text-primary-foreground' : ''}`}>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-heading font-semibold">${tier.price}</span>
-                    <span className={isTopTier && !isCurrentTier ? 'text-primary-foreground/80' : 'text-muted-foreground'}>
-                      /{tier.billing_period}
-                    </span>
-                  </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="card-luxury">
+              <CardContent className="py-12 text-center">
+                <Crown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Active Membership</h3>
+                <p className="text-muted-foreground mb-4">
+                  Join our membership program to unlock exclusive benefits
+                </p>
+                <Button>View Membership Plans</Button>
+              </CardContent>
+            </Card>
+          )}
 
-                  <div className="flex items-center gap-4 text-sm">
-                    <span>{tier.monthly_service_credits === 99 ? 'Unlimited' : tier.monthly_service_credits} treatment{tier.monthly_service_credits !== 1 ? 's' : ''}/mo</span>
-                    {tier.priority_booking && (
-                      <Badge variant="outline" className={`text-xs ${isTopTier && !isCurrentTier ? 'border-primary-foreground/30 text-primary-foreground' : ''}`}>
-                        VIP
-                      </Badge>
-                    )}
-                  </div>
+          {/* FAQ Section */}
+          <Card className="card-luxury">
+            <CardHeader>
+              <CardTitle className="font-heading">Membership FAQ</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-medium">How do credits work?</h4>
+                <p className="text-sm text-muted-foreground">Credits can be used for any signature treatment. Unused credits roll over for up to 3 months.</p>
+              </div>
+              <div>
+                <h4 className="font-medium">Can I pause my membership?</h4>
+                <p className="text-sm text-muted-foreground">Yes, you can pause your membership for up to 2 months per year. Just let us know at least 7 days before your next billing date.</p>
+              </div>
+              <div>
+                <h4 className="font-medium">What's included in priority booking?</h4>
+                <p className="text-sm text-muted-foreground">VIP members get early access to new time slots and priority during busy seasons. We'll always find time for you!</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                  <ul className="space-y-2 text-sm">
-                    {benefits.map((benefit, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className={`h-4 w-4 mt-0.5 flex-shrink-0 ${isTopTier && !isCurrentTier ? 'text-primary-foreground' : 'text-success'}`} />
-                        <span className={isTopTier && !isCurrentTier ? 'text-primary-foreground/90' : ''}>{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
+        <TabsContent value="usage" className="mt-6">
+          <MembershipUsageHistory />
+        </TabsContent>
 
-                  <Button 
-                    className="w-full mt-4" 
-                    variant={isCurrentTier ? 'outline' : isTopTier ? 'secondary' : 'default'}
-                    disabled={isCurrentTier}
-                  >
-                    {isCurrentTier ? 'Current Plan' : 'Get Started'}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
+        <TabsContent value="plans" className="mt-6">
+          {/* Available Tiers */}
+          <div className="grid gap-6 md:grid-cols-3">
+            {availableMemberships?.map((tier, index) => {
+              const isCurrentTier = currentMembership?.memberships?.id === tier.id;
+              const benefits = Array.isArray(tier.benefits) ? tier.benefits as string[] : [];
+              const isTopTier = index === (availableMemberships.length - 1);
+              
+              return (
+                <Card 
+                  key={tier.id} 
+                  className={`card-luxury relative overflow-hidden ${getTierColor(index, isCurrentTier)} ${isTopTier && !isCurrentTier ? 'border-primary' : ''}`}
+                >
+                  {isTopTier && (
+                    <div className="absolute top-4 right-4">
+                      <Crown className="h-5 w-5 text-yellow-600" />
+                    </div>
+                  )}
+                  {isCurrentTier && (
+                    <div className="absolute top-4 right-4">
+                      <Badge className="bg-primary text-primary-foreground">Current</Badge>
+                    </div>
+                  )}
+                  <CardHeader>
+                    <CardTitle className="font-heading text-xl">{tier.name}</CardTitle>
+                    <CardDescription>
+                      {tier.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-heading font-semibold">${tier.price}</span>
+                      <span className="text-muted-foreground">
+                        /{tier.billing_period}
+                      </span>
+                    </div>
 
-      {/* FAQ Section */}
-      <Card className="card-luxury">
-        <CardHeader>
-          <CardTitle className="font-heading">Membership FAQ</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h4 className="font-medium">How do credits work?</h4>
-            <p className="text-sm text-muted-foreground">Credits can be used for any signature treatment. Unused credits roll over for up to 3 months.</p>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span>{tier.monthly_service_credits === 99 ? 'Unlimited' : tier.monthly_service_credits} treatment{tier.monthly_service_credits !== 1 ? 's' : ''}/mo</span>
+                      {tier.priority_booking && (
+                        <Badge variant="outline" className="text-xs">
+                          VIP
+                        </Badge>
+                      )}
+                    </div>
+
+                    <ul className="space-y-2 text-sm">
+                      {benefits.map((benefit, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-600" />
+                          <span>{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button 
+                      className="w-full mt-4" 
+                      variant={isCurrentTier ? 'outline' : isTopTier ? 'default' : 'secondary'}
+                      disabled={isCurrentTier}
+                    >
+                      {isCurrentTier ? 'Current Plan' : 'Get Started'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
-          <div>
-            <h4 className="font-medium">Can I pause my membership?</h4>
-            <p className="text-sm text-muted-foreground">Yes, you can pause your membership for up to 2 months per year. Just let us know at least 7 days before your next billing date.</p>
-          </div>
-          <div>
-            <h4 className="font-medium">What's included in priority booking?</h4>
-            <p className="text-sm text-muted-foreground">VIP members get early access to new time slots and priority during busy seasons. We'll always find time for you!</p>
-          </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

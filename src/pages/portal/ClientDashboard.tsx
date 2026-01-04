@@ -3,10 +3,11 @@ import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye } from 'lucide-react';
+import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye, History, Crown, Flag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
   DEMO_PACKAGES, 
@@ -17,6 +18,8 @@ import {
 } from '@/hooks/useDemoData';
 import { LoyaltyPointsWidget } from '@/components/portal/LoyaltyPointsWidget';
 import { MembershipStatusWidget } from '@/components/portal/MembershipStatusWidget';
+import { ClientTimeline } from '@/components/portal/ClientTimeline';
+import { ClientNotesFlags } from '@/components/portal/ClientNotesFlags';
 
 export function ClientDashboard() {
   const { client, isDemo } = useClientAuth();
@@ -121,16 +124,17 @@ export function ClientDashboard() {
       )}
 
       {/* Welcome Header */}
-      <div className="bg-gradient-sage rounded-2xl p-8 text-primary-foreground">
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-8">
         <div className="flex items-center gap-3 mb-2">
-          <Sparkles className="h-6 w-6" />
-          <span className="text-sm font-medium opacity-90">Welcome back</span>
+          <Sparkles className="h-6 w-6 text-primary" />
+          <span className="text-sm font-medium text-muted-foreground">Welcome back</span>
         </div>
         <h1 className="text-3xl font-heading font-semibold">
           {client?.first_name} {client?.last_name}
         </h1>
         {client?.is_vip && (
-          <Badge className="mt-3 bg-elita-gold/20 text-primary-foreground border-elita-gold/30">
+          <Badge className="mt-3 bg-yellow-100 text-yellow-800 border-yellow-300">
+            <Crown className="h-3 w-3 mr-1" />
             VIP Member
           </Badge>
         )}
@@ -163,7 +167,7 @@ export function ClientDashboard() {
                   with {nextAppointment.staff?.first_name} {nextAppointment.staff?.last_name}
                 </p>
               </div>
-              <Badge className="status-confirmed">{nextAppointment.status}</Badge>
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">{nextAppointment.status}</Badge>
             </div>
           ) : (
             <div className="text-center py-8">
@@ -177,104 +181,143 @@ export function ClientDashboard() {
         </CardContent>
       </Card>
 
-      {/* Quick Links Grid */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Link to="/portal/packages">
-          <Card className="card-luxury group cursor-pointer h-full">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <Package className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">My Packages</h3>
-                <p className="text-sm text-muted-foreground">{packagesCount} active package{packagesCount !== 1 ? 's' : ''}</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+      {/* Tabs: Overview, Timeline, Notes */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview" className="gap-2">
+            <Package className="h-4 w-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="gap-2">
+            <History className="h-4 w-4" />
+            Timeline
+          </TabsTrigger>
+          <TabsTrigger value="notes" className="gap-2">
+            <Flag className="h-4 w-4" />
+            Notes & Flags
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="mt-6 space-y-6">
+          {/* Quick Links Grid */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Link to="/portal/packages">
+              <Card className="card-luxury group cursor-pointer h-full">
+                <CardContent className="flex items-center gap-4 p-6">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Package className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">My Packages</h3>
+                    <p className="text-sm text-muted-foreground">{packagesCount} active package{packagesCount !== 1 ? 's' : ''}</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/portal/photos">
+              <Card className="card-luxury group cursor-pointer h-full">
+                <CardContent className="flex items-center gap-4 p-6">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Image className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Progress Photos</h3>
+                    <p className="text-sm text-muted-foreground">{photosCount} photo{photosCount !== 1 ? 's' : ''}</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/portal/recommendations">
+              <Card className="card-luxury group cursor-pointer h-full">
+                <CardContent className="flex items-center gap-4 p-6">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <ShoppingBag className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Recommendations</h3>
+                    <p className="text-sm text-muted-foreground">{recommendationsCount} new recommendation{recommendationsCount !== 1 ? 's' : ''}</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/portal/history">
+              <Card className="card-luxury group cursor-pointer h-full">
+                <CardContent className="flex items-center gap-4 p-6">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Clock className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Treatment History</h3>
+                    <p className="text-sm text-muted-foreground">{client?.visit_count || 0} visit{(client?.visit_count || 0) !== 1 ? 's' : ''}</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          {/* Membership & Loyalty Row */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <MembershipStatusWidget />
+            <LoyaltyPointsWidget />
+          </div>
+
+          {/* Stats */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card className="card-luxury">
+              <CardContent className="p-6 text-center">
+                <p className="text-3xl font-heading font-semibold text-primary">
+                  ${(client?.total_spent || 0).toLocaleString()}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">Total Investment</p>
+              </CardContent>
+            </Card>
+            <Card className="card-luxury">
+              <CardContent className="p-6 text-center">
+                <p className="text-3xl font-heading font-semibold text-primary">
+                  {client?.visit_count || 0}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">Total Visits</p>
+              </CardContent>
+            </Card>
+            <Card className="card-luxury">
+              <CardContent className="p-6 text-center">
+                <p className="text-3xl font-heading font-semibold text-primary">
+                  {client?.last_visit_date 
+                    ? format(new Date(client.last_visit_date), 'MMM d')
+                    : '—'}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">Last Visit</p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="timeline" className="mt-6">
+          <Card className="card-luxury">
+            <CardHeader>
+              <CardTitle className="text-lg font-heading flex items-center gap-2">
+                <History className="h-5 w-5 text-primary" />
+                Activity Timeline
+              </CardTitle>
+              <CardDescription>Your recent visits, packages, and photos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ClientTimeline />
             </CardContent>
           </Card>
-        </Link>
+        </TabsContent>
 
-        <Link to="/portal/photos">
-          <Card className="card-luxury group cursor-pointer h-full">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <Image className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Progress Photos</h3>
-                <p className="text-sm text-muted-foreground">{photosCount} photo{photosCount !== 1 ? 's' : ''}</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link to="/portal/recommendations">
-          <Card className="card-luxury group cursor-pointer h-full">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <ShoppingBag className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Recommendations</h3>
-                <p className="text-sm text-muted-foreground">{recommendationsCount} new recommendation{recommendationsCount !== 1 ? 's' : ''}</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link to="/portal/history">
-          <Card className="card-luxury group cursor-pointer h-full">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <Clock className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Treatment History</h3>
-                <p className="text-sm text-muted-foreground">{client?.visit_count || 0} visit{(client?.visit_count || 0) !== 1 ? 's' : ''}</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
-
-      {/* Membership & Loyalty Row */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <MembershipStatusWidget />
-        <LoyaltyPointsWidget />
-      </div>
-
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="card-luxury">
-          <CardContent className="p-6 text-center">
-            <p className="text-3xl font-heading font-semibold text-primary">
-              ${(client?.total_spent || 0).toLocaleString()}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">Total Investment</p>
-          </CardContent>
-        </Card>
-        <Card className="card-luxury">
-          <CardContent className="p-6 text-center">
-            <p className="text-3xl font-heading font-semibold text-primary">
-              {client?.visit_count || 0}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">Total Visits</p>
-          </CardContent>
-        </Card>
-        <Card className="card-luxury">
-          <CardContent className="p-6 text-center">
-            <p className="text-3xl font-heading font-semibold text-primary">
-              {client?.last_visit_date 
-                ? format(new Date(client.last_visit_date), 'MMM d')
-                : '—'}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">Last Visit</p>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="notes" className="mt-6">
+          <ClientNotesFlags />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
