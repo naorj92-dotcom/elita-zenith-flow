@@ -17,11 +17,11 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Logo */}
-      <div className="pt-12 pb-8 flex justify-center">
+      <div className="pt-16 pb-10 flex justify-center">
         <img 
           src={elitaLogo} 
           alt="Elita Medical Spa" 
-          className="h-12 w-auto object-contain"
+          className="h-16 w-auto object-contain"
         />
       </div>
 
