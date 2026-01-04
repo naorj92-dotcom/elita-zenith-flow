@@ -61,13 +61,20 @@ export const DEMO_PACKAGES = [
   },
 ];
 
+// Helper to create a date with specific time
+const createDateTime = (date: Date, hours: number, minutes: number = 0) => {
+  const d = new Date(date);
+  d.setHours(hours, minutes, 0, 0);
+  return d.toISOString();
+};
+
 export const DEMO_APPOINTMENTS = [
   {
     id: 'demo-apt-1',
     client_id: 'demo-client-id',
     staff_id: 'demo-staff-1',
     service_id: 'demo-svc-1',
-    scheduled_at: addDays(new Date(), 3).toISOString().replace('T', 'T10:00:00'),
+    scheduled_at: createDateTime(addDays(new Date(), 3), 10, 0),
     duration_minutes: 60,
     status: 'confirmed',
     total_amount: 185,
@@ -92,7 +99,7 @@ export const DEMO_APPOINTMENTS = [
     client_id: 'demo-client-id',
     staff_id: 'demo-staff-2',
     service_id: 'demo-svc-2',
-    scheduled_at: subDays(new Date(), 14).toISOString().replace('T', 'T14:00:00'),
+    scheduled_at: createDateTime(subDays(new Date(), 14), 14, 0),
     duration_minutes: 75,
     status: 'completed',
     total_amount: 250,
@@ -117,7 +124,7 @@ export const DEMO_APPOINTMENTS = [
     client_id: 'demo-client-id',
     staff_id: 'demo-staff-1',
     service_id: 'demo-svc-3',
-    scheduled_at: subDays(new Date(), 45).toISOString().replace('T', 'T11:30:00'),
+    scheduled_at: createDateTime(subDays(new Date(), 45), 11, 30),
     duration_minutes: 90,
     status: 'completed',
     total_amount: 350,
