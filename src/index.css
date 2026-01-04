@@ -21,11 +21,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 30 10% 18%;
     
-    /* Accent: camel / muted gold - ONLY for primary CTAs, active nav, highlights */
-    --primary: 32 35% 52%;
+    /* Accent: light brownish taupe - ONLY for primary CTAs, active nav, highlights */
+    --primary: 30 25% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 32 40% 45%;
-    --primary-muted: 32 25% 75%;
+    --primary-hover: 30 28% 50%;
+    --primary-muted: 30 18% 72%;
     
     /* Secondary: subtle, understated */
     --secondary: 35 15% 95%;
