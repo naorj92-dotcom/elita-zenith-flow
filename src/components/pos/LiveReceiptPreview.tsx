@@ -4,7 +4,7 @@ import {
   formatCurrency, 
   formatDate, 
   formatTime,
-  ELITE_MEDSPA_INFO 
+  ELITA_MEDSPA_INFO 
 } from './ReceiptData';
 import { Sparkles, Gift } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -29,11 +29,11 @@ export const LiveReceiptPreview = forwardRef<HTMLDivElement, LiveReceiptPreviewP
           <div className="flex items-center justify-center gap-2 mb-1">
             <Sparkles className="h-4 w-4 text-primary" />
             <h3 className="font-heading text-lg font-semibold tracking-wide text-primary">
-              {ELITE_MEDSPA_INFO.name}
+              {ELITA_MEDSPA_INFO.name}
             </h3>
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
-          <p className="text-xs text-muted-foreground italic">{ELITE_MEDSPA_INFO.tagline}</p>
+          <p className="text-xs text-muted-foreground italic">{ELITA_MEDSPA_INFO.tagline}</p>
         </div>
 
         {/* Content */}
@@ -172,8 +172,8 @@ export const LiveReceiptPreview = forwardRef<HTMLDivElement, LiveReceiptPreviewP
 
         {/* Footer */}
         <div className="bg-muted/30 border-t p-3 text-center text-xs text-muted-foreground">
-          <p>Thank you for choosing {ELITE_MEDSPA_INFO.name}</p>
-          <p className="mt-1">{ELITE_MEDSPA_INFO.phone} • {ELITE_MEDSPA_INFO.website}</p>
+          <p>Thank you for choosing {ELITA_MEDSPA_INFO.name}</p>
+          <p className="mt-1">{ELITA_MEDSPA_INFO.phone} • {ELITA_MEDSPA_INFO.website}</p>
         </div>
       </div>
     );
