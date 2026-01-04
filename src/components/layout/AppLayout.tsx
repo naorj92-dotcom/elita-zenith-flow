@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LogOut,
   ChevronDown,
-  Sparkles,
+  Search,
+  Plus,
+  CreditCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
@@ -12,8 +14,9 @@ import {
   getNavigationForRole, 
   getMobileNavForRole,
   NavCategory,
-  NavItem 
 } from '@/config/navigation';
+import { Button } from '@/components/ui/button';
+import elitaLogo from '@/assets/elita-logo.png';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -28,10 +31,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     isOwner, 
     clockStatus, 
     signOut,
-    loginWithPin 
   } = useUnifiedAuth();
   
-  // Get navigation based on role
   const navigation = useMemo(() => 
     getNavigationForRole(role, employeeType), 
     [role, employeeType]
@@ -43,7 +44,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   );
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(() => {
-    // Auto-expand category containing current route
     const current = new Set<string>();
     navigation.forEach(cat => {
       if (cat.items.some(item => 
@@ -87,36 +87,32 @@ export function AppLayout({ children }: AppLayoutProps) {
     await signOut();
   };
 
-  // Role display text
   const getRoleDisplay = () => {
     if (isOwner) return 'Owner';
     if (role === 'employee') {
       return employeeType === 'front_desk' ? 'Front Desk' : 'Provider';
     }
     if (role === 'client') return 'Client';
-    // Legacy staff role display
     return staff?.role?.replace('_', ' ') || 'Staff';
   };
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
+      {/* Sidebar - Clean, minimal, no visual noise */}
+      <aside className="hidden md:flex flex-col w-60 bg-card border-r border-border">
         {/* Logo */}
-        <div className="p-6 border-b border-sidebar-border">
-          <Link to={role === 'client' ? '/portal' : '/dashboard'} className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="font-heading text-xl text-sidebar-foreground">Elita</h1>
-              <p className="text-xs text-muted-foreground">MedSpa OS</p>
-            </div>
+        <div className="p-5 border-b border-border">
+          <Link to={role === 'client' ? '/portal' : '/dashboard'} className="block">
+            <img 
+              src={elitaLogo} 
+              alt="Elita Medical Spa" 
+              className="h-10 w-auto object-contain"
+            />
           </Link>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {/* Navigation - Grouped sections */}
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {navigation.map((category) => {
             const isExpanded = expandedCategories.has(category.label);
             const isActive = isCategoryActive(category);
@@ -134,17 +130,17 @@ export function AppLayout({ children }: AppLayoutProps) {
                   key={category.label}
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
                     itemActive 
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-luxury-sm" 
-                      : "text-sidebar-foreground hover:bg-sidebar-accent"
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-foreground hover:bg-accent"
                   )}
                 >
                   <Icon className={cn(
-                    "w-5 h-5 transition-transform group-hover:scale-110",
-                    itemActive ? "" : "text-muted-foreground"
+                    "w-[18px] h-[18px]",
+                    itemActive ? "text-primary-foreground" : "text-muted-foreground"
                   )} />
-                  <span className="font-medium text-sm">{category.label}</span>
+                  <span className="text-sm font-medium">{category.label}</span>
                 </Link>
               );
             }
@@ -155,23 +151,23 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <button
                   onClick={() => toggleCategory(category.label)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
                     isActive
-                      ? "bg-sidebar-primary/50 text-sidebar-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent"
+                      ? "bg-accent text-foreground"
+                      : "text-foreground hover:bg-accent"
                   )}
                 >
                   <Icon className={cn(
-                    "w-5 h-5 transition-transform group-hover:scale-110",
+                    "w-[18px] h-[18px]",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )} />
-                  <span className="font-medium text-sm">{category.label}</span>
+                  <span className="text-sm font-medium">{category.label}</span>
                   <motion.div
                     animate={{ rotate: isExpanded ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.15 }}
                     className="ml-auto"
                   >
-                    <ChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
                   </motion.div>
                 </button>
 
@@ -181,10 +177,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.15 }}
                       className="overflow-hidden"
                     >
-                      <div className="pl-4 pt-1 space-y-1">
+                      <div className="pl-3 pt-0.5 space-y-0.5">
                         {visibleItems.map((item) => {
                           const SubIcon = item.icon;
                           const itemActive = isItemActive(item.href);
@@ -194,20 +190,14 @@ export function AppLayout({ children }: AppLayoutProps) {
                               key={item.href}
                               to={item.href}
                               className={cn(
-                                "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 group",
+                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150",
                                 itemActive
-                                  ? "bg-sidebar-accent text-sidebar-foreground"
-                                  : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                                  ? "bg-primary/10 text-primary"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
                               )}
                             >
-                              <SubIcon className={cn(
-                                "w-4 h-4",
-                                itemActive ? "text-primary" : "text-muted-foreground"
-                              )} />
+                              <SubIcon className="w-4 h-4" />
                               <span className="text-sm">{item.label}</span>
-                              {itemActive && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary ml-auto" />
-                              )}
                             </Link>
                           );
                         })}
@@ -221,44 +211,36 @@ export function AppLayout({ children }: AppLayoutProps) {
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-sidebar-border">
-          {/* Clock Status - Only show for employees/owners */}
+        <div className="p-3 border-t border-border">
+          {/* Clock Status */}
           {(role === 'owner' || role === 'employee') && clockStatus && (
             <div className={cn(
-              "mb-4 px-4 py-3 rounded-lg text-sm",
+              "mb-3 px-3 py-2.5 rounded-lg text-sm",
               clockStatus.is_clocked_in 
-                ? "bg-success/10 text-success border border-success/20"
+                ? "bg-success/10 text-success"
                 : "bg-muted text-muted-foreground"
             )}>
               <div className="flex items-center gap-2">
                 <div className={cn(
                   "w-2 h-2 rounded-full",
-                  clockStatus.is_clocked_in ? "bg-success animate-pulse" : "bg-muted-foreground"
+                  clockStatus.is_clocked_in ? "bg-success" : "bg-muted-foreground"
                 )} />
-                <span className="font-medium">
-                  {clockStatus.is_clocked_in ? 'Clocked In' : 'Clocked Out'}
+                <span className="font-medium text-xs">
+                  {clockStatus.is_clocked_in ? 'On Shift' : 'Off Shift'}
                 </span>
               </div>
-              {clockStatus.is_clocked_in && clockStatus.clock_entry && (
-                <p className="mt-1 text-xs opacity-80">
-                  Since {new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
-              )}
             </div>
           )}
 
           {/* User Info */}
           <div className="flex items-center gap-3 px-2 py-2">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-primary font-semibold text-sm">
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-primary font-semibold text-xs">
                 {staff?.first_name?.[0]}{staff?.last_name?.[0]}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm text-sidebar-foreground truncate">
+              <p className="font-medium text-sm text-foreground truncate">
                 {staff?.first_name} {staff?.last_name}
               </p>
               <p className="text-xs text-muted-foreground capitalize">
@@ -276,54 +258,89 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </aside>
 
-      {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between">
-          <Link to={role === 'client' ? '/portal' : '/dashboard'} className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <span className="font-heading text-lg">Elita</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            {clockStatus?.is_clocked_in && (
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            )}
-            <button
-              onClick={handleLogout}
-              className="p-2 rounded-lg text-muted-foreground hover:text-destructive"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+        {/* Top Bar - Global search, quick actions, user menu */}
+        <header className="hidden md:flex items-center justify-between px-6 py-3 bg-card border-b border-border">
+          {/* Search */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg w-72">
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <input 
+              type="text" 
+              placeholder="Search clients, appointments..." 
+              className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none flex-1"
+            />
           </div>
-        </div>
-      </div>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border px-2 py-2 flex justify-around">
-        {mobileNavItems.map((item) => {
-          const isActive = location.pathname === item.href || 
-                          location.pathname.startsWith(item.href + '/');
-          const Icon = item.icon;
-          
-          return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px]",
-                isActive ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-xs font-medium">{item.label}</span>
+          {/* Quick Actions */}
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/schedule/new" className="gap-2">
+                <Plus className="w-4 h-4" />
+                New Appointment
+              </Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link to="/pos" className="gap-2">
+                <CreditCard className="w-4 h-4" />
+                Checkout
+              </Link>
+            </Button>
+          </div>
+        </header>
+
+        {/* Mobile Header */}
+        <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Link to={role === 'client' ? '/portal' : '/dashboard'}>
+              <img 
+                src={elitaLogo} 
+                alt="Elita" 
+                className="h-7 w-auto object-contain"
+              />
             </Link>
-          );
-        })}
-      </nav>
+            <div className="flex items-center gap-3">
+              {clockStatus?.is_clocked_in && (
+                <div className="w-2 h-2 rounded-full bg-success" />
+              )}
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-lg text-muted-foreground hover:text-destructive"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </header>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto md:pt-0 pt-16 pb-20 md:pb-0">
-        {children}
-      </main>
+        {/* Mobile Bottom Nav */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-2 flex justify-around">
+          {mobileNavItems.map((item) => {
+            const isActive = location.pathname === item.href || 
+                            location.pathname.startsWith(item.href + '/');
+            const Icon = item.icon;
+            
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(
+                  "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px]",
+                  isActive ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-xs font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto md:pt-0 pt-14 pb-20 md:pb-0 bg-background">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
