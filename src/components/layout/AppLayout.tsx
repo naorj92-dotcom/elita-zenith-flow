@@ -101,12 +101,12 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Sidebar - Clean, minimal, no visual noise */}
       <aside className="hidden md:flex flex-col w-60 bg-card border-r border-border">
         {/* Logo */}
-        <div className="p-5 border-b border-border">
+        <div className="p-5 border-b border-border flex justify-center">
           <Link to={role === 'client' ? '/portal' : '/dashboard'} className="block">
             <img 
               src={elitaLogo} 
               alt="Elita Medical Spa" 
-              className="h-10 w-auto object-contain"
+              className="h-14 w-auto object-contain"
             />
           </Link>
         </div>
