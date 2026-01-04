@@ -2,12 +2,11 @@ import React from 'react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
-import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye, History, Crown, Flag } from 'lucide-react';
+import { format, isValid } from 'date-fns';
+import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye, History, Crown, Flag, Gift, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
   DEMO_PACKAGES, 
@@ -20,6 +19,8 @@ import { LoyaltyPointsWidget } from '@/components/portal/LoyaltyPointsWidget';
 import { MembershipStatusWidget } from '@/components/portal/MembershipStatusWidget';
 import { ClientTimeline } from '@/components/portal/ClientTimeline';
 import { ClientNotesFlags } from '@/components/portal/ClientNotesFlags';
+import { MembershipBadge } from '@/components/shared/StatusBadge';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 export function ClientDashboard() {
   const { client, isDemo } = useClientAuth();
@@ -133,10 +134,7 @@ export function ClientDashboard() {
           {client?.first_name} {client?.last_name}
         </h1>
         {client?.is_vip && (
-          <Badge className="mt-3 bg-yellow-100 text-yellow-800 border-yellow-300">
-            <Crown className="h-3 w-3 mr-1" />
-            VIP Member
-          </Badge>
+          <MembershipBadge isVip className="mt-3" />
         )}
       </div>
 
@@ -160,23 +158,34 @@ export function ClientDashboard() {
               <div className="flex-1">
                 <p className="font-semibold">{nextAppointment.services?.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(nextAppointment.scheduled_at), 'EEEE, MMMM d, yyyy')} at{' '}
-                  {format(new Date(nextAppointment.scheduled_at), 'h:mm a')}
+                  {(() => {
+                    try {
+                      const date = new Date(nextAppointment.scheduled_at);
+                      return isValid(date) 
+                        ? `${format(date, 'EEEE, MMMM d, yyyy')} at ${format(date, 'h:mm a')}`
+                        : 'Date pending';
+                    } catch {
+                      return 'Date pending';
+                    }
+                  })()}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   with {nextAppointment.staff?.first_name} {nextAppointment.staff?.last_name}
                 </p>
               </div>
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200">{nextAppointment.status}</Badge>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-info/10 text-info border border-info/20 capitalize">
+                {nextAppointment.status}
+              </span>
             </div>
           ) : (
-            <div className="text-center py-8">
-              <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground mb-4">No upcoming appointments</p>
-              <Link to="/portal/book">
-                <Button>Schedule Your Next Visit</Button>
-              </Link>
-            </div>
+            <EmptyState
+              icon={Calendar}
+              title="No upcoming appointments"
+              description="Book your next treatment to continue your journey with us."
+              actionLabel="Schedule Your Next Visit"
+              actionHref="/portal/book"
+              compact
+            />
           )}
         </CardContent>
       </Card>
