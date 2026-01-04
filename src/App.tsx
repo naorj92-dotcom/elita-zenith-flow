@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UnifiedAuthProvider, useUnifiedAuth } from "@/contexts/UnifiedAuthContext";
+import { ClientAuthProvider } from "@/contexts/ClientAuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ClientPortalLayout } from "@/components/layout/ClientPortalLayout";
 
@@ -93,30 +94,6 @@ function OwnerRoute({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>;
 }
 
-// Client portal route wrapper
-function ClientRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, role, isLoading } = useUnifiedAuth();
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/portal/auth" replace />;
-  }
-  
-  // Redirect staff to dashboard
-  if (role === 'owner' || role === 'employee') {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return <ClientPortalLayout />;
-}
-
 function AppRoutes() {
   return (
     <Routes>
@@ -168,23 +145,23 @@ function AppRoutes() {
       {/* ========== SETTINGS (Owner Only) ========== */}
       <Route path="/settings" element={<OwnerRoute><SettingsPage /></OwnerRoute>} />
       
-      {/* ========== CLIENT PORTAL ========== */}
+      {/* ========== CLIENT PORTAL (Separate Auth) ========== */}
       <Route path="/portal/auth" element={<ClientAuthPage />} />
-      <Route path="/portal" element={<ClientRoute><ClientDashboard /></ClientRoute>}>
+      <Route path="/portal" element={<ClientPortalLayout />}>
         <Route index element={<ClientDashboard />} />
+        <Route path="packages" element={<ClientPackagesPage />} />
+        <Route path="photos" element={<ClientPhotosPage />} />
+        <Route path="recommendations" element={<ClientRecommendationsPage />} />
+        <Route path="history" element={<ClientHistoryPage />} />
+        <Route path="book" element={<ClientBookingPage />} />
+        <Route path="forms" element={<ClientFormsPage />} />
+        <Route path="memberships" element={<ClientMembershipsPage />} />
+        <Route path="appointments" element={<ClientHistoryPage />} />
+        <Route path="benefits" element={<ClientMembershipsPage />} />
+        <Route path="payments" element={<ClientHistoryPage />} />
+        <Route path="gift-cards" element={<ClientPackagesPage />} />
+        <Route path="profile" element={<ClientDashboard />} />
       </Route>
-      <Route path="/portal/packages" element={<ClientRoute><ClientPackagesPage /></ClientRoute>} />
-      <Route path="/portal/photos" element={<ClientRoute><ClientPhotosPage /></ClientRoute>} />
-      <Route path="/portal/recommendations" element={<ClientRoute><ClientRecommendationsPage /></ClientRoute>} />
-      <Route path="/portal/history" element={<ClientRoute><ClientHistoryPage /></ClientRoute>} />
-      <Route path="/portal/book" element={<ClientRoute><ClientBookingPage /></ClientRoute>} />
-      <Route path="/portal/forms" element={<ClientRoute><ClientFormsPage /></ClientRoute>} />
-      <Route path="/portal/memberships" element={<ClientRoute><ClientMembershipsPage /></ClientRoute>} />
-      <Route path="/portal/appointments" element={<ClientRoute><ClientHistoryPage /></ClientRoute>} />
-      <Route path="/portal/benefits" element={<ClientRoute><ClientMembershipsPage /></ClientRoute>} />
-      <Route path="/portal/payments" element={<ClientRoute><ClientHistoryPage /></ClientRoute>} />
-      <Route path="/portal/gift-cards" element={<ClientRoute><ClientPackagesPage /></ClientRoute>} />
-      <Route path="/portal/profile" element={<ClientRoute><ClientDashboard /></ClientRoute>} />
       
       {/* ========== 404 ========== */}
       <Route path="*" element={<NotFound />} />
@@ -196,11 +173,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <UnifiedAuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <ClientAuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </ClientAuthProvider>
       </UnifiedAuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

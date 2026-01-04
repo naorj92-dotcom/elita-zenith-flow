@@ -259,3 +259,97 @@ export const DEMO_SERVICE_RECOMMENDATIONS = [
     },
   },
 ];
+
+// Demo membership usage history
+export const DEMO_MEMBERSHIP = {
+  id: 'demo-membership-1',
+  client_id: 'demo-client-id',
+  membership_id: 'demo-mem-def-1',
+  start_date: subDays(new Date(), 90).toISOString(),
+  next_billing_date: addDays(new Date(), 5).toISOString(),
+  status: 'active',
+  remaining_credits: 2,
+  created_at: subDays(new Date(), 90).toISOString(),
+  updated_at: new Date().toISOString(),
+  memberships: {
+    id: 'demo-mem-def-1',
+    name: 'Radiance VIP',
+    description: 'Monthly membership with exclusive benefits',
+    price: 299,
+    billing_period: 'monthly',
+    monthly_service_credits: 3,
+    retail_discount_percent: 15,
+    priority_booking: true,
+    benefits: ['3 Monthly Service Credits', '15% Retail Discount', 'Priority Booking', 'Exclusive Member Events'],
+  },
+};
+
+export const DEMO_MEMBERSHIP_LEDGER = [
+  {
+    id: 'demo-ledger-1',
+    client_membership_id: 'demo-membership-1',
+    transaction_type: 'credit_added',
+    credits: 3,
+    balance_after: 3,
+    description: 'Monthly credits added',
+    created_at: subDays(new Date(), 30).toISOString(),
+    related_service_id: null,
+    related_appointment_id: null,
+  },
+  {
+    id: 'demo-ledger-2',
+    client_membership_id: 'demo-membership-1',
+    transaction_type: 'credit_used',
+    credits: -1,
+    balance_after: 2,
+    description: 'HydraFacial Signature',
+    created_at: subDays(new Date(), 14).toISOString(),
+    related_service_id: 'demo-svc-1',
+    related_appointment_id: 'demo-apt-2',
+  },
+  {
+    id: 'demo-ledger-3',
+    client_membership_id: 'demo-membership-1',
+    transaction_type: 'credit_added',
+    credits: 3,
+    balance_after: 5,
+    description: 'Monthly credits added',
+    created_at: subDays(new Date(), 60).toISOString(),
+    related_service_id: null,
+    related_appointment_id: null,
+  },
+  {
+    id: 'demo-ledger-4',
+    client_membership_id: 'demo-membership-1',
+    transaction_type: 'credit_used',
+    credits: -2,
+    balance_after: 3,
+    description: 'LED Light Therapy + Facial',
+    created_at: subDays(new Date(), 45).toISOString(),
+    related_service_id: 'demo-svc-3',
+    related_appointment_id: 'demo-apt-3',
+  },
+];
+
+// Demo client notes and flags
+export const DEMO_CLIENT_NOTES = [
+  {
+    id: 'demo-note-1',
+    content: 'Prefers morning appointments between 9-11am',
+    created_at: subDays(new Date(), 60).toISOString(),
+    staff_name: 'Sarah Mitchell',
+    type: 'preference',
+  },
+  {
+    id: 'demo-note-2',
+    content: 'Allergic to certain fragrances - always use unscented products',
+    created_at: subDays(new Date(), 90).toISOString(),
+    staff_name: 'Dr. Chen',
+    type: 'medical',
+  },
+];
+
+export const DEMO_CLIENT_FLAGS = [
+  { type: 'vip', label: 'VIP Member', color: 'gold' },
+  { type: 'allergy', label: 'Fragrance Sensitivity', color: 'orange' },
+];

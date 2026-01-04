@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Image, Calendar, Eye } from 'lucide-react';
+import { Image, Calendar, Eye, ZoomIn, ArrowLeftRight } from 'lucide-react';
 import { DEMO_PHOTOS } from '@/hooks/useDemoData';
 
 export function ClientPhotosPage() {
   const { client, isDemo } = useClientAuth();
+  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
 
   const { data: photos, isLoading } = useQuery({
     queryKey: ['client-photos', client?.id, isDemo],
@@ -70,10 +73,15 @@ export function ClientPhotosPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
           {photos?.map((photo) => (
-            <Card key={photo.id} className="card-luxury overflow-hidden">
+            <Card 
+              key={photo.id} 
+              className="card-luxury overflow-hidden group cursor-pointer"
+              onClick={() => setSelectedPhoto(photo)}
+            >
               <CardContent className="p-0">
-                {/* Photo Grid */}
-                <div className="grid grid-cols-2">
+                {/* Photo Grid - Side by Side */}
+                <div className="grid grid-cols-2 relative">
+                  {/* Before */}
                   <div className="relative aspect-[3/4] bg-muted">
                     {photo.before_photo_url ? (
                       <img
@@ -86,10 +94,19 @@ export function ClientPhotosPage() {
                         <Image className="h-8 w-8 text-muted-foreground" />
                       </div>
                     )}
-                    <Badge className="absolute top-2 left-2 bg-background/80 text-foreground">
+                    <Badge className="absolute top-2 left-2 bg-background/80 text-foreground backdrop-blur-sm">
                       Before
                     </Badge>
                   </div>
+
+                  {/* Center divider with arrow */}
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                    <div className="h-10 w-10 rounded-full bg-background shadow-lg flex items-center justify-center border">
+                      <ArrowLeftRight className="h-5 w-5 text-primary" />
+                    </div>
+                  </div>
+
+                  {/* After */}
                   <div className="relative aspect-[3/4] bg-muted">
                     {photo.after_photo_url ? (
                       <img
@@ -102,9 +119,16 @@ export function ClientPhotosPage() {
                         <Image className="h-8 w-8 text-muted-foreground" />
                       </div>
                     )}
-                    <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">
+                    <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
                       After
                     </Badge>
+                  </div>
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="bg-background rounded-full p-3 shadow-lg">
+                      <ZoomIn className="h-6 w-6 text-primary" />
+                    </div>
                   </div>
                 </div>
                 
@@ -124,6 +148,66 @@ export function ClientPhotosPage() {
           ))}
         </div>
       )}
+
+      {/* Full-screen comparison dialog */}
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{selectedPhoto?.services?.name || 'Progress Photo'}</span>
+              {selectedPhoto?.taken_date && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  {format(new Date(selectedPhoto.taken_date), 'MMMM d, yyyy')}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-2 gap-4">
+            {/* Before */}
+            <div className="space-y-2">
+              <Badge variant="outline" className="w-full justify-center py-1">Before</Badge>
+              <div className="aspect-[3/4] bg-muted rounded-lg overflow-hidden">
+                {selectedPhoto?.before_photo_url ? (
+                  <img
+                    src={selectedPhoto.before_photo_url}
+                    alt="Before treatment"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Image className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* After */}
+            <div className="space-y-2">
+              <Badge className="w-full justify-center py-1">After</Badge>
+              <div className="aspect-[3/4] bg-muted rounded-lg overflow-hidden">
+                {selectedPhoto?.after_photo_url ? (
+                  <img
+                    src={selectedPhoto.after_photo_url}
+                    alt="After treatment"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Image className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {selectedPhoto?.notes && (
+            <p className="text-sm text-muted-foreground mt-2 text-center">
+              {selectedPhoto.notes}
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
