@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Eye } from 'lucide-react';
+import { Loader2, Eye } from 'lucide-react';
+import elitaLogo from '@/assets/elita-logo.png';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -124,9 +125,8 @@ export function ClientAuthPage() {
       <div className="w-full max-w-md">
         {/* Logo Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
-            <Sparkles className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl font-heading font-semibold text-foreground">Elita</h1>
+          <div className="flex justify-center mb-4">
+            <img src={elitaLogo} alt="Elita MedSpa" className="h-16 w-auto" />
           </div>
           <p className="text-muted-foreground font-body">Client Portal</p>
         </div>
