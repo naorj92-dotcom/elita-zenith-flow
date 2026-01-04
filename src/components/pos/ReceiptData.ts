@@ -90,17 +90,17 @@ export interface BusinessInfo {
   googleReviewUrl: string;
 }
 
-export const ELITE_MEDSPA_INFO: BusinessInfo = {
-  name: 'Elite MedSpa',
+export const ELITA_MEDSPA_INFO: BusinessInfo = {
+  name: 'Elita MedSpa',
   tagline: 'Elevate Your Beauty',
   address: '123 Luxury Lane, Suite 100',
   city: 'Beverly Hills',
   state: 'CA',
   zip: '90210',
   phone: '(310) 555-0123',
-  email: 'info@elitemedspa.com',
-  website: 'www.elitemedspa.com',
-  googleReviewUrl: 'https://g.page/r/elite-medspa/review',
+  email: 'info@elitamedspa.com',
+  website: 'www.Elitamedspa.com',
+  googleReviewUrl: 'https://g.page/r/elita-medspa/review',
 };
 
 export function generateReceiptNumber(): string {

@@ -21,7 +21,7 @@ import {
   PackageStatus,
   MembershipStatus,
   generateReceiptNumber, 
-  ELITE_MEDSPA_INFO 
+  ELITA_MEDSPA_INFO 
 } from '@/components/pos/ReceiptData';
 import { addDays, format } from 'date-fns';
 
@@ -375,7 +375,7 @@ export function POSPage() {
           discount_amount: discountAmount,
           total_amount: totalAmount,
           payment_method: paymentMethod,
-          google_review_url: ELITE_MEDSPA_INFO.googleReviewUrl,
+          google_review_url: ELITA_MEDSPA_INFO.googleReviewUrl,
         }])
         .select()
         .single();
@@ -436,7 +436,7 @@ export function POSPage() {
         totalAmount: totalAmount,
         paymentMethod: paymentMethod,
         receiptFormat: 'standard',
-        googleReviewUrl: ELITE_MEDSPA_INFO.googleReviewUrl,
+        googleReviewUrl: ELITA_MEDSPA_INFO.googleReviewUrl,
         createdAt: new Date(),
         packageStatus,
         membershipStatus,

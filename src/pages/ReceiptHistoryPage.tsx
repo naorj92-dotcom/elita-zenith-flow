@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Search, Receipt, Printer, Eye, Hash, Mail } from 'lucide-react';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
-import { ReceiptData, RetailItem, TreatmentSummary, ELITE_MEDSPA_INFO } from '@/components/pos/ReceiptData';
+import { ReceiptData, RetailItem, TreatmentSummary, ELITA_MEDSPA_INFO } from '@/components/pos/ReceiptData';
 import { toast } from 'sonner';
 
 export function ReceiptHistoryPage() {
@@ -121,7 +121,7 @@ export function ReceiptHistoryPage() {
       totalAmount: Number(receipt.total_amount),
       paymentMethod: receipt.payment_method as 'card' | 'cash' | 'gift_card' | 'split',
       receiptFormat: receipt.receipt_format as 'thermal' | 'standard',
-      googleReviewUrl: receipt.google_review_url || ELITE_MEDSPA_INFO.googleReviewUrl,
+      googleReviewUrl: receipt.google_review_url || ELITA_MEDSPA_INFO.googleReviewUrl,
       notes: receipt.notes || undefined,
       createdAt: new Date(receipt.created_at),
     };

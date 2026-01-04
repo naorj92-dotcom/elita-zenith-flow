@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { ReceiptData, ELITE_MEDSPA_INFO, formatCurrency, formatDate, formatTime } from './ReceiptData';
+import { ReceiptData, ELITA_MEDSPA_INFO, formatCurrency, formatDate, formatTime } from './ReceiptData';
 import { Separator } from '@/components/ui/separator';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -9,7 +9,7 @@ interface ThermalReceiptProps {
 
 export const ThermalReceipt = forwardRef<HTMLDivElement, ThermalReceiptProps>(
   ({ receipt }, ref) => {
-    const business = ELITE_MEDSPA_INFO;
+    const business = ELITA_MEDSPA_INFO;
 
     return (
       <div
