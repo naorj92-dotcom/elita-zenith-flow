@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AppointmentStatus } from '@/types';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 interface ScheduleAppointment {
   id: string;
@@ -30,18 +32,7 @@ interface ScheduleAppointment {
   room_name: string | null;
 }
 
-const getStatusStyle = (status: AppointmentStatus): string => {
-  const styles: Record<AppointmentStatus, string> = {
-    scheduled: 'bg-warning/10 text-warning border-warning/20',
-    confirmed: 'bg-success/10 text-success border-success/20',
-    checked_in: 'bg-info/10 text-info border-info/20',
-    in_progress: 'bg-primary/10 text-primary border-primary/20',
-    completed: 'bg-elita-sage/10 text-elita-sage-dark border-elita-sage/20',
-    cancelled: 'bg-destructive/10 text-destructive border-destructive/20',
-    no_show: 'bg-muted text-muted-foreground border-border',
-  };
-  return styles[status] || styles.scheduled;
-};
+// Status styling now handled by StatusBadge component
 
 export function SchedulePage() {
   const { staff } = useAuth();
@@ -259,17 +250,13 @@ export function SchedulePage() {
                 <p className="text-muted-foreground">Loading appointments...</p>
               </div>
             ) : appointments.length === 0 ? (
-              <div className="text-center py-12">
-                <CalendarIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-heading text-xl text-foreground mb-2">No appointments</h3>
-                <p className="text-muted-foreground mb-6">There are no appointments scheduled for this day.</p>
-                <Link to="/schedule/new">
-                  <Button className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Schedule Appointment
-                  </Button>
-                </Link>
-              </div>
+              <EmptyState
+                icon={CalendarIcon}
+                title="No appointments"
+                description="There are no appointments scheduled for this day. Ready to book one?"
+                actionLabel="Schedule Appointment"
+                actionHref="/schedule/new"
+              />
             ) : (
               <div className="divide-y divide-border">
                 {appointments.map((apt, index) => (
@@ -306,12 +293,7 @@ export function SchedulePage() {
                             </h3>
                             <p className="text-sm text-muted-foreground">{apt.service_name}</p>
                           </div>
-                          <span className={cn(
-                            "px-3 py-1 rounded-full text-xs font-medium capitalize border",
-                            getStatusStyle(apt.status)
-                          )}>
-                            {apt.status.replace('_', ' ')}
-                          </span>
+                          <StatusBadge status={apt.status} />
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">

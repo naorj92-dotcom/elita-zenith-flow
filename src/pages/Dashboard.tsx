@@ -18,10 +18,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { AppointmentStatus } from '@/types';
 import { LiveGoalsWidget } from '@/components/dashboard/LiveGoalsWidget';
+import { TodayOpsWidget } from '@/components/dashboard/TodayOpsWidget';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 interface TodayAppointment {
   id: string;
@@ -139,16 +141,8 @@ export function Dashboard() {
     }
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'success';
-      case 'scheduled': return 'default';
-      case 'completed': return 'muted';
-      case 'cancelled': return 'destructive';
-      case 'checked_in': return 'info';
-      case 'in_progress': return 'default';
-      default: return 'muted';
-    }
+  const getStatusForBadge = (status: string) => {
+    return status as any;
   };
 
   const firstName = staff?.first_name || 'there';
@@ -228,69 +222,83 @@ export function Dashboard() {
       </motion.section>
 
       {/* Middle section - Schedule and Goals */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Clock In/Out Card */}
+      {/* Main Grid - Ops + Clock */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Today Ops Widget - Command Center */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="lg:col-span-2"
         >
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center",
-                    clockStatus?.is_clocked_in ? "bg-success/10" : "bg-muted"
-                  )}>
-                    <Clock className={cn(
-                      "w-5 h-5",
-                      clockStatus?.is_clocked_in ? "text-success" : "text-muted-foreground"
-                    )} />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">
-                      {clockStatus?.is_clocked_in ? 'Currently On Shift' : 'Ready to Start?'}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {clockStatus?.is_clocked_in && clockStatus.clock_entry
-                        ? `Since ${new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                        : 'Clock in to begin your shift'
-                      }
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={handleClockAction}
-                  disabled={isLoading}
-                  variant={clockStatus?.is_clocked_in ? "destructive" : "success"}
-                  className="gap-2"
-                >
-                  {clockStatus?.is_clocked_in ? (
-                    <>
-                      <Square className="w-4 h-4" />
-                      Clock Out
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4" />
-                      Clock In
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <TodayOpsWidget />
         </motion.div>
 
-        {/* Live Goals Widget */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
-          <LiveGoalsWidget />
-        </motion.div>
+        {/* Right Column - Clock + Goals */}
+        <div className="space-y-6">
+          {/* Clock In/Out Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <Card>
+              <CardContent className="p-5">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center",
+                      clockStatus?.is_clocked_in ? "bg-success/10" : "bg-muted"
+                    )}>
+                      <Clock className={cn(
+                        "w-5 h-5",
+                        clockStatus?.is_clocked_in ? "text-success" : "text-muted-foreground"
+                      )} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-foreground">
+                        {clockStatus?.is_clocked_in ? 'On Shift' : 'Ready to Start?'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {clockStatus?.is_clocked_in && clockStatus.clock_entry
+                          ? `Since ${new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                          : 'Clock in to begin'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleClockAction}
+                    disabled={isLoading}
+                    variant={clockStatus?.is_clocked_in ? "destructive" : "default"}
+                    className="w-full gap-2"
+                  >
+                    {clockStatus?.is_clocked_in ? (
+                      <>
+                        <Square className="w-4 h-4" />
+                        Clock Out
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        Clock In
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Live Goals Widget */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <LiveGoalsWidget />
+          </motion.div>
+        </div>
       </div>
 
       {/* Today's Schedule */}
@@ -312,15 +320,14 @@ export function Dashboard() {
           </CardHeader>
           <CardContent className="space-y-2">
             {appointments.length === 0 ? (
-              <div className="text-center py-10">
-                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
-                  <Calendar className="w-5 h-5 text-muted-foreground" />
-                </div>
-                <p className="text-muted-foreground text-sm">No appointments scheduled for today</p>
-                <Button variant="outline" size="sm" className="mt-4" asChild>
-                  <Link to="/schedule/new">Schedule Appointment</Link>
-                </Button>
-              </div>
+              <EmptyState
+                icon={Calendar}
+                title="No appointments today"
+                description="Your schedule is clear. Book your first appointment to get started."
+                actionLabel="Schedule Appointment"
+                actionHref="/schedule/new"
+                compact
+              />
             ) : (
               appointments.map((apt, index) => (
                 <motion.div
@@ -341,9 +348,7 @@ export function Dashboard() {
                       <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
                       <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
                     </div>
-                    <Badge variant={getStatusBadgeVariant(apt.status)} className="capitalize">
-                      {apt.status.replace('_', ' ')}
-                    </Badge>
+                    <StatusBadge status={apt.status} />
                     <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
                 </motion.div>
