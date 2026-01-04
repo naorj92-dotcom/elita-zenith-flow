@@ -1,19 +1,23 @@
 import React from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { PinPad } from '@/components/auth/PinPad';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 
 export function LoginPage() {
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { loginWithPin, isAuthenticated, isLoading, role } = useUnifiedAuth();
 
   if (isAuthenticated) {
+    // Redirect clients to portal
+    if (role === 'client') {
+      return <Navigate to="/portal" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-hero">
       <PinPad 
-        onSubmit={login}
+        onSubmit={loginWithPin}
         isLoading={isLoading}
         title="Elita MedSpa"
         subtitle="Enter your PIN to clock in"

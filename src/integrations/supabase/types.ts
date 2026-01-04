@@ -14,13 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_soap_notes: {
+        Row: {
+          appointment_id: string
+          assessment: string | null
+          created_at: string
+          id: string
+          objective: string | null
+          plan: string | null
+          provider_id: string | null
+          subjective: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          assessment?: string | null
+          created_at?: string
+          id?: string
+          objective?: string | null
+          plan?: string | null
+          provider_id?: string | null
+          subjective?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          assessment?: string | null
+          created_at?: string
+          id?: string
+          objective?: string | null
+          plan?: string | null
+          provider_id?: string | null
+          subjective?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_soap_notes_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_soap_notes_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
+          aftercare_sent_at: string | null
+          checked_in_at: string | null
           client_id: string | null
+          completed_at: string | null
           created_at: string
           duration_minutes: number
           id: string
+          machine_id: string | null
           notes: string | null
+          rebooked_from_id: string | null
+          rebooked_to_id: string | null
+          review_requested_at: string | null
           room_id: string | null
           scheduled_at: string
           service_id: string | null
@@ -30,11 +88,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          aftercare_sent_at?: string | null
+          checked_in_at?: string | null
           client_id?: string | null
+          completed_at?: string | null
           created_at?: string
           duration_minutes?: number
           id?: string
+          machine_id?: string | null
           notes?: string | null
+          rebooked_from_id?: string | null
+          rebooked_to_id?: string | null
+          review_requested_at?: string | null
           room_id?: string | null
           scheduled_at: string
           service_id?: string | null
@@ -44,11 +109,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          aftercare_sent_at?: string | null
+          checked_in_at?: string | null
           client_id?: string | null
+          completed_at?: string | null
           created_at?: string
           duration_minutes?: number
           id?: string
+          machine_id?: string | null
           notes?: string | null
+          rebooked_from_id?: string | null
+          rebooked_to_id?: string | null
+          review_requested_at?: string | null
           room_id?: string | null
           scheduled_at?: string
           service_id?: string | null
@@ -63,6 +135,27 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_rebooked_from_id_fkey"
+            columns: ["rebooked_from_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_rebooked_to_id_fkey"
+            columns: ["rebooked_to_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
             referencedColumns: ["id"]
           },
           {
@@ -87,6 +180,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+          reason: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          reason?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          reason?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       before_after_photos: {
         Row: {
@@ -593,6 +728,67 @@ export type Database = {
         }
         Relationships: []
       }
+      membership_benefits_ledger: {
+        Row: {
+          balance_after: number
+          client_membership_id: string
+          created_at: string
+          credits: number
+          description: string | null
+          id: string
+          performed_by: string | null
+          related_appointment_id: string | null
+          related_service_id: string | null
+          transaction_type: string
+        }
+        Insert: {
+          balance_after: number
+          client_membership_id: string
+          created_at?: string
+          credits: number
+          description?: string | null
+          id?: string
+          performed_by?: string | null
+          related_appointment_id?: string | null
+          related_service_id?: string | null
+          transaction_type: string
+        }
+        Update: {
+          balance_after?: number
+          client_membership_id?: string
+          created_at?: string
+          credits?: number
+          description?: string | null
+          id?: string
+          performed_by?: string | null
+          related_appointment_id?: string | null
+          related_service_id?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_benefits_ledger_client_membership_id_fkey"
+            columns: ["client_membership_id"]
+            isOneToOne: false
+            referencedRelation: "client_memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membership_benefits_ledger_related_appointment_id_fkey"
+            columns: ["related_appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membership_benefits_ledger_related_service_id_fkey"
+            columns: ["related_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memberships: {
         Row: {
           benefits: Json
@@ -1072,6 +1268,7 @@ export type Database = {
       }
       services: {
         Row: {
+          aftercare_template_id: string | null
           category: string
           created_at: string
           description: string | null
@@ -1082,10 +1279,12 @@ export type Database = {
           name: string
           price: number
           recovery_buffer_minutes: number
+          required_room_type: string | null
           requires_consent: boolean
           updated_at: string
         }
         Insert: {
+          aftercare_template_id?: string | null
           category: string
           created_at?: string
           description?: string | null
@@ -1096,10 +1295,12 @@ export type Database = {
           name: string
           price: number
           recovery_buffer_minutes?: number
+          required_room_type?: string | null
           requires_consent?: boolean
           updated_at?: string
         }
         Update: {
+          aftercare_template_id?: string | null
           category?: string
           created_at?: string
           description?: string | null
@@ -1110,10 +1311,18 @@ export type Database = {
           name?: string
           price?: number
           recovery_buffer_minutes?: number
+          required_room_type?: string | null
           requires_consent?: boolean
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "services_aftercare_template_id_fkey"
+            columns: ["aftercare_template_id"]
+            isOneToOne: false
+            referencedRelation: "notification_templates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "services_machine_type_id_fkey"
             columns: ["machine_type_id"]
@@ -1335,6 +1544,57 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          employee_type: Database["public"]["Enums"]["employee_type"] | null
+          id: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          staff_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          employee_type?: Database["public"]["Enums"]["employee_type"] | null
+          id?: string
+          is_active?: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          staff_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          employee_type?: Database["public"]["Enums"]["employee_type"] | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+          staff_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       waitlist: {
         Row: {
           client_id: string
@@ -1414,8 +1674,24 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: number
       }
+      get_employee_type: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["employee_type"]
+      }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "owner" | "employee" | "client"
       appointment_status:
         | "scheduled"
         | "confirmed"
@@ -1424,6 +1700,7 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "no_show"
+      employee_type: "front_desk" | "provider"
       form_status: "draft" | "pending" | "completed" | "expired"
       form_type: "intake" | "consent" | "contract" | "custom"
       staff_role: "admin" | "provider" | "front_desk"
@@ -1555,6 +1832,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["owner", "employee", "client"],
       appointment_status: [
         "scheduled",
         "confirmed",
@@ -1564,6 +1842,7 @@ export const Constants = {
         "cancelled",
         "no_show",
       ],
+      employee_type: ["front_desk", "provider"],
       form_status: ["draft", "pending", "completed", "expired"],
       form_type: ["intake", "consent", "contract", "custom"],
       staff_role: ["admin", "provider", "front_desk"],

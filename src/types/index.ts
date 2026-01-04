@@ -1,6 +1,10 @@
 // Elita MedSpa - Core Type Definitions
 // Matches database schema
 
+// Re-export role types for convenience  
+export * from './roles';
+
+
 // Staff & Authentication
 export interface Staff {
   id: string;
