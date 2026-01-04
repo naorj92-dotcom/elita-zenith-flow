@@ -3,10 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ClientAuthProvider } from "@/contexts/ClientAuthContext";
+import { UnifiedAuthProvider, useUnifiedAuth } from "@/contexts/UnifiedAuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ClientPortalLayout } from "@/components/layout/ClientPortalLayout";
+
+// Pages
 import { LoginPage } from "@/pages/LoginPage";
 import { Dashboard } from "@/pages/Dashboard";
 import { PayrollPage } from "@/pages/PayrollPage";
@@ -30,6 +31,8 @@ import NotificationsManagementPage from "@/pages/admin/NotificationsManagementPa
 import ManagerAnalyticsPage from "@/pages/ManagerAnalyticsPage";
 import MyReportsPage from "@/pages/MyReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
+
+// Client Portal Pages
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
@@ -43,78 +46,147 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+// Protected route wrapper for staff (owner + employee)
+function StaffRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, role, isLoading } = useUnifiedAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   
+  // Redirect clients to portal
+  if (role === 'client') {
+    return <Navigate to="/portal" replace />;
+  }
+  
   return <AppLayout>{children}</AppLayout>;
+}
+
+// Owner-only route wrapper
+function OwnerRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isOwner, isLoading } = useUnifiedAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (!isOwner) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <AppLayout>{children}</AppLayout>;
+}
+
+// Client portal route wrapper
+function ClientRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, role, isLoading } = useUnifiedAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/portal/auth" replace />;
+  }
+  
+  // Redirect staff to dashboard
+  if (role === 'owner' || role === 'employee') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <ClientPortalLayout />;
 }
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Staff Portal */}
+      {/* ========== STAFF LOGIN ========== */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       
-      {/* Home */}
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/competition" element={<ProtectedRoute><CompetitionPage /></ProtectedRoute>} />
+      {/* ========== HOME (All Staff) ========== */}
+      <Route path="/dashboard" element={<StaffRoute><Dashboard /></StaffRoute>} />
+      <Route path="/competition" element={<StaffRoute><CompetitionPage /></StaffRoute>} />
       
-      {/* Scheduling */}
-      <Route path="/schedule" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
-      <Route path="/schedule/:id" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
-      <Route path="/waitlist" element={<ProtectedRoute><WaitlistManagementPage /></ProtectedRoute>} />
+      {/* ========== SCHEDULING (All Staff) ========== */}
+      <Route path="/schedule" element={<StaffRoute><SchedulePage /></StaffRoute>} />
+      <Route path="/schedule/:id" element={<StaffRoute><SchedulePage /></StaffRoute>} />
+      <Route path="/waitlist" element={<StaffRoute><WaitlistManagementPage /></StaffRoute>} />
       
-      {/* Clients */}
-      <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
-      <Route path="/clients/:id" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
-      <Route path="/photos" element={<ProtectedRoute><ClientPhotosManagementPage /></ProtectedRoute>} />
+      {/* ========== CLIENTS (All Staff) ========== */}
+      <Route path="/clients" element={<StaffRoute><ClientsPage /></StaffRoute>} />
+      <Route path="/clients/:id" element={<StaffRoute><ClientsPage /></StaffRoute>} />
+      <Route path="/photos" element={<StaffRoute><ClientPhotosManagementPage /></StaffRoute>} />
       
-      {/* Services */}
-      <Route path="/services" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
-      <Route path="/packages" element={<ProtectedRoute><PackagesManagementPage /></ProtectedRoute>} />
-      <Route path="/memberships" element={<ProtectedRoute><MembershipsManagementPage /></ProtectedRoute>} />
-      <Route path="/gift-cards" element={<ProtectedRoute><GiftCardsManagementPage /></ProtectedRoute>} />
+      {/* ========== POS (All Staff) ========== */}
+      <Route path="/pos" element={<StaffRoute><POSPage /></StaffRoute>} />
+      <Route path="/pos/:appointmentId" element={<StaffRoute><POSPage /></StaffRoute>} />
+      <Route path="/receipts" element={<StaffRoute><ReceiptHistoryPage /></StaffRoute>} />
       
-      {/* POS */}
-      <Route path="/pos" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
-      <Route path="/receipts" element={<ProtectedRoute><ReceiptHistoryPage /></ProtectedRoute>} />
+      {/* ========== SERVICES (Owner Only) ========== */}
+      <Route path="/services" element={<OwnerRoute><ServicesManagementPage /></OwnerRoute>} />
+      <Route path="/packages" element={<OwnerRoute><PackagesManagementPage /></OwnerRoute>} />
+      <Route path="/memberships" element={<OwnerRoute><MembershipsManagementPage /></OwnerRoute>} />
+      <Route path="/gift-cards" element={<OwnerRoute><GiftCardsManagementPage /></OwnerRoute>} />
       
-      {/* Operations */}
-      <Route path="/machines" element={<ProtectedRoute><MachinesManagementPage /></ProtectedRoute>} />
-      <Route path="/products" element={<ProtectedRoute><ProductsManagementPage /></ProtectedRoute>} />
-      <Route path="/forms" element={<ProtectedRoute><FormsManagementPage /></ProtectedRoute>} />
-      <Route path="/notifications" element={<ProtectedRoute><NotificationsManagementPage /></ProtectedRoute>} />
+      {/* ========== OPERATIONS (Owner Only) ========== */}
+      <Route path="/machines" element={<OwnerRoute><MachinesManagementPage /></OwnerRoute>} />
+      <Route path="/products" element={<OwnerRoute><ProductsManagementPage /></OwnerRoute>} />
+      <Route path="/forms" element={<OwnerRoute><FormsManagementPage /></OwnerRoute>} />
+      <Route path="/notifications" element={<OwnerRoute><NotificationsManagementPage /></OwnerRoute>} />
       
-      {/* Team */}
-      <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
-      <Route path="/timeclock" element={<ProtectedRoute><TimeClockPage /></ProtectedRoute>} />
-      <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
+      {/* ========== TEAM ========== */}
+      <Route path="/staff" element={<OwnerRoute><StaffManagementPage /></OwnerRoute>} />
+      <Route path="/admin/staff" element={<OwnerRoute><StaffManagementPage /></OwnerRoute>} />
+      <Route path="/timeclock" element={<StaffRoute><TimeClockPage /></StaffRoute>} />
+      <Route path="/payroll" element={<OwnerRoute><PayrollPage /></OwnerRoute>} />
       
-      {/* Reports */}
-      <Route path="/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
-      <Route path="/analytics" element={<ProtectedRoute><ManagerAnalyticsPage /></ProtectedRoute>} />
+      {/* ========== REPORTS ========== */}
+      <Route path="/my-reports" element={<StaffRoute><MyReportsPage /></StaffRoute>} />
+      <Route path="/analytics" element={<OwnerRoute><ManagerAnalyticsPage /></OwnerRoute>} />
       
-      {/* Settings */}
-      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      {/* ========== SETTINGS (Owner Only) ========== */}
+      <Route path="/settings" element={<OwnerRoute><SettingsPage /></OwnerRoute>} />
       
-      {/* Client Portal */}
+      {/* ========== CLIENT PORTAL ========== */}
       <Route path="/portal/auth" element={<ClientAuthPage />} />
-      <Route path="/portal" element={<ClientPortalLayout />}>
+      <Route path="/portal" element={<ClientRoute><ClientDashboard /></ClientRoute>}>
         <Route index element={<ClientDashboard />} />
-        <Route path="packages" element={<ClientPackagesPage />} />
-        <Route path="photos" element={<ClientPhotosPage />} />
-        <Route path="recommendations" element={<ClientRecommendationsPage />} />
-        <Route path="history" element={<ClientHistoryPage />} />
-        <Route path="book" element={<ClientBookingPage />} />
-        <Route path="forms" element={<ClientFormsPage />} />
-        <Route path="memberships" element={<ClientMembershipsPage />} />
       </Route>
+      <Route path="/portal/packages" element={<ClientRoute><ClientPackagesPage /></ClientRoute>} />
+      <Route path="/portal/photos" element={<ClientRoute><ClientPhotosPage /></ClientRoute>} />
+      <Route path="/portal/recommendations" element={<ClientRoute><ClientRecommendationsPage /></ClientRoute>} />
+      <Route path="/portal/history" element={<ClientRoute><ClientHistoryPage /></ClientRoute>} />
+      <Route path="/portal/book" element={<ClientRoute><ClientBookingPage /></ClientRoute>} />
+      <Route path="/portal/forms" element={<ClientRoute><ClientFormsPage /></ClientRoute>} />
+      <Route path="/portal/memberships" element={<ClientRoute><ClientMembershipsPage /></ClientRoute>} />
+      <Route path="/portal/appointments" element={<ClientRoute><ClientHistoryPage /></ClientRoute>} />
+      <Route path="/portal/benefits" element={<ClientRoute><ClientMembershipsPage /></ClientRoute>} />
+      <Route path="/portal/payments" element={<ClientRoute><ClientHistoryPage /></ClientRoute>} />
+      <Route path="/portal/gift-cards" element={<ClientRoute><ClientPackagesPage /></ClientRoute>} />
+      <Route path="/portal/profile" element={<ClientRoute><ClientDashboard /></ClientRoute>} />
       
+      {/* ========== 404 ========== */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -123,15 +195,13 @@ function AppRoutes() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <ClientAuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </ClientAuthProvider>
-      </AuthProvider>
+      <UnifiedAuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </UnifiedAuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

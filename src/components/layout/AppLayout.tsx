@@ -1,141 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  LayoutDashboard, 
-  Calendar, 
-  Users, 
-  Clock, 
-  DollarSign,
-  Package,
-  Settings,
   LogOut,
-  ChevronRight,
   ChevronDown,
   Sparkles,
-  UserCog,
-  FileText,
-  Camera,
-  Crown,
-  Gift,
-  ClipboardList,
-  Bell,
-  Cpu,
-  ShoppingCart,
-  Receipt,
-  BarChart3,
-  TrendingUp,
-  Target,
-  PieChart,
-  Briefcase,
-  Wrench,
-  Heart,
-  CreditCard,
-  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
-
-interface NavSubItem {
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  roles?: string[];
-}
-
-interface NavCategory {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  items: NavSubItem[];
-  roles?: string[];
-}
-
-// Unified MedSpa OS Navigation Structure
-const navCategories: NavCategory[] = [
-  {
-    label: 'Home',
-    icon: LayoutDashboard,
-    items: [
-      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: 'Scheduling',
-    icon: Calendar,
-    items: [
-      { label: 'Calendar', href: '/schedule', icon: Calendar },
-      { label: 'Waitlist', href: '/waitlist', icon: ClipboardList, roles: ['admin', 'front_desk'] },
-    ],
-  },
-  {
-    label: 'Clients',
-    icon: Users,
-    items: [
-      { label: 'Client List', href: '/clients', icon: Users },
-      { label: 'Photos', href: '/photos', icon: Camera, roles: ['admin', 'provider'] },
-    ],
-  },
-  {
-    label: 'Services',
-    icon: Sparkles,
-    items: [
-      { label: 'Services', href: '/services', icon: Sparkles, roles: ['admin'] },
-      { label: 'Packages', href: '/packages', icon: Package, roles: ['admin'] },
-      { label: 'Memberships', href: '/memberships', icon: Crown, roles: ['admin'] },
-      { label: 'Gift Cards', href: '/gift-cards', icon: Gift, roles: ['admin'] },
-    ],
-    roles: ['admin'],
-  },
-  {
-    label: 'POS',
-    icon: ShoppingCart,
-    items: [
-      { label: 'Checkout', href: '/pos', icon: ShoppingCart },
-      { label: 'Receipts', href: '/receipts', icon: Receipt, roles: ['admin', 'front_desk'] },
-    ],
-  },
-  {
-    label: 'Operations',
-    icon: Wrench,
-    items: [
-      { label: 'Machines', href: '/machines', icon: Cpu, roles: ['admin'] },
-      { label: 'Products', href: '/products', icon: Package, roles: ['admin'] },
-      { label: 'Forms & Consents', href: '/forms', icon: FileText, roles: ['admin'] },
-      { label: 'Notifications', href: '/notifications', icon: Bell, roles: ['admin'] },
-    ],
-    roles: ['admin'],
-  },
-  {
-    label: 'Team',
-    icon: Briefcase,
-    items: [
-      { label: 'Staff', href: '/admin/staff', icon: UserCog, roles: ['admin'] },
-      { label: 'Time Clock', href: '/timeclock', icon: Clock },
-      { label: 'Payroll', href: '/payroll', icon: DollarSign, roles: ['admin'] },
-    ],
-  },
-  {
-    label: 'Reports',
-    icon: BarChart3,
-    items: [
-      { label: 'My Reports', href: '/my-reports', icon: TrendingUp },
-      { label: 'Business', href: '/analytics?tab=sales', icon: BarChart3, roles: ['admin'] },
-      { label: 'Staff Performance', href: '/analytics?tab=staff', icon: Target, roles: ['admin'] },
-      { label: 'Machine ROI', href: '/analytics?tab=machines', icon: Cpu, roles: ['admin'] },
-      { label: 'Products', href: '/analytics?tab=products', icon: PieChart, roles: ['admin'] },
-    ],
-  },
-  {
-    label: 'Settings',
-    icon: Settings,
-    items: [
-      { label: 'General', href: '/settings?tab=general', icon: Settings, roles: ['admin'] },
-      { label: 'Payments', href: '/settings?tab=payments', icon: CreditCard, roles: ['admin'] },
-      { label: 'Policies', href: '/settings?tab=policies', icon: Shield, roles: ['admin'] },
-    ],
-    roles: ['admin'],
-  },
-];
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { 
+  getNavigationForRole, 
+  getMobileNavForRole,
+  NavCategory,
+  NavItem 
+} from '@/config/navigation';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -143,11 +21,31 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
-  const { staff, logout, clockStatus } = useAuth();
+  const { 
+    staff, 
+    role, 
+    employeeType, 
+    isOwner, 
+    clockStatus, 
+    signOut,
+    loginWithPin 
+  } = useUnifiedAuth();
+  
+  // Get navigation based on role
+  const navigation = useMemo(() => 
+    getNavigationForRole(role, employeeType), 
+    [role, employeeType]
+  );
+  
+  const mobileNavItems = useMemo(() => 
+    getMobileNavForRole(role), 
+    [role]
+  );
+
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(() => {
     // Auto-expand category containing current route
     const current = new Set<string>();
-    navCategories.forEach(cat => {
+    navigation.forEach(cat => {
       if (cat.items.some(item => 
         location.pathname === item.href || 
         location.pathname.startsWith(item.href.split('?')[0] + '/')
@@ -157,10 +55,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     });
     return current;
   });
-
-  const isAdmin = staff?.role === 'admin';
-  const isFrontDesk = staff?.role === 'front_desk';
-  const isProvider = staff?.role === 'provider';
 
   const toggleCategory = (label: string) => {
     setExpandedCategories(prev => {
@@ -172,24 +66,6 @@ export function AppLayout({ children }: AppLayoutProps) {
       }
       return next;
     });
-  };
-
-  const canAccessItem = (item: NavSubItem): boolean => {
-    if (!item.roles) return true;
-    return staff ? item.roles.includes(staff.role) : false;
-  };
-
-  const canAccessCategory = (category: NavCategory): boolean => {
-    // If category has role restriction, check it
-    if (category.roles && staff && !category.roles.includes(staff.role)) {
-      return false;
-    }
-    // Check if user can access any item in category
-    return category.items.some(item => canAccessItem(item));
-  };
-
-  const getVisibleItems = (category: NavCategory): NavSubItem[] => {
-    return category.items.filter(item => canAccessItem(item));
   };
 
   const isItemActive = (href: string): boolean => {
@@ -207,14 +83,20 @@ export function AppLayout({ children }: AppLayoutProps) {
     return category.items.some(item => isItemActive(item.href));
   };
 
-  // Mobile nav items - key pages only
-  const mobileNavItems = [
-    { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'Schedule', href: '/schedule', icon: Calendar },
-    { label: 'Clients', href: '/clients', icon: Users },
-    { label: 'POS', href: '/pos', icon: ShoppingCart },
-    { label: 'Team', href: '/timeclock', icon: Clock },
-  ];
+  const handleLogout = async () => {
+    await signOut();
+  };
+
+  // Role display text
+  const getRoleDisplay = () => {
+    if (isOwner) return 'Owner';
+    if (role === 'employee') {
+      return employeeType === 'front_desk' ? 'Front Desk' : 'Provider';
+    }
+    if (role === 'client') return 'Client';
+    // Legacy staff role display
+    return staff?.role?.replace('_', ' ') || 'Staff';
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -222,7 +104,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <aside className="hidden md:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
-          <Link to="/dashboard" className="flex items-center gap-3">
+          <Link to={role === 'client' ? '/portal' : '/dashboard'} className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary" />
             </div>
@@ -235,11 +117,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navCategories.filter(canAccessCategory).map((category) => {
+          {navigation.map((category) => {
             const isExpanded = expandedCategories.has(category.label);
             const isActive = isCategoryActive(category);
             const Icon = category.icon;
-            const visibleItems = getVisibleItems(category);
+            const visibleItems = category.items;
 
             // Single item categories render directly
             if (visibleItems.length === 1) {
@@ -263,9 +145,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                     itemActive ? "" : "text-muted-foreground"
                   )} />
                   <span className="font-medium text-sm">{category.label}</span>
-                  {itemActive && (
-                    <ChevronRight className="w-4 h-4 ml-auto" />
-                  )}
                 </Link>
               );
             }
@@ -343,8 +222,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* User Section */}
         <div className="p-4 border-t border-sidebar-border">
-          {/* Clock Status */}
-          {clockStatus && (
+          {/* Clock Status - Only show for employees/owners */}
+          {(role === 'owner' || role === 'employee') && clockStatus && (
             <div className={cn(
               "mb-4 px-4 py-3 rounded-lg text-sm",
               clockStatus.is_clocked_in 
@@ -383,11 +262,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                 {staff?.first_name} {staff?.last_name}
               </p>
               <p className="text-xs text-muted-foreground capitalize">
-                {staff?.role?.replace('_', ' ')}
+                {getRoleDisplay()}
               </p>
             </div>
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
               title="Sign Out"
             >
@@ -400,7 +279,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
-          <Link to="/dashboard" className="flex items-center gap-2">
+          <Link to={role === 'client' ? '/portal' : '/dashboard'} className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
             <span className="font-heading text-lg">Elita</span>
           </Link>
@@ -409,7 +288,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
             )}
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="p-2 rounded-lg text-muted-foreground hover:text-destructive"
             >
               <LogOut className="w-4 h-4" />
