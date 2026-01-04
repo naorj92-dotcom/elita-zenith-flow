@@ -21,11 +21,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 30 10% 18%;
     
-    /* Accent: camel / muted gold - ONLY for primary CTAs, active nav, highlights */
-    --primary: 32 35% 52%;
+    /* Accent: gold - ONLY for primary CTAs, active nav, highlights */
+    --primary: 45 75% 47%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 32 40% 45%;
-    --primary-muted: 32 25% 75%;
+    --primary-hover: 45 80% 40%;
+    --primary-muted: 45 50% 70%;
     
     /* Secondary: subtle, understated */
     --secondary: 35 15% 95%;
@@ -55,7 +55,7 @@
     /* Borders & Inputs - subtle 1px light gray */
     --border: 35 15% 88%;
     --input: 35 15% 92%;
-    --ring: 32 35% 52%;
+    --ring: 45 75% 47%;
     
     /* Rounded corners: 12-16px */
     --radius: 0.75rem;
@@ -63,16 +63,16 @@
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 30 10% 30%;
-    --sidebar-primary: 32 35% 52%;
+    --sidebar-primary: 45 75% 47%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 35 15% 96%;
     --sidebar-accent-foreground: 30 10% 22%;
     --sidebar-border: 35 15% 90%;
-    --sidebar-ring: 32 35% 52%;
+    --sidebar-ring: 45 75% 47%;
     
     /* Elita Brand Variables */
-    --elita-camel: 32 35% 52%;
-    --elita-gold: 38 45% 55%;
+    --elita-camel: 45 75% 47%;
+    --elita-gold: 45 80% 50%;
     --elita-cream: 40 20% 97%;
     --elita-cream-dark: 35 15% 93%;
     --elita-charcoal: 30 10% 18%;
@@ -83,7 +83,7 @@
     --shadow-sm: 0 1px 3px hsl(30 10% 18% / 0.03);
     --shadow-md: 0 4px 12px hsl(30 10% 18% / 0.05);
     --shadow-lg: 0 8px 24px hsl(30 10% 18% / 0.08);
-    --shadow-glow: 0 0 20px hsl(32 35% 52% / 0.12);
+    --shadow-glow: 0 0 20px hsl(45 75% 47% / 0.15);
     
     /* Typography - clean modern sans-serif */
     --font-heading: 'Inter', system-ui, sans-serif;
@@ -100,9 +100,9 @@
     --popover: 30 10% 11%;
     --popover-foreground: 35 15% 95%;
     
-    --primary: 32 40% 55%;
+    --primary: 45 75% 50%;
     --primary-foreground: 30 10% 8%;
-    --primary-hover: 32 45% 48%;
+    --primary-hover: 45 80% 42%;
     
     --secondary: 30 10% 15%;
     --secondary-foreground: 35 15% 90%;
@@ -124,16 +124,16 @@
     
     --border: 30 10% 20%;
     --input: 30 10% 18%;
-    --ring: 32 40% 55%;
+    --ring: 45 75% 50%;
     
     --sidebar-background: 30 10% 9%;
     --sidebar-foreground: 35 15% 90%;
-    --sidebar-primary: 32 40% 55%;
+    --sidebar-primary: 45 75% 50%;
     --sidebar-primary-foreground: 30 10% 8%;
     --sidebar-accent: 30 10% 14%;
     --sidebar-accent-foreground: 35 15% 95%;
     --sidebar-border: 30 10% 18%;
-    --sidebar-ring: 32 40% 55%;
+    --sidebar-ring: 45 75% 50%;
   }
 }
 
