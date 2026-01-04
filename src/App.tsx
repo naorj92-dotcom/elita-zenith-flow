@@ -25,9 +25,11 @@ import { MembershipsManagementPage } from "@/pages/admin/MembershipsManagementPa
 import { GiftCardsManagementPage } from "@/pages/admin/GiftCardsManagementPage";
 import { WaitlistManagementPage } from "@/pages/admin/WaitlistManagementPage";
 import { MachinesManagementPage } from "@/pages/admin/MachinesManagementPage";
+import { PackagesManagementPage } from "@/pages/admin/PackagesManagementPage";
 import NotificationsManagementPage from "@/pages/admin/NotificationsManagementPage";
 import ManagerAnalyticsPage from "@/pages/ManagerAnalyticsPage";
 import MyReportsPage from "@/pages/MyReportsPage";
+import SettingsPage from "@/pages/SettingsPage";
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
@@ -57,29 +59,48 @@ function AppRoutes() {
       {/* Staff Portal */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      
+      {/* Home */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/pos" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
       <Route path="/competition" element={<ProtectedRoute><CompetitionPage /></ProtectedRoute>} />
-      <Route path="/receipts" element={<ProtectedRoute><ReceiptHistoryPage /></ProtectedRoute>} />
+      
+      {/* Scheduling */}
       <Route path="/schedule" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
       <Route path="/schedule/:id" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
+      <Route path="/waitlist" element={<ProtectedRoute><WaitlistManagementPage /></ProtectedRoute>} />
+      
+      {/* Clients */}
       <Route path="/clients" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
       <Route path="/clients/:id" element={<ProtectedRoute><ClientsPage /></ProtectedRoute>} />
-      <Route path="/timeclock" element={<ProtectedRoute><TimeClockPage /></ProtectedRoute>} />
-      <Route path="/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
-      <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
+      <Route path="/photos" element={<ProtectedRoute><ClientPhotosManagementPage /></ProtectedRoute>} />
+      
+      {/* Services */}
       <Route path="/services" element={<ProtectedRoute><ServicesManagementPage /></ProtectedRoute>} />
+      <Route path="/packages" element={<ProtectedRoute><PackagesManagementPage /></ProtectedRoute>} />
+      <Route path="/memberships" element={<ProtectedRoute><MembershipsManagementPage /></ProtectedRoute>} />
+      <Route path="/gift-cards" element={<ProtectedRoute><GiftCardsManagementPage /></ProtectedRoute>} />
+      
+      {/* POS */}
+      <Route path="/pos" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
+      <Route path="/receipts" element={<ProtectedRoute><ReceiptHistoryPage /></ProtectedRoute>} />
+      
+      {/* Operations */}
       <Route path="/machines" element={<ProtectedRoute><MachinesManagementPage /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><ProductsManagementPage /></ProtectedRoute>} />
       <Route path="/forms" element={<ProtectedRoute><FormsManagementPage /></ProtectedRoute>} />
-      <Route path="/photos" element={<ProtectedRoute><ClientPhotosManagementPage /></ProtectedRoute>} />
-      <Route path="/memberships" element={<ProtectedRoute><MembershipsManagementPage /></ProtectedRoute>} />
-      <Route path="/gift-cards" element={<ProtectedRoute><GiftCardsManagementPage /></ProtectedRoute>} />
-      <Route path="/waitlist" element={<ProtectedRoute><WaitlistManagementPage /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsManagementPage /></ProtectedRoute>} />
-      <Route path="/analytics" element={<ProtectedRoute><ManagerAnalyticsPage /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      
+      {/* Team */}
       <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
+      <Route path="/timeclock" element={<ProtectedRoute><TimeClockPage /></ProtectedRoute>} />
+      <Route path="/payroll" element={<ProtectedRoute><PayrollPage /></ProtectedRoute>} />
+      
+      {/* Reports */}
+      <Route path="/my-reports" element={<ProtectedRoute><MyReportsPage /></ProtectedRoute>} />
+      <Route path="/analytics" element={<ProtectedRoute><ManagerAnalyticsPage /></ProtectedRoute>} />
+      
+      {/* Settings */}
+      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       
       {/* Client Portal */}
       <Route path="/portal/auth" element={<ClientAuthPage />} />
