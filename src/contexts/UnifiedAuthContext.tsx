@@ -241,30 +241,53 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
   const loginWithPin = useCallback(async (pin: string): Promise<boolean> => {
     setIsLoading(true);
     try {
+      // Use secure RPC function to validate PIN (bypasses RLS securely)
       const { data, error } = await supabase
-        .from('staff')
-        .select('*')
-        .eq('pin', pin)
-        .eq('is_active', true)
-        .maybeSingle();
+        .rpc('validate_staff_pin', { p_pin: pin });
 
-      if (error || !data) {
+      if (error || !data || data.length === 0) {
         return false;
       }
 
+      const staffData = data[0];
+
+      // Build a complete Staff object from the RPC response
+      const completeStaff: Staff = {
+        id: staffData.id,
+        first_name: staffData.first_name,
+        last_name: staffData.last_name,
+        email: staffData.email,
+        phone: staffData.phone,
+        role: staffData.role,
+        is_active: staffData.is_active,
+        avatar_url: staffData.avatar_url,
+        // Default values for fields not returned by RPC (sensitive data)
+        pin: '',
+        hire_date: new Date().toISOString().split('T')[0],
+        hourly_rate: null,
+        service_commission_tier1: null,
+        service_commission_tier2: null,
+        service_commission_tier3: null,
+        service_tier1_threshold: null,
+        service_tier2_threshold: null,
+        retail_commission_rate: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
       // Set staff data directly (legacy mode)
-      setStaff(data as Staff);
-      await fetchClockStatus(data.id);
+      setStaff(completeStaff);
+      await fetchClockStatus(completeStaff.id);
       
       // Create mock permissions based on staff role
-      const staffRole = data.role as 'admin' | 'provider' | 'front_desk';
+      const staffRole = staffData.role as 'admin' | 'provider' | 'front_desk';
       if (staffRole === 'admin') {
         setUserRole({
           id: 'legacy',
           user_id: 'legacy',
           role: 'owner',
           employee_type: null,
-          staff_id: data.id,
+          staff_id: completeStaff.id,
           client_id: null,
           is_active: true,
           created_at: new Date().toISOString(),
@@ -278,7 +301,7 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
           user_id: 'legacy',
           role: 'employee',
           employee_type: empType,
-          staff_id: data.id,
+          staff_id: completeStaff.id,
           client_id: null,
           is_active: true,
           created_at: new Date().toISOString(),
