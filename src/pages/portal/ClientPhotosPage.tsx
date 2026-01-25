@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { Image, Calendar, Eye, ZoomIn, ArrowLeftRight } from 'lucide-react';
 import { DEMO_PHOTOS } from '@/hooks/useDemoData';
+import { SignedImage } from '@/components/photos/SignedImage';
 
 export function ClientPhotosPage() {
   const { client, isDemo } = useClientAuth();
@@ -84,7 +85,7 @@ export function ClientPhotosPage() {
                   {/* Before */}
                   <div className="relative aspect-[3/4] bg-muted">
                     {photo.before_photo_url ? (
-                      <img
+                      <SignedImage
                         src={photo.before_photo_url}
                         alt="Before treatment"
                         className="w-full h-full object-cover"
@@ -109,7 +110,7 @@ export function ClientPhotosPage() {
                   {/* After */}
                   <div className="relative aspect-[3/4] bg-muted">
                     {photo.after_photo_url ? (
-                      <img
+                      <SignedImage
                         src={photo.after_photo_url}
                         alt="After treatment"
                         className="w-full h-full object-cover"
@@ -169,7 +170,7 @@ export function ClientPhotosPage() {
               <Badge variant="outline" className="w-full justify-center py-1">Before</Badge>
               <div className="aspect-[3/4] bg-muted rounded-lg overflow-hidden">
                 {selectedPhoto?.before_photo_url ? (
-                  <img
+                  <SignedImage
                     src={selectedPhoto.before_photo_url}
                     alt="Before treatment"
                     className="w-full h-full object-cover"
@@ -187,7 +188,7 @@ export function ClientPhotosPage() {
               <Badge className="w-full justify-center py-1">After</Badge>
               <div className="aspect-[3/4] bg-muted rounded-lg overflow-hidden">
                 {selectedPhoto?.after_photo_url ? (
-                  <img
+                  <SignedImage
                     src={selectedPhoto.after_photo_url}
                     alt="After treatment"
                     className="w-full h-full object-cover"

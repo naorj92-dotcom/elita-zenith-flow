@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { PhotoAnnotationCanvas } from '@/components/photos/PhotoAnnotationCanvas';
+import { SignedImage } from '@/components/photos/SignedImage';
 
 interface Photo {
   id: string;
@@ -126,7 +127,7 @@ export function ClientPhotosManagementPage() {
       let beforePhotoUrl = null;
       let afterPhotoUrl = null;
 
-      // Upload before photo
+      // Upload before photo - store file path, not full URL (bucket is private)
       if (uploadForm.beforePhoto) {
         const fileExt = uploadForm.beforePhoto.name.split('.').pop();
         const fileName = `${uploadForm.clientId}/before-${Date.now()}.${fileExt}`;
@@ -137,14 +138,11 @@ export function ClientPhotosManagementPage() {
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
-          .from('treatment-photos')
-          .getPublicUrl(fileName);
-        
-        beforePhotoUrl = urlData.publicUrl;
+        // Store the file path for signed URL generation later
+        beforePhotoUrl = `treatment-photos/${fileName}`;
       }
 
-      // Upload after photo
+      // Upload after photo - store file path, not full URL (bucket is private)
       if (uploadForm.afterPhoto) {
         const fileExt = uploadForm.afterPhoto.name.split('.').pop();
         const fileName = `${uploadForm.clientId}/after-${Date.now()}.${fileExt}`;
@@ -155,11 +153,8 @@ export function ClientPhotosManagementPage() {
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
-          .from('treatment-photos')
-          .getPublicUrl(fileName);
-        
-        afterPhotoUrl = urlData.publicUrl;
+        // Store the file path for signed URL generation later
+        afterPhotoUrl = `treatment-photos/${fileName}`;
       }
 
       // Create database record
@@ -225,14 +220,13 @@ export function ClientPhotosManagementPage() {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from('treatment-photos')
-        .getPublicUrl(fileName);
+      // Store the file path for signed URL generation later (bucket is private)
+      const storedPath = `treatment-photos/${fileName}`;
 
       // Update database record
       const updateField = annotatingPhotoType === 'before' 
-        ? { before_photo_url: urlData.publicUrl }
-        : { after_photo_url: urlData.publicUrl };
+        ? { before_photo_url: storedPath }
+        : { after_photo_url: storedPath };
 
       const { error } = await supabase
         .from('before_after_photos')
@@ -462,7 +456,7 @@ export function ClientPhotosManagementPage() {
                     <div className="relative aspect-[3/4] bg-muted group">
                       {photo.before_photo_url ? (
                         <>
-                          <img
+                          <SignedImage
                             src={photo.before_photo_url}
                             alt="Before treatment"
                             className="w-full h-full object-cover"
@@ -488,7 +482,7 @@ export function ClientPhotosManagementPage() {
                     <div className="relative aspect-[3/4] bg-muted group">
                       {photo.after_photo_url ? (
                         <>
-                          <img
+                          <SignedImage
                             src={photo.after_photo_url}
                             alt="After treatment"
                             className="w-full h-full object-cover"
