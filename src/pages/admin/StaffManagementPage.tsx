@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Staff, StaffRole } from '@/types';
 import { Plus, Pencil, User, Phone, Mail, DollarSign, Percent, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { staffSchema, validateInput } from '@/lib/validations';
 
 interface StaffFormData {
   first_name: string;
@@ -83,7 +84,13 @@ export function StaffManagementPage() {
 
   const createStaffMutation = useMutation({
     mutationFn: async (data: StaffFormData) => {
-      const { error } = await supabase.from('staff').insert(data);
+      // Validate input before database operation
+      const result = staffSchema.safeParse(data);
+      if (!result.success) {
+        throw new Error(result.error.errors[0]?.message || 'Validation failed');
+      }
+      
+      const { error } = await supabase.from('staff').insert(result.data as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -103,7 +110,13 @@ export function StaffManagementPage() {
 
   const updateStaffMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<StaffFormData> }) => {
-      const { error } = await supabase.from('staff').update(data).eq('id', id);
+      // Validate input before database operation
+      const result = staffSchema.partial().safeParse(data);
+      if (!result.success) {
+        throw new Error(result.error.errors[0]?.message || 'Validation failed');
+      }
+      
+      const { error } = await supabase.from('staff').update(result.data as any).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

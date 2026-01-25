@@ -46,14 +46,110 @@ interface ReceiptEmailRequest {
   created_at: string;
 }
 
+// Validate email format
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// Validate UUID format
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+// Validate numeric values
+function isValidAmount(val: any): boolean {
+  return typeof val === 'number' && !isNaN(val) && val >= 0 && val < 1000000;
+}
+
+// Sanitize string for HTML to prevent XSS
+function sanitizeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+// Validate request data
+function validateRequest(data: any): { valid: boolean; error?: string } {
+  if (!data.receipt_id || !isValidUUID(data.receipt_id)) {
+    return { valid: false, error: 'Invalid receipt_id format' };
+  }
+  if (!data.client_email || !isValidEmail(data.client_email)) {
+    return { valid: false, error: 'Invalid client email' };
+  }
+  if (!data.client_name || typeof data.client_name !== 'string' || data.client_name.length > 200) {
+    return { valid: false, error: 'Invalid client name' };
+  }
+  if (!data.receipt_number || typeof data.receipt_number !== 'string' || data.receipt_number.length > 50) {
+    return { valid: false, error: 'Invalid receipt number' };
+  }
+  if (!isValidAmount(data.total_amount)) {
+    return { valid: false, error: 'Invalid total amount' };
+  }
+  if (!isValidAmount(data.subtotal)) {
+    return { valid: false, error: 'Invalid subtotal' };
+  }
+  if (data.tax_rate < 0 || data.tax_rate > 100) {
+    return { valid: false, error: 'Invalid tax rate' };
+  }
+  return { valid: true };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const data: ReceiptEmailRequest = await req.json();
-    console.log("Sending receipt email to:", data.client_email);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Authenticate the request
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const jwt = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify user has staff role (owner or employee)
+    const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: user.id });
+    if (roleData !== 'owner' && roleData !== 'employee') {
+      return new Response(
+        JSON.stringify({ error: "Forbidden - Staff access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const requestData = await req.json();
+    
+    // Validate input
+    const validation = validateRequest(requestData);
+    if (!validation.valid) {
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const data: ReceiptEmailRequest = requestData;
+    console.log("Sending receipt email to:", data.client_email, "User:", user.id);
 
     const formatCurrency = (amount: number) => 
       new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
@@ -68,7 +164,7 @@ const handler = async (req: Request): Promise<Response> => {
         hour: 'numeric', minute: '2-digit', hour12: true 
       });
 
-    // Build retail items HTML
+    // Build retail items HTML with sanitization
     let retailItemsHtml = '';
     if (data.retail_items && data.retail_items.length > 0) {
       retailItemsHtml = `
@@ -77,20 +173,20 @@ const handler = async (req: Request): Promise<Response> => {
             <strong style="color: #374151; font-size: 14px;">Products</strong>
           </td>
         </tr>
-        ${data.retail_items.map(item => `
+        ${data.retail_items.slice(0, 50).map(item => `
           <tr>
             <td style="padding: 5px 0; color: #6b7280; font-size: 13px;">
-              ${item.name} × ${item.quantity}
+              ${sanitizeHtml(item.name.substring(0, 200))} × ${Math.min(item.quantity, 100)}
             </td>
             <td style="padding: 5px 0; text-align: right; color: #374151; font-size: 13px;">
-              ${formatCurrency(item.total)}
+              ${formatCurrency(Math.min(item.total, 999999))}
             </td>
           </tr>
         `).join('')}
       `;
     }
 
-    // Build treatment summary HTML
+    // Build treatment summary HTML with sanitization
     let treatmentHtml = '';
     if (data.treatment_summary && Object.keys(data.treatment_summary).length > 0) {
       const ts = data.treatment_summary;
@@ -98,16 +194,16 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="background: #faf5ff; border-radius: 8px; padding: 15px; margin: 20px 0;">
           <h3 style="margin: 0 0 10px 0; color: #7c3aed; font-size: 14px;">Treatment Summary</h3>
           <table style="width: 100%; font-size: 13px; color: #6b7280;">
-            ${ts.areaTreated ? `<tr><td style="padding: 3px 0;">Area Treated:</td><td style="text-align: right;">${ts.areaTreated}</td></tr>` : ''}
-            ${ts.intensity ? `<tr><td style="padding: 3px 0;">Intensity:</td><td style="text-align: right;">${ts.intensity}</td></tr>` : ''}
-            ${ts.duration ? `<tr><td style="padding: 3px 0;">Duration:</td><td style="text-align: right;">${ts.duration}</td></tr>` : ''}
-            ${ts.notes ? `<tr><td colspan="2" style="padding: 8px 0 0 0; font-style: italic;">${ts.notes}</td></tr>` : ''}
+            ${ts.areaTreated ? `<tr><td style="padding: 3px 0;">Area Treated:</td><td style="text-align: right;">${sanitizeHtml(ts.areaTreated.substring(0, 200))}</td></tr>` : ''}
+            ${ts.intensity ? `<tr><td style="padding: 3px 0;">Intensity:</td><td style="text-align: right;">${sanitizeHtml(ts.intensity.substring(0, 100))}</td></tr>` : ''}
+            ${ts.duration ? `<tr><td style="padding: 3px 0;">Duration:</td><td style="text-align: right;">${sanitizeHtml(ts.duration.substring(0, 100))}</td></tr>` : ''}
+            ${ts.notes ? `<tr><td colspan="2" style="padding: 8px 0 0 0; font-style: italic;">${sanitizeHtml(ts.notes.substring(0, 500))}</td></tr>` : ''}
           </table>
         </div>
       `;
     }
 
-    // Build status footer HTML
+    // Build status footer HTML with sanitization
     let statusHtml = '';
     if (data.package_status || data.membership_status || data.next_recommended_booking) {
       statusHtml = `
@@ -115,19 +211,19 @@ const handler = async (req: Request): Promise<Response> => {
           <h3 style="margin: 0 0 12px 0; color: #7c3aed; font-size: 14px;">Your Status</h3>
           ${data.package_status ? `
             <p style="margin: 0 0 8px 0; font-size: 13px; color: #374151;">
-              <strong>📦 Package:</strong> ${data.package_status.packageName} | 
-              Sessions Remaining: ${data.package_status.sessionsRemaining} of ${data.package_status.sessionsTotal}
+              <strong>📦 Package:</strong> ${sanitizeHtml(data.package_status.packageName.substring(0, 100))} | 
+              Sessions Remaining: ${Math.min(data.package_status.sessionsRemaining, 9999)} of ${Math.min(data.package_status.sessionsTotal, 9999)}
             </p>
           ` : ''}
           ${data.membership_status ? `
             <p style="margin: 0 0 8px 0; font-size: 13px; color: #374151;">
-              <strong>⭐ Member Status:</strong> ${data.membership_status.tierName} | 
-              Next Billing: ${data.membership_status.nextBillingDate}
+              <strong>⭐ Member Status:</strong> ${sanitizeHtml(data.membership_status.tierName.substring(0, 100))} | 
+              Next Billing: ${sanitizeHtml(data.membership_status.nextBillingDate.substring(0, 50))}
             </p>
           ` : ''}
           ${data.next_recommended_booking ? `
             <p style="margin: 0; font-size: 13px; color: #7c3aed;">
-              <strong>📅 Next Recommended Visit:</strong> ${data.next_recommended_booking}
+              <strong>📅 Next Recommended Visit:</strong> ${sanitizeHtml(data.next_recommended_booking.substring(0, 100))}
             </p>
           ` : ''}
         </div>
@@ -154,7 +250,7 @@ const handler = async (req: Request): Promise<Response> => {
             <!-- Receipt Header -->
             <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px dashed #e5e7eb;">
               <h2 style="margin: 0 0 5px 0; color: #374151; font-size: 18px;">Receipt</h2>
-              <p style="margin: 0; color: #8b5cf6; font-family: monospace; font-size: 16px; font-weight: bold;">${data.receipt_number}</p>
+              <p style="margin: 0; color: #8b5cf6; font-family: monospace; font-size: 16px; font-weight: bold;">${sanitizeHtml(data.receipt_number)}</p>
               <p style="margin: 10px 0 0 0; color: #6b7280; font-size: 13px;">${formatDate(data.created_at)}</p>
               <p style="margin: 0; color: #6b7280; font-size: 13px;">${formatTime(data.created_at)}</p>
             </div>
@@ -163,11 +259,11 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px;">
               <div>
                 <p style="margin: 0; color: #6b7280;">Client</p>
-                <p style="margin: 3px 0 0 0; color: #374151; font-weight: 500;">${data.client_name}</p>
+                <p style="margin: 3px 0 0 0; color: #374151; font-weight: 500;">${sanitizeHtml(data.client_name)}</p>
               </div>
               <div style="text-align: right;">
                 <p style="margin: 0; color: #6b7280;">Provider</p>
-                <p style="margin: 3px 0 0 0; color: #374151; font-weight: 500;">${data.provider_name}</p>
+                <p style="margin: 3px 0 0 0; color: #374151; font-weight: 500;">${sanitizeHtml(data.provider_name)}</p>
               </div>
             </div>
             
@@ -176,8 +272,8 @@ const handler = async (req: Request): Promise<Response> => {
               ${data.service_name ? `
                 <tr>
                   <td style="padding: 10px 0; color: #374151; font-size: 14px;">
-                    ${data.service_name}
-                    ${data.machine_used ? `<span style="display: inline-block; background: #f3e8ff; color: #7c3aed; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">${data.machine_used}</span>` : ''}
+                    ${sanitizeHtml(data.service_name.substring(0, 200))}
+                    ${data.machine_used ? `<span style="display: inline-block; background: #f3e8ff; color: #7c3aed; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">${sanitizeHtml(data.machine_used.substring(0, 100))}</span>` : ''}
                   </td>
                   <td style="padding: 10px 0; text-align: right; color: #374151; font-size: 14px;">${formatCurrency(data.service_price)}</td>
                 </tr>
@@ -216,7 +312,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </tr>
                 <tr>
                   <td colspan="2" style="padding-top: 5px; text-align: right; color: #6b7280; font-size: 12px; text-transform: capitalize;">
-                    Paid via ${data.payment_method.replace('_', ' ')}
+                    Paid via ${sanitizeHtml(data.payment_method.replace('_', ' '))}
                   </td>
                 </tr>
               </table>
@@ -236,7 +332,7 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Legal Footer -->
           <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 11px;">
             <p style="margin: 0;">This is your official receipt. Please keep for your records.</p>
-            <p style="margin: 5px 0 0 0;">Receipt #${data.receipt_number}</p>
+            <p style="margin: 5px 0 0 0;">Receipt #${sanitizeHtml(data.receipt_number)}</p>
           </div>
         </div>
       </body>

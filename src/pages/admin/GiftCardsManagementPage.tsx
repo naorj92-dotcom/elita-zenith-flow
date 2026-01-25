@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, Gift, Search, Copy, Check } from 'lucide-react';
 import { format } from 'date-fns';
+import { giftCardSchema } from '@/lib/validations';
 
 interface GiftCardFormData {
   initial_amount: number;
@@ -72,16 +73,22 @@ export function GiftCardsManagementPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: GiftCardFormData) => {
+      // Validate input before database operation
+      const result = giftCardSchema.safeParse(data);
+      if (!result.success) {
+        throw new Error(result.error.errors[0]?.message || 'Validation failed');
+      }
+      
       const code = generateGiftCardCode();
       const { error } = await supabase.from('gift_cards').insert({
         code,
-        initial_amount: data.initial_amount,
-        remaining_amount: data.initial_amount,
-        purchaser_name: data.purchaser_name,
-        purchaser_email: data.purchaser_email,
-        recipient_name: data.recipient_name,
-        recipient_email: data.recipient_email,
-        message: data.message,
+        initial_amount: result.data.initial_amount,
+        remaining_amount: result.data.initial_amount,
+        purchaser_name: result.data.purchaser_name || null,
+        purchaser_email: result.data.purchaser_email || null,
+        recipient_name: result.data.recipient_name || null,
+        recipient_email: result.data.recipient_email || null,
+        message: result.data.message || null,
         expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
       });
       if (error) throw error;
@@ -92,7 +99,7 @@ export function GiftCardsManagementPage() {
       toast.success(`Gift card created: ${code}`);
       resetForm();
     },
-    onError: () => toast.error('Failed to create gift card'),
+    onError: (error: any) => toast.error(error.message || 'Failed to create gift card'),
   });
 
   const resetForm = () => {
