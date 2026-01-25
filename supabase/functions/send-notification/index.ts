@@ -27,6 +27,35 @@ function replaceVariables(text: string, variables: Record<string, string>): stri
   return result;
 }
 
+// Validate UUID format
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+// Validate input data
+function validateRequest(data: any): { valid: boolean; error?: string } {
+  if (!data.client_id || !isValidUUID(data.client_id)) {
+    return { valid: false, error: 'Invalid client_id format' };
+  }
+  if (!data.category || typeof data.category !== 'string' || data.category.length > 100) {
+    return { valid: false, error: 'Invalid category' };
+  }
+  if (!['email', 'sms'].includes(data.type)) {
+    return { valid: false, error: 'Invalid notification type' };
+  }
+  if (data.template_id && !isValidUUID(data.template_id)) {
+    return { valid: false, error: 'Invalid template_id format' };
+  }
+  if (data.custom_subject && data.custom_subject.length > 200) {
+    return { valid: false, error: 'Subject too long (max 200 characters)' };
+  }
+  if (data.custom_body && data.custom_body.length > 10000) {
+    return { valid: false, error: 'Body too long (max 10000 characters)' };
+  }
+  return { valid: true };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -38,9 +67,48 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { template_id, category, type, client_id, variables, custom_subject, custom_body }: NotificationRequest = await req.json();
+    // Authenticate the request
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    console.log("Received notification request:", { template_id, category, type, client_id });
+    const jwt = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify user has staff role (owner or employee)
+    const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: user.id });
+    if (roleData !== 'owner' && roleData !== 'employee') {
+      return new Response(
+        JSON.stringify({ error: "Forbidden - Staff access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const requestData = await req.json();
+    
+    // Validate input
+    const validation = validateRequest(requestData);
+    if (!validation.valid) {
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { template_id, category, type, client_id, variables, custom_subject, custom_body }: NotificationRequest = requestData;
+
+    console.log("Received notification request:", { template_id, category, type, client_id, user_id: user.id });
 
     // Get client details
     const { data: client, error: clientError } = await supabase
