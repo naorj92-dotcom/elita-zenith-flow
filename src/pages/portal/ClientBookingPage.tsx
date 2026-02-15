@@ -11,6 +11,7 @@ import { CalendarIcon, Clock, User, Check, ArrowLeft, ArrowRight, Loader2, Cpu, 
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useMachineAvailability } from '@/hooks/useMachineAvailability';
+import { useCalendarSync } from '@/hooks/useCalendarSync';
 
 const TIME_SLOTS = [
   { hour: 9, minute: 0 },
@@ -40,6 +41,7 @@ export function ClientBookingPage() {
 
   // Machine availability hook
   const { isSlotAvailableForBooking, machines } = useMachineAvailability(selectedDate);
+  const { syncAppointment } = useCalendarSync();
   // Fetch services
   const { data: services, isLoading: loadingServices } = useQuery({
     queryKey: ['booking-services'],
@@ -112,7 +114,11 @@ export function ClientBookingPage() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Sync to Google Calendar (fire-and-forget)
+      if (data?.id) {
+        syncAppointment(data.id);
+      }
       toast({
         title: 'Appointment Booked!',
         description: 'We look forward to seeing you.',
