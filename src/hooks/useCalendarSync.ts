@@ -1,3 +1,4 @@
+import { useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface GoogleCalendarEvent {
@@ -17,7 +18,9 @@ export interface GoogleCalendarEvent {
 }
 
 export function useCalendarSync() {
-  const syncAppointment = async (appointmentId: string) => {
+  const pullInFlight = useRef<Promise<GoogleCalendarEvent[]> | null>(null);
+
+  const syncAppointment = useCallback(async (appointmentId: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
@@ -31,17 +34,15 @@ export function useCalendarSync() {
 
       if (response.error) {
         console.error('Calendar sync error:', response.error);
-      } else {
-        console.log('Calendar sync result:', response.data);
       }
 
       return response.data;
     } catch (error) {
       console.error('Calendar sync failed:', error);
     }
-  };
+  }, []);
 
-  const syncAll = async () => {
+  const syncAll = useCallback(async () => {
     try {
       const response = await supabase.functions.invoke('sync-google-calendar', {
         body: { action: 'sync_all' },
@@ -55,25 +56,37 @@ export function useCalendarSync() {
     } catch (error) {
       console.error('Calendar sync_all failed:', error);
     }
-  };
+  }, []);
 
-  const pullEvents = async (timeMin: string, timeMax: string): Promise<GoogleCalendarEvent[]> => {
-    try {
-      const response = await supabase.functions.invoke('sync-google-calendar', {
-        body: { action: 'pull', time_min: timeMin, time_max: timeMax },
-      });
-
-      if (response.error) {
-        console.error('Calendar pull error:', response.error);
-        return [];
-      }
-
-      return response.data?.events || [];
-    } catch (error) {
-      console.error('Calendar pull failed:', error);
-      return [];
+  const pullEvents = useCallback(async (timeMin: string, timeMax: string): Promise<GoogleCalendarEvent[]> => {
+    // Deduplicate concurrent calls
+    if (pullInFlight.current) {
+      return pullInFlight.current;
     }
-  };
+
+    const promise = (async () => {
+      try {
+        const response = await supabase.functions.invoke('sync-google-calendar', {
+          body: { action: 'pull', time_min: timeMin, time_max: timeMax },
+        });
+
+        if (response.error) {
+          console.error('Calendar pull error:', response.error);
+          return [];
+        }
+
+        return response.data?.events || [];
+      } catch (error) {
+        console.error('Calendar pull failed:', error);
+        return [];
+      } finally {
+        pullInFlight.current = null;
+      }
+    })();
+
+    pullInFlight.current = promise;
+    return promise;
+  }, []);
 
   return { syncAppointment, syncAll, pullEvents };
 }

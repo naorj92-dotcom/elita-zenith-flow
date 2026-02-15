@@ -95,7 +95,8 @@ export function SchedulePage() {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staff, selectedDate, view]);
 
   const handleSync = async () => {
     setIsSyncing(true);
