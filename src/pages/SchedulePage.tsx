@@ -7,7 +7,9 @@ import {
   Plus,
   Clock,
   User,
-  Filter
+  Filter,
+  RefreshCw,
+  Globe
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +20,8 @@ import { Button } from '@/components/ui/button';
 import { AppointmentStatus } from '@/types';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { useCalendarSync, GoogleCalendarEvent } from '@/hooks/useCalendarSync';
+import { Badge } from '@/components/ui/badge';
 
 interface ScheduleAppointment {
   id: string;
@@ -36,21 +40,25 @@ interface ScheduleAppointment {
 
 export function SchedulePage() {
   const { staff } = useAuth();
+  const { pullEvents } = useCalendarSync();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [appointments, setAppointments] = useState<ScheduleAppointment[]>([]);
+  const [googleEvents, setGoogleEvents] = useState<GoogleCalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      if (!staff) return;
+  const fetchData = async () => {
+    if (!staff) return;
 
-      setIsLoading(true);
-      const startOfDay = new Date(selectedDate);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(selectedDate);
-      endOfDay.setHours(23, 59, 59, 999);
+    setIsLoading(true);
+    const startOfDay = new Date(selectedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(selectedDate);
+    endOfDay.setHours(23, 59, 59, 999);
 
-      const { data, error } = await supabase
+    // Fetch DB appointments and Google Calendar events in parallel
+    const [dbResult, gcEvents] = await Promise.all([
+      supabase
         .from('appointments')
         .select(`
           id,
@@ -66,30 +74,46 @@ export function SchedulePage() {
         `)
         .gte('scheduled_at', startOfDay.toISOString())
         .lte('scheduled_at', endOfDay.toISOString())
-        .order('scheduled_at', { ascending: true });
+        .order('scheduled_at', { ascending: true }),
+      pullEvents(startOfDay.toISOString(), endOfDay.toISOString()),
+    ]);
 
-      if (error) {
-        console.error('Error fetching appointments:', error);
-      } else if (data) {
-        const formatted: ScheduleAppointment[] = data.map((apt: any) => ({
-          id: apt.id,
-          scheduled_at: apt.scheduled_at,
-          duration_minutes: apt.duration_minutes,
-          status: apt.status as AppointmentStatus,
-          notes: apt.notes,
-          total_amount: apt.total_amount,
-          client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown',
-          service_name: apt.services?.name || 'Unknown Service',
-          staff_name: apt.staff ? `${apt.staff.first_name} ${apt.staff.last_name}` : 'Unknown',
-          room_name: apt.rooms?.name || null,
-        }));
-        setAppointments(formatted);
-      }
-      setIsLoading(false);
-    };
+    if (dbResult.error) {
+      console.error('Error fetching appointments:', dbResult.error);
+    } else if (dbResult.data) {
+      const formatted: ScheduleAppointment[] = dbResult.data.map((apt: any) => ({
+        id: apt.id,
+        scheduled_at: apt.scheduled_at,
+        duration_minutes: apt.duration_minutes,
+        status: apt.status as AppointmentStatus,
+        notes: apt.notes,
+        total_amount: apt.total_amount,
+        client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown',
+        service_name: apt.services?.name || 'Unknown Service',
+        staff_name: apt.staff ? `${apt.staff.first_name} ${apt.staff.last_name}` : 'Unknown',
+        room_name: apt.rooms?.name || null,
+      }));
+      setAppointments(formatted);
+    }
 
-    fetchAppointments();
+    // Filter out Google events that are already synced (have elita_appointment_id)
+    const externalEvents = gcEvents.filter(
+      (ev) => !ev.extendedProperties?.private?.elita_appointment_id
+    );
+    setGoogleEvents(externalEvents);
+
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
   }, [staff, selectedDate]);
+
+  const handleRefreshSync = async () => {
+    setIsSyncing(true);
+    await fetchData();
+    setIsSyncing(false);
+  };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -159,6 +183,16 @@ export function SchedulePage() {
           <p className="text-muted-foreground">{formatDate(selectedDate)}</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefreshSync}
+            disabled={isSyncing}
+            className="gap-2"
+          >
+            <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
+            Sync
+          </Button>
           <Button variant="outline" size="sm" onClick={goToToday}>
             Today
           </Button>
@@ -236,6 +270,7 @@ export function SchedulePage() {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {appointments.length} appointments
+                  {googleEvents.length > 0 && ` · ${googleEvents.length} from calendar`}
                 </span>
                 <Button variant="ghost" size="icon">
                   <Filter className="w-4 h-4" />
@@ -249,7 +284,7 @@ export function SchedulePage() {
                 <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
                 <p className="text-muted-foreground">Loading appointments...</p>
               </div>
-            ) : appointments.length === 0 ? (
+            ) : appointments.length === 0 && googleEvents.length === 0 ? (
               <EmptyState
                 icon={CalendarIcon}
                 title="No appointments"
@@ -259,6 +294,7 @@ export function SchedulePage() {
               />
             ) : (
               <div className="divide-y divide-border">
+                {/* Database appointments */}
                 {appointments.map((apt, index) => (
                   <motion.div
                     key={apt.id}
@@ -313,6 +349,66 @@ export function SchedulePage() {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Google Calendar events (external) */}
+                {googleEvents.map((event, index) => {
+                  const startTime = event.start?.dateTime || event.start?.date || '';
+                  const endTime = event.end?.dateTime || event.end?.date || '';
+                  const durationMs = startTime && endTime 
+                    ? new Date(endTime).getTime() - new Date(startTime).getTime() 
+                    : 0;
+                  const durationMin = Math.round(durationMs / 60000);
+
+                  return (
+                    <motion.div
+                      key={event.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + (appointments.length + index) * 0.05 }}
+                    >
+                      <div className="flex items-start gap-4 p-5 bg-accent/20">
+                        {/* Time Column */}
+                        <div className="text-center min-w-[70px]">
+                          <p className="text-lg font-semibold text-foreground">
+                            {startTime ? formatTime(startTime) : 'All day'}
+                          </p>
+                          {durationMin > 0 && (
+                            <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {durationMin} min
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Vertical Line */}
+                        <div className="w-px bg-accent self-stretch" />
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div>
+                              <h3 className="font-semibold text-foreground">
+                                {event.summary || 'Untitled Event'}
+                              </h3>
+                              {event.description && (
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                  {event.description}
+                                </p>
+                              )}
+                            </div>
+                            <Badge variant="outline" className="gap-1 shrink-0">
+                              <Globe className="w-3 h-3" />
+                              Google
+                            </Badge>
+                          </div>
+                          {event.location && (
+                            <p className="text-xs text-muted-foreground">📍 {event.location}</p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
           </CardContent>

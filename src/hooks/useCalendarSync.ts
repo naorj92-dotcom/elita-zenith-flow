@@ -1,5 +1,21 @@
 import { supabase } from '@/integrations/supabase/client';
 
+export interface GoogleCalendarEvent {
+  id: string;
+  summary?: string;
+  description?: string;
+  start?: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
+  location?: string;
+  extendedProperties?: {
+    private?: {
+      elita_appointment_id?: string;
+      elita_provider?: string;
+      elita_room?: string;
+    };
+  };
+}
+
 export function useCalendarSync() {
   const syncAppointment = async (appointmentId: string) => {
     try {
@@ -41,5 +57,23 @@ export function useCalendarSync() {
     }
   };
 
-  return { syncAppointment, syncAll };
+  const pullEvents = async (timeMin: string, timeMax: string): Promise<GoogleCalendarEvent[]> => {
+    try {
+      const response = await supabase.functions.invoke('sync-google-calendar', {
+        body: { action: 'pull', time_min: timeMin, time_max: timeMax },
+      });
+
+      if (response.error) {
+        console.error('Calendar pull error:', response.error);
+        return [];
+      }
+
+      return response.data?.events || [];
+    } catch (error) {
+      console.error('Calendar pull failed:', error);
+      return [];
+    }
+  };
+
+  return { syncAppointment, syncAll, pullEvents };
 }
