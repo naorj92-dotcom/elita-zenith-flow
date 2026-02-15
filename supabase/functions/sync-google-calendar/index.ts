@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Validate auth
+    // Validate auth header exists
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -222,20 +222,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    // Verify user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const body = await req.json();
+    const { action, appointment_id, calendar_id = "primary" } = body;
 
     // Get Google service account key
     const saKeyJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_KEY");
@@ -245,8 +233,23 @@ Deno.serve(async (req) => {
     const saKey: ServiceAccountKey = JSON.parse(saKeyJson);
     const accessToken = await getAccessToken(saKey);
 
-    const body = await req.json();
-    const { action, appointment_id, calendar_id = "primary" } = body;
+    // For actions that modify data, verify authenticated user
+    const requiresAuth = action === "sync" || action === "sync_all";
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    if (requiresAuth) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized - login required for this action" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     if (action === "sync" && appointment_id) {
       // Fetch appointment with details
