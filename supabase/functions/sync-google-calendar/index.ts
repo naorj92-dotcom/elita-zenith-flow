@@ -223,7 +223,8 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { action, appointment_id, calendar_id = "primary" } = body;
+    const { action, appointment_id } = body;
+    const calendar_id = "contact@elitamedspa.com";
 
     // Get Google service account key
     const saKeyJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_KEY");
