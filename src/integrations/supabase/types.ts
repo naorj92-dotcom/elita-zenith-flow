@@ -284,6 +284,50 @@ export type Database = {
           },
         ]
       }
+      calendar_sync: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          google_calendar_id: string
+          google_event_id: string
+          id: string
+          last_synced_at: string
+          sync_error: string | null
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          google_calendar_id?: string
+          google_event_id: string
+          id?: string
+          last_synced_at?: string
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          google_calendar_id?: string
+          google_event_id?: string
+          id?: string
+          last_synced_at?: string
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_sync_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_forms: {
         Row: {
           appointment_id: string | null
