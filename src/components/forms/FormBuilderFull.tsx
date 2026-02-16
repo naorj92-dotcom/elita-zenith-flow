@@ -31,6 +31,7 @@ interface FormBuilderFullProps {
   onCancel: () => void;
   isSaving: boolean;
   isEditing: boolean;
+  mode?: 'form' | 'chart';
 }
 
 const FIELD_TYPE_PALETTE = [
@@ -54,10 +55,11 @@ const FORM_TYPES = [
   { value: 'custom', label: 'Custom Form' },
 ];
 
-export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving, isEditing }: FormBuilderFullProps) {
+export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving, isEditing, mode = 'form' }: FormBuilderFullProps) {
   const [activeTab, setActiveTab] = useState<'build' | 'settings' | 'preview'>('build');
   const [selectedFieldIndex, setSelectedFieldIndex] = useState<number | null>(null);
   const [newOption, setNewOption] = useState('');
+  const [showTemplates, setShowTemplates] = useState(!isEditing);
 
   const set = (key: string, value: any) => onChange({ ...formData, [key]: value });
   const fields = formData.fields;
@@ -130,38 +132,99 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <p className="text-sm font-semibold text-foreground leading-tight">{formData.name || 'Untitled form'}</p>
-            <p className="text-xs text-muted-foreground">Form</p>
+            <p className="text-sm font-semibold text-foreground leading-tight">{formData.name || (mode === 'chart' ? 'Untitled client chart' : 'Untitled client form')}</p>
+            <p className="text-xs text-muted-foreground">{mode === 'chart' ? 'Chart' : 'Form'}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isEditing && formData.is_active && (
+          {isEditing && formData.is_active ? (
             <span className="flex items-center gap-1.5 text-xs font-medium text-success">
               <span className="w-2 h-2 rounded-full bg-success" />
               Published
             </span>
-          )}
+          ) : !isEditing ? (
+            <span className="flex items-center gap-1.5 text-xs font-medium text-warning">
+              <span className="w-2 h-2 rounded-full bg-warning" />
+              Draft
+            </span>
+          ) : null}
         </div>
       </div>
 
       {/* Main Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Canvas / Preview Area */}
-        <div className="flex-1 overflow-auto bg-muted/20">
-          {activeTab === 'preview' ? (
-            <FormPreview formData={formData} />
-          ) : activeTab === 'settings' ? (
-            <FormSettings formData={formData} onChange={onChange} />
-          ) : (
-            <FormCanvas
-              fields={fields}
-              formData={formData}
-              selectedFieldIndex={selectedFieldIndex}
-              onSelectField={setSelectedFieldIndex}
-              onUpdateField={updateField}
-              onRemoveField={removeField}
-              onMoveField={moveField}
-            />
+        <div className="flex-1 overflow-auto bg-muted/20 flex flex-col">
+          <div className="flex-1">
+            {activeTab === 'preview' ? (
+              <FormPreview formData={formData} />
+            ) : activeTab === 'settings' ? (
+              <FormSettings formData={formData} onChange={onChange} />
+            ) : (
+              <FormCanvas
+                fields={fields}
+                formData={formData}
+                selectedFieldIndex={selectedFieldIndex}
+                onSelectField={setSelectedFieldIndex}
+                onUpdateField={updateField}
+                onRemoveField={removeField}
+                onMoveField={moveField}
+              />
+            )}
+          </div>
+
+          {/* Template suggestion banner — Boulevard style */}
+          {showTemplates && activeTab === 'build' && !isEditing && (
+            <div className="border-t border-border bg-card px-6 py-4 shrink-0">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">Start from a template</h4>
+                  <p className="text-xs text-muted-foreground">Choose an example to get started, or build from scratch</p>
+                </div>
+                <button type="button" onClick={() => setShowTemplates(false)} className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1">
+                  Dismiss <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {mode === 'form' ? (
+                  <>
+                    <button type="button" onClick={() => { onChange({ ...formData, name: 'New client intake', description: 'Collect basic information from a new client' }); setShowTemplates(false); }}
+                      className="text-left border border-border rounded-lg p-3 hover:bg-accent/30 transition-colors">
+                      <p className="text-sm font-medium text-foreground">New client intake</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Collect basic information from a new client</p>
+                    </button>
+                    <button type="button" onClick={() => { onChange({ ...formData, name: 'Photo consent', description: 'Get consent to use a client\'s photos for business purposes' }); setShowTemplates(false); }}
+                      className="text-left border border-border rounded-lg p-3 hover:bg-accent/30 transition-colors">
+                      <p className="text-sm font-medium text-foreground">Photo consent</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Get consent to use a client's photos for business purposes</p>
+                    </button>
+                    <button type="button" onClick={() => { onChange({ ...formData, name: 'Medical history', description: 'Gather medical history and health information' }); setShowTemplates(false); }}
+                      className="text-left border border-border rounded-lg p-3 hover:bg-accent/30 transition-colors">
+                      <p className="text-sm font-medium text-foreground">Medical history</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Gather medical history and health information</p>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" onClick={() => { onChange({ ...formData, name: 'SOAP note', description: 'Assess, and plan client treatments' }); setShowTemplates(false); }}
+                      className="text-left border border-border rounded-lg p-3 hover:bg-accent/30 transition-colors">
+                      <p className="text-sm font-medium text-foreground">SOAP note</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Assess, and plan client treatments</p>
+                    </button>
+                    <button type="button" onClick={() => { onChange({ ...formData, name: 'Treatment record', description: 'Take service notes and capture photos' }); setShowTemplates(false); }}
+                      className="text-left border border-border rounded-lg p-3 hover:bg-accent/30 transition-colors">
+                      <p className="text-sm font-medium text-foreground">Treatment record</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Take service notes and capture photos</p>
+                    </button>
+                    <button type="button" onClick={() => { onChange({ ...formData, name: 'Advanced treatment record', description: 'Take notes and mark up photos for review' }); setShowTemplates(false); }}
+                      className="text-left border border-border rounded-lg p-3 hover:bg-accent/30 transition-colors">
+                      <p className="text-sm font-medium text-foreground">Advanced treatment record</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Take notes and mark up photos for review</p>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
@@ -273,7 +336,12 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
               Disable and Unpublish
             </button>
           )}
-          <Button size="sm" onClick={onSave} disabled={isSaving} className="px-6">
+          {!isEditing && (
+            <Button variant="outline" size="sm" onClick={onSave} disabled={isSaving} className="px-5">
+              Save Draft
+            </Button>
+          )}
+          <Button size="sm" onClick={onSave} disabled={isSaving} className={cn('px-6', !isEditing && 'opacity-60')}>
             {isSaving ? 'Saving...' : 'Publish'}
           </Button>
         </div>

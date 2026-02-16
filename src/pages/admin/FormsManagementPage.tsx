@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, FileText, ClipboardCheck, FileSignature, Scroll, Eye, Users } from 'lucide-react';
+import { Plus, Search, FileText, ClipboardCheck, FileSignature, Scroll, Eye, Users, X } from 'lucide-react';
 import { FormField } from '@/components/forms/FormFieldRenderer';
 import { FormBuilderFull } from '@/components/forms/FormBuilderFull';
 import { format } from 'date-fns';
@@ -66,8 +67,12 @@ export function FormsManagementPage() {
   const [filterType, setFilterType] = useState<FormType | 'all'>('all');
   const [activeTab, setActiveTab] = useState('templates');
 
+  // Create dialog state
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
   // Builder state
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [builderMode, setBuilderMode] = useState<'form' | 'chart'>('form');
   const [editingForm, setEditingForm] = useState<Form | null>(null);
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
 
@@ -137,10 +142,22 @@ export function FormsManagementPage() {
         requires_signature: form.requires_signature,
         is_active: form.is_active,
       });
+      setBuilderMode('form');
+      setIsBuilderOpen(true);
     } else {
-      setEditingForm(null);
-      setFormData(INITIAL_FORM_DATA);
+      setShowCreateDialog(true);
     }
+  };
+
+  const openNewBuilder = (mode: 'form' | 'chart') => {
+    setEditingForm(null);
+    setBuilderMode(mode);
+    setFormData({
+      ...INITIAL_FORM_DATA,
+      name: mode === 'chart' ? 'Untitled client chart' : 'Untitled client form',
+      form_type: mode === 'chart' ? 'custom' : 'intake',
+    });
+    setShowCreateDialog(false);
     setIsBuilderOpen(true);
   };
 
@@ -174,12 +191,57 @@ export function FormsManagementPage() {
         onCancel={closeBuilder}
         isSaving={saveMutation.isPending}
         isEditing={!!editingForm}
+        mode={builderMode}
       />
     );
   }
 
   return (
     <div className="p-6 space-y-6">
+      {/* Create Form/Chart Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[700px] p-0 gap-0">
+          <div className="p-8 pb-6 text-center">
+            <h2 className="text-2xl font-semibold text-foreground">Create a form or chart</h2>
+            <p className="text-muted-foreground mt-1">Which type best fits your needs?</p>
+          </div>
+          <div className="px-8 pb-8 grid grid-cols-2 gap-4">
+            {/* Form Card */}
+            <div className="border border-border rounded-lg p-6 flex flex-col">
+              <h3 className="text-xl font-semibold text-foreground text-center">Form</h3>
+              <p className="text-sm text-muted-foreground text-center mt-1">For clients to complete</p>
+              <div className="mt-5 mb-6">
+                <p className="text-sm font-semibold text-foreground mb-2">Examples</p>
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-muted-foreground" />New Client Intake</li>
+                  <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-muted-foreground" />Medical History Questionnaire</li>
+                  <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-muted-foreground" />Liability Waiver</li>
+                </ul>
+              </div>
+              <Button className="w-full mt-auto" onClick={() => openNewBuilder('form')}>
+                Create form
+              </Button>
+            </div>
+            {/* Chart Card */}
+            <div className="border border-border rounded-lg p-6 flex flex-col">
+              <h3 className="text-xl font-semibold text-foreground text-center">Chart</h3>
+              <p className="text-sm text-muted-foreground text-center mt-1">For staff use only</p>
+              <div className="mt-5 mb-6">
+                <p className="text-sm font-semibold text-foreground mb-2">Examples</p>
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-muted-foreground" />Service Notes</li>
+                  <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-muted-foreground" />SOAP Notes</li>
+                  <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-muted-foreground" />Treatment Plan</li>
+                </ul>
+              </div>
+              <Button className="w-full mt-auto" onClick={() => openNewBuilder('chart')}>
+                Create chart
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -188,7 +250,7 @@ export function FormsManagementPage() {
         </div>
         <Button onClick={() => openBuilder()} className="gap-2">
           <Plus className="w-4 h-4" />
-          Create Form
+          Create New
         </Button>
       </div>
 
