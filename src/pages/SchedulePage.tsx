@@ -156,9 +156,36 @@ export function SchedulePage() {
   };
 
   const handleAppointmentDrop = (appointmentId: string, newScheduledAt: Date) => {
-    // Google Calendar events are read-only — ignore drag attempts
     if (appointmentId.startsWith('gcal-')) {
-      toast.info('Google Calendar events are read-only and cannot be moved here');
+      // Build a local-only ScheduleAppointment from the Google event
+      const gcalId = appointmentId.replace('gcal-', '');
+      const gEvent = googleEvents.find((e) => e.id === gcalId);
+      if (!gEvent) return;
+
+      const startStr = gEvent.start?.dateTime || gEvent.start?.date || '';
+      const endStr = gEvent.end?.dateTime || gEvent.end?.date || '';
+      const start = new Date(startStr);
+      const end = endStr ? new Date(endStr) : new Date(start.getTime() + 3600000);
+      const durationMin = Math.round((end.getTime() - start.getTime()) / 60000);
+      const parts = (gEvent.summary || '').split(' - ');
+
+      const fakeApt: ScheduleAppointment = {
+        id: appointmentId,
+        scheduled_at: start.toISOString(),
+        duration_minutes: durationMin,
+        status: 'scheduled',
+        notes: null,
+        total_amount: 0,
+        client_name: parts[1]?.trim() || parts[0]?.trim() || 'Unknown',
+        service_name: parts[0]?.trim() || 'Appointment',
+        staff_name: '',
+        staff_id: null,
+        client_id: null,
+        room_name: null,
+      };
+
+      setRescheduleApt(fakeApt);
+      setRescheduleNewTime(newScheduledAt);
       return;
     }
     const apt = appointments.find((a) => a.id === appointmentId);
@@ -171,16 +198,34 @@ export function SchedulePage() {
     if (!rescheduleApt || !rescheduleNewTime) return;
     setIsRescheduling(true);
 
-    const { error } = await supabase
-      .from('appointments')
-      .update({ scheduled_at: rescheduleNewTime.toISOString() })
-      .eq('id', rescheduleApt.id);
-
-    if (error) {
-      toast.error('Failed to reschedule appointment');
+    if (rescheduleApt.id.startsWith('gcal-')) {
+      // Local-only move: update the google event position in state without syncing to Google
+      const gcalId = rescheduleApt.id.replace('gcal-', '');
+      setGoogleEvents((prev) =>
+        prev.map((ev) => {
+          if (ev.id !== gcalId) return ev;
+          const dur = rescheduleApt.duration_minutes || 60;
+          const newEnd = new Date(rescheduleNewTime.getTime() + dur * 60000);
+          return {
+            ...ev,
+            start: { ...ev.start, dateTime: rescheduleNewTime.toISOString() },
+            end: { ...ev.end, dateTime: newEnd.toISOString() },
+          };
+        })
+      );
+      toast.success('Appointment moved locally (not synced to Google)');
     } else {
-      toast.success('Appointment rescheduled successfully');
-      await fetchData();
+      const { error } = await supabase
+        .from('appointments')
+        .update({ scheduled_at: rescheduleNewTime.toISOString() })
+        .eq('id', rescheduleApt.id);
+
+      if (error) {
+        toast.error('Failed to reschedule appointment');
+      } else {
+        toast.success('Appointment rescheduled successfully');
+        await fetchData();
+      }
     }
 
     setIsRescheduling(false);
