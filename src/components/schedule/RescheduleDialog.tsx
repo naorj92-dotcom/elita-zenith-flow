@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { ArrowRight } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import type { ScheduleAppointment } from '@/pages/SchedulePage';
 
 interface RescheduleDialogProps {
@@ -49,33 +49,37 @@ export function RescheduleDialog({ open, onOpenChange, appointment, newScheduled
         <div className="space-y-4 py-2">
           <p className="font-semibold text-lg">{appointment.client_name}</p>
 
-          <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-start">
-            {/* Old time */}
-            <div className="space-y-1 p-3 rounded-lg bg-muted/50 border border-border">
-              <p className="text-sm font-medium">{appointment.service_name}</p>
-              <p className="text-sm text-foreground">{formatDate(oldStart)}</p>
-              <p className="text-sm font-semibold text-destructive">{formatTime(oldStart, appointment.duration_minutes)}</p>
-              <p className="text-xs text-muted-foreground">({formatDuration(appointment.duration_minutes)})</p>
-              {appointment.staff_name && <p className="text-xs text-muted-foreground">{appointment.staff_name}</p>}
-              <p className="text-xs text-muted-foreground">(${Number(appointment.total_amount).toFixed(0)})</p>
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 items-start text-sm">
+            {/* Service name spanning both columns */}
+            <p className="font-semibold col-span-3">{appointment.service_name}</p>
+
+            {/* Old date/time */}
+            <div className="space-y-0.5">
+              <p>{formatDate(oldStart)}</p>
+              <p className="font-semibold text-destructive">{formatTime(oldStart, appointment.duration_minutes)}</p>
+              <p className="text-muted-foreground">({formatDuration(appointment.duration_minutes)})</p>
+              {appointment.staff_name && <p className="text-muted-foreground">{appointment.staff_name}</p>}
+              <p className="text-muted-foreground">(${Number(appointment.total_amount).toFixed(0)})</p>
             </div>
 
-            <div className="flex items-center pt-8">
-              <ArrowRight className="w-5 h-5 text-muted-foreground" />
+            {/* Arrow */}
+            <div className="flex items-center pt-1">
+              <span className="text-muted-foreground">▸</span>
             </div>
 
-            {/* New time */}
-            <div className="space-y-1 p-3 rounded-lg bg-primary/5 border border-primary/20">
-              <p className="text-sm font-medium">{appointment.service_name}</p>
-              <p className="text-sm text-foreground">{formatDate(newScheduledAt)}</p>
-              <p className="text-sm font-semibold text-primary">{formatTime(newScheduledAt, appointment.duration_minutes)}</p>
-              <p className="text-xs text-muted-foreground">({formatDuration(appointment.duration_minutes)})</p>
-              {appointment.staff_name && <p className="text-xs text-muted-foreground">{appointment.staff_name}</p>}
-              <p className="text-xs text-muted-foreground">(${Number(appointment.total_amount).toFixed(0)})</p>
+            {/* New date/time */}
+            <div className="space-y-0.5">
+              <p>{formatDate(newScheduledAt)}</p>
+              <p className="font-semibold text-primary">{formatTime(newScheduledAt, appointment.duration_minutes)}</p>
+              <p className="text-muted-foreground">({formatDuration(appointment.duration_minutes)})</p>
+              {appointment.staff_name && <p className="text-muted-foreground">{appointment.staff_name}</p>}
+              <p className="text-muted-foreground">(${Number(appointment.total_amount).toFixed(0)})</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 pt-2">
+          <Separator />
+
+          <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Send updated confirmation to:</span>
             <div className="flex items-center gap-2">
               <Checkbox
@@ -86,6 +90,8 @@ export function RescheduleDialog({ open, onOpenChange, appointment, newScheduled
               <Label htmlFor="send-confirm" className="text-sm font-medium cursor-pointer">Client</Label>
             </div>
           </div>
+
+          <Separator />
         </div>
 
         <DialogFooter className="gap-2">
