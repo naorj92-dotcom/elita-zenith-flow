@@ -244,8 +244,8 @@ function NewClientOverlay({ onClose, onCreated }: { onClose: () => void; onCreat
 
     setSaving(false);
     if (error) {
-      toast.error('Failed to create client');
-    } else {
+      console.error('Create client error:', error);
+      toast.error(`Failed to create client: ${error.message}`);
       toast.success('Client created');
       onCreated(data.id);
     }
