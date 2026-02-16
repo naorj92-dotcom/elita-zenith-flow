@@ -5,6 +5,8 @@ import { AppointmentStatus } from '@/types';
 import { useCalendarSync, GoogleCalendarEvent } from '@/hooks/useCalendarSync';
 import { ScheduleHeader, CalendarView } from '@/components/schedule/ScheduleHeader';
 import { CalendarTimeGrid } from '@/components/schedule/CalendarTimeGrid';
+import { RescheduleDialog } from '@/components/schedule/RescheduleDialog';
+import { toast } from 'sonner';
 
 export interface ScheduleAppointment {
   id: string;
@@ -17,6 +19,7 @@ export interface ScheduleAppointment {
   service_name: string;
   staff_name: string;
   staff_id: string | null;
+  client_id: string | null;
   room_name: string | null;
 }
 
@@ -44,8 +47,13 @@ export function SchedulePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isFullCalendar, setIsFullCalendar] = useState(false);
+  const [clientDetailsMap, setClientDetailsMap] = useState<Record<string, any>>({});
 
-  // Fetch active staff on mount
+  // Reschedule dialog state
+  const [rescheduleApt, setRescheduleApt] = useState<ScheduleAppointment | null>(null);
+  const [rescheduleNewTime, setRescheduleNewTime] = useState<Date | null>(null);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+
   useEffect(() => {
     const fetchStaff = async () => {
       const { data } = await supabase
@@ -55,7 +63,6 @@ export function SchedulePage() {
         .order('first_name', { ascending: true });
       if (data) {
         setStaffList(data);
-        // Default: show all providers
         setSelectedStaffIds(data.map((s) => s.id));
       }
     };
@@ -89,8 +96,8 @@ export function SchedulePage() {
       supabase
         .from('appointments')
         .select(`
-          id, scheduled_at, duration_minutes, status, notes, total_amount, staff_id,
-          clients (first_name, last_name),
+          id, scheduled_at, duration_minutes, status, notes, total_amount, staff_id, client_id,
+          clients (first_name, last_name, phone, email, visit_count, total_spent, date_of_birth),
           services (name),
           staff (first_name, last_name),
           rooms (name)
@@ -102,21 +109,35 @@ export function SchedulePage() {
     ]);
 
     if (dbResult.data) {
-      setAppointments(
-        dbResult.data.map((apt: any) => ({
-          id: apt.id,
+      const newClientMap: Record<string, any> = {};
+      const mapped = dbResult.data.map((apt: any) => {
+        const id = apt.id;
+        if (apt.clients) {
+          newClientMap[id] = {
+            phone: apt.clients.phone,
+            email: apt.clients.email,
+            visit_count: apt.clients.visit_count,
+            total_spent: apt.clients.total_spent,
+            date_of_birth: apt.clients.date_of_birth,
+          };
+        }
+        return {
+          id,
           scheduled_at: apt.scheduled_at,
           duration_minutes: apt.duration_minutes,
           status: apt.status as AppointmentStatus,
           notes: apt.notes,
           total_amount: apt.total_amount,
           staff_id: apt.staff_id,
+          client_id: apt.client_id,
           client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Walk-in',
           service_name: apt.services?.name || 'Service',
           staff_name: apt.staff ? `${apt.staff.first_name} ${apt.staff.last_name}` : '',
           room_name: apt.rooms?.name || null,
-        }))
-      );
+        };
+      });
+      setAppointments(mapped);
+      setClientDetailsMap(newClientMap);
     }
 
     setGoogleEvents(gcEvents.filter((ev) => !ev.extendedProperties?.private?.elita_appointment_id));
@@ -132,6 +153,48 @@ export function SchedulePage() {
     setIsSyncing(true);
     await fetchData();
     setIsSyncing(false);
+  };
+
+  const handleAppointmentDrop = (appointmentId: string, newScheduledAt: Date) => {
+    const apt = appointments.find((a) => a.id === appointmentId);
+    if (!apt) return;
+    setRescheduleApt(apt);
+    setRescheduleNewTime(newScheduledAt);
+  };
+
+  const handleRescheduleConfirm = async () => {
+    if (!rescheduleApt || !rescheduleNewTime) return;
+    setIsRescheduling(true);
+
+    const { error } = await supabase
+      .from('appointments')
+      .update({ scheduled_at: rescheduleNewTime.toISOString() })
+      .eq('id', rescheduleApt.id);
+
+    if (error) {
+      toast.error('Failed to reschedule appointment');
+    } else {
+      toast.success('Appointment rescheduled successfully');
+      await fetchData();
+    }
+
+    setIsRescheduling(false);
+    setRescheduleApt(null);
+    setRescheduleNewTime(null);
+  };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    const { error } = await supabase
+      .from('appointments')
+      .update({ status: status as any })
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Failed to update status');
+    } else {
+      toast.success(`Appointment ${status.replace('_', ' ')}`);
+      await fetchData();
+    }
   };
 
   const stepSize = view === 'day' ? 1 : view === '4day' ? 4 : 7;
@@ -181,6 +244,17 @@ export function SchedulePage() {
         googleEvents={googleEvents}
         isLoading={isLoading}
         staffList={filteredStaff}
+        onAppointmentDrop={handleAppointmentDrop}
+        onStatusChange={handleStatusChange}
+        clientDetailsMap={clientDetailsMap}
+      />
+      <RescheduleDialog
+        open={!!rescheduleApt}
+        onOpenChange={(open) => { if (!open) { setRescheduleApt(null); setRescheduleNewTime(null); } }}
+        appointment={rescheduleApt}
+        newScheduledAt={rescheduleNewTime}
+        onConfirm={handleRescheduleConfirm}
+        isLoading={isRescheduling}
       />
     </div>
   );
