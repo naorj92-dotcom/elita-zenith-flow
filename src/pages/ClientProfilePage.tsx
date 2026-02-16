@@ -230,12 +230,16 @@ export default function ClientProfilePage() {
               <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none">
                 {[
                   { value: 'overview', label: 'Overview' },
+                  { value: 'accommodations', label: 'Accommodations' },
                   { value: 'messages', label: 'Messages', count: messages.filter(m => m.sender_type === 'client' && !m.is_read).length },
                   { value: 'history', label: 'History' },
+                  { value: 'wallet', label: 'Wallet' },
                   { value: 'memberships', label: 'Memberships' },
                   { value: 'packages', label: 'Packages' },
+                  { value: 'products', label: 'Products' },
                   { value: 'forms', label: 'Forms & Charts' },
                   { value: 'gallery', label: 'Gallery' },
+                  { value: 'files', label: 'Files' },
                 ].map((tab) => (
                   <TabsTrigger
                     key={tab.value}
@@ -293,6 +297,26 @@ export default function ClientProfilePage() {
               {/* GALLERY */}
               <TabsContent value="gallery" className="mt-0">
                 <GalleryTab photos={photos} />
+              </TabsContent>
+
+              {/* ACCOMMODATIONS */}
+              <TabsContent value="accommodations" className="mt-0">
+                <EmptyState icon={ClipboardList} title="No accommodations" description="Client accommodations and special requirements will appear here." compact />
+              </TabsContent>
+
+              {/* WALLET */}
+              <TabsContent value="wallet" className="mt-0">
+                <EmptyState icon={CreditCard} title="No wallet items" description="Gift cards, credits, and payment methods will appear here." compact />
+              </TabsContent>
+
+              {/* PRODUCTS */}
+              <TabsContent value="products" className="mt-0">
+                <EmptyState icon={ShoppingCart} title="No product history" description="Product purchases and recommendations will appear here." compact />
+              </TabsContent>
+
+              {/* FILES */}
+              <TabsContent value="files" className="mt-0">
+                <EmptyState icon={FolderOpen} title="No files" description="Uploaded documents and files will appear here." compact />
               </TabsContent>
             </div>
           </Tabs>
@@ -657,6 +681,17 @@ function ContactSidebar({ client }: { client: any }) {
   const [referralSource, setReferralSource] = useState(client.referral_source || '');
   const [emailNotif, setEmailNotif] = useState(client.email_notifications ?? true);
   const [textNotif, setTextNotif] = useState(client.text_notifications ?? true);
+  const [pronouns, setPronouns] = useState(client.pronouns || '');
+  const [address, setAddress] = useState(client.address || '');
+  const [city, setCity] = useState(client.city || '');
+  const [state, setState] = useState(client.state || '');
+  const [zip, setZip] = useState(client.zip || '');
+  const [emergencyName, setEmergencyName] = useState(client.emergency_contact_name || '');
+  const [emergencyRelationship, setEmergencyRelationship] = useState(client.emergency_contact_relationship || '');
+  const [emergencyPhone, setEmergencyPhone] = useState(client.emergency_contact_phone || '');
+  const [marketingOptIn, setMarketingOptIn] = useState(client.marketing_opt_in || '');
+  const [tags, setTags] = useState<string[]>(client.client_tags || []);
+  const [newTag, setNewTag] = useState('');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -670,22 +705,143 @@ function ContactSidebar({ client }: { client: any }) {
       referral_source: referralSource || null,
       email_notifications: emailNotif,
       text_notifications: textNotif,
+      pronouns: pronouns || null,
+      address: address.trim() || null,
+      city: city.trim() || null,
+      state: state || null,
+      zip: zip.trim() || null,
+      emergency_contact_name: emergencyName.trim() || null,
+      emergency_contact_relationship: emergencyRelationship.trim() || null,
+      emergency_contact_phone: emergencyPhone.trim() || null,
+      marketing_opt_in: marketingOptIn || null,
+      client_tags: tags,
     }).eq('id', client.id);
     setSaving(false);
     if (error) {
       toast.error('Failed to save');
     } else {
       queryClient.invalidateQueries({ queryKey: ['client-profile', client.id] });
-      toast.success('Contact info saved');
+      toast.success('Changes saved');
     }
   };
 
-  return (
-    <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-border bg-card overflow-auto">
-      <div className="p-6 space-y-5">
-        <h3 className="text-sm font-semibold text-primary">Contact Info</h3>
+  const addTag = () => {
+    const tag = newTag.trim().toUpperCase();
+    if (tag && !tags.includes(tag)) {
+      setTags([...tags, tag]);
+      setNewTag('');
+    }
+  };
 
-        <div className="space-y-4">
+  const removeTag = (tag: string) => {
+    setTags(tags.filter((t) => t !== tag));
+  };
+
+  // Calculate age from DOB
+  const age = dob ? (() => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let a = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) a--;
+    return a;
+  })() : null;
+
+  const US_STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+
+  return (
+    <ScrollArea className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-border bg-card">
+      <div className="p-6 space-y-5">
+
+        {/* Referral Section */}
+        <h3 className="text-sm font-semibold text-primary">Referral</h3>
+        <div>
+          <label className="text-xs text-muted-foreground">Referral Source</label>
+          <Select value={referralSource} onValueChange={setReferralSource}>
+            <SelectTrigger className="h-9 mt-1">
+              <SelectValue placeholder="Select source" />
+            </SelectTrigger>
+            <SelectContent>
+              {['Facebook', 'Instagram', 'Google', 'Friend/Family', 'Walk-in', 'Yelp', 'TikTok', 'Other'].map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Separator />
+
+        {/* Marketing Opt-In */}
+        <div>
+          <label className="text-xs text-muted-foreground font-medium">Marketing Opt-In</label>
+          <Select value={marketingOptIn} onValueChange={setMarketingOptIn}>
+            <SelectTrigger className="h-9 mt-1">
+              <SelectValue placeholder="Please select..." />
+            </SelectTrigger>
+            <SelectContent>
+              {['Opted In', 'Opted Out', 'Not Specified'].map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Separator />
+
+        {/* Client Tags */}
+        <h3 className="text-sm font-semibold text-primary">Client Tags</h3>
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Badge key={tag} variant="secondary" className="gap-1 text-xs">
+              {tag}
+              <button onClick={() => removeTag(tag)} className="ml-0.5 hover:text-destructive">×</button>
+            </Badge>
+          ))}
+          <div className="flex gap-1">
+            <Input
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+              placeholder="Add tag..."
+              className="h-7 w-24 text-xs"
+            />
+            <Button size="sm" variant="outline" onClick={addTag} className="h-7 text-xs px-2">+ Add</Button>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Personal Info */}
+        <h3 className="text-sm font-semibold text-primary">Personal Info</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground">Birthday</label>
+            <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="h-9 mt-1" />
+            {age !== null && age > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">{age} years old</p>
+            )}
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground">Pronouns</label>
+            <Select value={pronouns} onValueChange={setPronouns}>
+              <SelectTrigger className="h-9 mt-1">
+                <SelectValue placeholder="Not Specified" />
+              </SelectTrigger>
+              <SelectContent>
+                {['Not Specified', 'She/Her', 'He/Him', 'They/Them', 'Other'].map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Contact Info */}
+        <h3 className="text-sm font-semibold text-primary">Contact Info</h3>
+        <div className="space-y-3">
           <div>
             <label className="text-xs text-muted-foreground">First Name *</label>
             <div className="flex items-center gap-2 mt-1">
@@ -693,12 +849,10 @@ function ContactSidebar({ client }: { client: any }) {
               <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="h-9" />
             </div>
           </div>
-
           <div>
             <label className="text-xs text-muted-foreground">Last Name *</label>
             <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className="h-9" />
           </div>
-
           <div>
             <label className="text-xs text-muted-foreground">Email</label>
             <div className="flex items-center gap-2 mt-1">
@@ -710,7 +864,6 @@ function ContactSidebar({ client }: { client: any }) {
               <label htmlFor="email-notif" className="text-xs text-muted-foreground">Email notifications</label>
             </div>
           </div>
-
           <div>
             <label className="text-xs text-muted-foreground">Mobile</label>
             <div className="flex items-center gap-2 mt-1">
@@ -722,35 +875,75 @@ function ContactSidebar({ client }: { client: any }) {
               <label htmlFor="text-notif" className="text-xs text-muted-foreground">Text notifications</label>
             </div>
           </div>
+        </div>
 
+        <Separator />
+
+        {/* Home Address */}
+        <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+          <MapPin className="h-4 w-4" /> Home Address
+        </h3>
+        <div className="space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground">Date of Birth</label>
-            <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="h-9 mt-1" />
+            <label className="text-xs text-muted-foreground">Street Address</label>
+            <Input value={address} onChange={(e) => setAddress(e.target.value)} className="h-9 mt-1" placeholder="5980 Gales Lane" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">City</label>
+            <Input value={city} onChange={(e) => setCity(e.target.value)} className="h-9 mt-1" placeholder="Columbia" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs text-muted-foreground">State</label>
+              <Select value={state} onValueChange={setState}>
+                <SelectTrigger className="h-9 mt-1">
+                  <SelectValue placeholder="State" />
+                </SelectTrigger>
+                <SelectContent>
+                  {US_STATES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">ZIP</label>
+              <Input value={zip} onChange={(e) => setZip(e.target.value)} className="h-9 mt-1" placeholder="21045" />
+            </div>
           </div>
         </div>
 
         <Separator />
 
-        <h3 className="text-sm font-semibold text-primary">Referral</h3>
-        <div>
-          <label className="text-xs text-muted-foreground">Referral Source</label>
-          <Select value={referralSource} onValueChange={setReferralSource}>
-            <SelectTrigger className="h-9 mt-1">
-              <SelectValue placeholder="Select source" />
-            </SelectTrigger>
-            <SelectContent>
-              {['Facebook', 'Instagram', 'Google', 'Friend/Family', 'Walk-in', 'Yelp', 'Other'].map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Emergency Contact */}
+        <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+          <ShieldAlert className="h-4 w-4" /> Emergency Contact
+        </h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground">Emergency Contact Name</label>
+            <Input value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} className="h-9 mt-1" placeholder="Contact name" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Emergency Contact Relationship</label>
+            <Input value={emergencyRelationship} onChange={(e) => setEmergencyRelationship(e.target.value)} className="h-9 mt-1" placeholder="e.g. Spouse, Parent" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Emergency Contact Phone</label>
+            <div className="flex items-center gap-2 mt-1">
+              <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+              <Input value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} className="h-9" placeholder="(443) 865-1466" />
+            </div>
+          </div>
         </div>
+
+        <Separator />
 
         <Button onClick={handleSave} disabled={saving} className="w-full gap-2">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save Contact Info
+          Save Changes
         </Button>
       </div>
-    </div>
+    </ScrollArea>
   );
 }

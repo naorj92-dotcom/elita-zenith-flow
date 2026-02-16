@@ -545,18 +545,24 @@ export type Database = {
           allergies: string | null
           avatar_url: string | null
           city: string | null
+          client_tags: string[] | null
           created_at: string
           date_of_birth: string | null
           email: string | null
           email_notifications: boolean
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
           first_name: string
           id: string
           is_vip: boolean
           last_name: string
           last_visit_date: string | null
+          marketing_opt_in: string | null
           medications: string | null
           notes: string | null
           phone: string | null
+          pronouns: string | null
           referral_source: string | null
           scheduling_alert: string | null
           state: string | null
@@ -571,18 +577,24 @@ export type Database = {
           allergies?: string | null
           avatar_url?: string | null
           city?: string | null
+          client_tags?: string[] | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
           email_notifications?: boolean
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           first_name: string
           id?: string
           is_vip?: boolean
           last_name: string
           last_visit_date?: string | null
+          marketing_opt_in?: string | null
           medications?: string | null
           notes?: string | null
           phone?: string | null
+          pronouns?: string | null
           referral_source?: string | null
           scheduling_alert?: string | null
           state?: string | null
@@ -597,18 +609,24 @@ export type Database = {
           allergies?: string | null
           avatar_url?: string | null
           city?: string | null
+          client_tags?: string[] | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
           email_notifications?: boolean
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           first_name?: string
           id?: string
           is_vip?: boolean
           last_name?: string
           last_visit_date?: string | null
+          marketing_opt_in?: string | null
           medications?: string | null
           notes?: string | null
           phone?: string | null
+          pronouns?: string | null
           referral_source?: string | null
           scheduling_alert?: string | null
           state?: string | null
