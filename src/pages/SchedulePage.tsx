@@ -33,7 +33,7 @@ export interface ScheduleStaff {
 
 export function SchedulePage() {
   const { staff } = useAuth();
-  const { pullEvents } = useCalendarSync();
+  const { pullEvents, syncAppointment } = useCalendarSync();
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -196,6 +196,8 @@ export function SchedulePage() {
       toast.error('Failed to reschedule appointment');
     } else {
       toast.success('Appointment rescheduled successfully');
+      // Sync updated appointment to Google Calendar
+      syncAppointment(rescheduleApt.id).catch(console.error);
       await fetchData();
     }
 
@@ -214,6 +216,8 @@ export function SchedulePage() {
       toast.error('Failed to update status');
     } else {
       toast.success(`Appointment ${status.replace('_', ' ')}`);
+      // Sync status change to Google Calendar
+      syncAppointment(id).catch(console.error);
       await fetchData();
     }
   };
