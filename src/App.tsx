@@ -29,6 +29,7 @@ import { WaitlistManagementPage } from "@/pages/admin/WaitlistManagementPage";
 import { MachinesManagementPage } from "@/pages/admin/MachinesManagementPage";
 import { PackagesManagementPage } from "@/pages/admin/PackagesManagementPage";
 import NotificationsManagementPage from "@/pages/admin/NotificationsManagementPage";
+import MessagesManagementPage from "@/pages/admin/MessagesManagementPage";
 import ManagerAnalyticsPage from "@/pages/ManagerAnalyticsPage";
 import MyReportsPage from "@/pages/MyReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
@@ -43,7 +44,6 @@ import { ClientHistoryPage } from "@/pages/portal/ClientHistoryPage";
 import { ClientBookingPage } from "@/pages/portal/ClientBookingPage";
 import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
 import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
-import { ClientMessagesPage } from "@/pages/portal/ClientMessagesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -115,6 +115,7 @@ function AppRoutes() {
       <Route path="/clients" element={<StaffRoute><ClientsPage /></StaffRoute>} />
       <Route path="/clients/:id" element={<StaffRoute><ClientsPage /></StaffRoute>} />
       <Route path="/photos" element={<StaffRoute><ClientPhotosManagementPage /></StaffRoute>} />
+      <Route path="/messages" element={<OwnerRoute><MessagesManagementPage /></OwnerRoute>} />
       
       {/* ========== POS (All Staff) ========== */}
       <Route path="/pos" element={<StaffRoute><POSPage /></StaffRoute>} />
@@ -162,7 +163,7 @@ function AppRoutes() {
         <Route path="payments" element={<ClientHistoryPage />} />
         <Route path="gift-cards" element={<ClientPackagesPage />} />
         <Route path="profile" element={<ClientDashboard />} />
-        <Route path="messages" element={<ClientMessagesPage />} />
+        <Route path="messages" element={<ClientDashboard />} />
       </Route>
       
       {/* ========== 404 ========== */}
