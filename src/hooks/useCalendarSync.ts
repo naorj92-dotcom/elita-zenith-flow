@@ -5,9 +5,11 @@ export interface GoogleCalendarEvent {
   id: string;
   summary?: string;
   description?: string;
+  status?: string;
   start?: { dateTime?: string; date?: string };
   end?: { dateTime?: string; date?: string };
   location?: string;
+  attendees?: Array<{ email?: string; displayName?: string; responseStatus?: string }>;
   extendedProperties?: {
     private?: {
       elita_appointment_id?: string;

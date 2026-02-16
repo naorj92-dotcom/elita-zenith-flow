@@ -39,10 +39,51 @@ function isToday(d: Date) {
   return isSameDay(d, new Date());
 }
 
+// Parse Google Calendar event description for phone/email
+function parseGoogleEventDescription(desc?: string): { phone?: string; email?: string } {
+  if (!desc) return {};
+  const phoneMatch = desc.match(/Phone:-?\s*([\d\s\-()]+)/i);
+  const emailMatch = desc.match(/Email:-?\s*([\w.+\-@]+)/i);
+  return {
+    phone: phoneMatch ? phoneMatch[1].trim() : undefined,
+    email: emailMatch ? emailMatch[1].trim() : undefined,
+  };
+}
+
+// Convert a Google Calendar event to a ScheduleAppointment-like object for the popover
+function googleEventToAppointment(event: GoogleCalendarEvent): ScheduleAppointment {
+  const startStr = event.start?.dateTime || event.start?.date || '';
+  const endStr = event.end?.dateTime || event.end?.date || '';
+  const start = new Date(startStr);
+  const end = endStr ? new Date(endStr) : new Date(start.getTime() + 3600000);
+  const durationMin = Math.round((end.getTime() - start.getTime()) / 60000);
+
+  // Parse "Client Name - Service Name" from summary
+  const parts = (event.summary || '').split(' - ');
+  const clientName = parts[0]?.trim() || event.summary || 'Unknown';
+  const serviceName = parts[1]?.trim() || 'Google Calendar Event';
+
+  return {
+    id: `gcal-${event.id}`,
+    scheduled_at: start.toISOString(),
+    duration_minutes: durationMin,
+    status: event.status === 'confirmed' ? 'confirmed' : 'scheduled',
+    notes: event.description || null,
+    total_amount: 0,
+    client_name: clientName,
+    service_name: serviceName,
+    staff_name: '',
+    staff_id: null,
+    client_id: null,
+    room_name: null,
+  };
+}
+
 export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onStatusChange, clientDetailsMap }: CalendarTimeGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const [selectedApt, setSelectedApt] = useState<ScheduleAppointment | null>(null);
+  const [selectedGoogleDetails, setSelectedGoogleDetails] = useState<{ phone?: string; email?: string } | null>(null);
   const [popoverPos, setPopoverPos] = useState<{ x: number; y: number } | null>(null);
 
   const isDayView = dates.length === 1;
@@ -109,6 +150,21 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     let y = e.clientY - gridRect.top + (scrollRef.current?.scrollTop || 0);
     setPopoverPos({ x, y });
     setSelectedApt(apt);
+    setSelectedGoogleDetails(null);
+  };
+
+  const handleGoogleEventClick = (event: GoogleCalendarEvent, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const gridRect = scrollRef.current?.getBoundingClientRect();
+    if (!gridRect) return;
+    let x = e.clientX - gridRect.left + (scrollRef.current?.scrollLeft || 0);
+    let y = e.clientY - gridRect.top + (scrollRef.current?.scrollTop || 0);
+    setPopoverPos({ x, y });
+    const fakeApt = googleEventToAppointment(event);
+    const details = parseGoogleEventDescription(event.description);
+    setSelectedApt(fakeApt);
+    setSelectedGoogleDetails(details);
   };
 
   // Drag state
@@ -280,6 +336,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       showStaffName={false}
                       colWidth={staffColWidth}
                       onAptClick={handleAptClick}
+                      onGoogleEventClick={handleGoogleEventClick}
                       onDragStart={handleDragStart}
                       draggingApt={draggingApt}
                       dragGhostTop={dragGhostTop}
@@ -300,6 +357,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                 showStaffName
                 className="flex-1 border-r border-border last:border-r-0"
                 onAptClick={handleAptClick}
+                onGoogleEventClick={handleGoogleEventClick}
                 onDragStart={handleDragStart}
                 draggingApt={draggingApt}
                 dragGhostTop={dragGhostTop}
@@ -317,9 +375,9 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
           >
             <AppointmentPopover
               appointment={selectedApt}
-              clientDetails={clientDetailsMap?.[selectedApt.id] || null}
-              onClose={() => setSelectedApt(null)}
-              onStatusChange={onStatusChange}
+              clientDetails={selectedGoogleDetails || clientDetailsMap?.[selectedApt.id] || null}
+              onClose={() => { setSelectedApt(null); setSelectedGoogleDetails(null); }}
+              onStatusChange={selectedApt.id.startsWith('gcal-') ? undefined : onStatusChange}
             />
           </div>
         )}
@@ -338,12 +396,13 @@ interface ProviderColumnProps {
   className?: string;
   colWidth?: number;
   onAptClick?: (apt: ScheduleAppointment, e: React.MouseEvent) => void;
+  onGoogleEventClick?: (event: GoogleCalendarEvent, e: React.MouseEvent) => void;
   onDragStart?: (apt: ScheduleAppointment, colDate: Date, e: React.MouseEvent) => void;
   draggingApt?: string | null;
   dragGhostTop?: number | null;
 }
 
-function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
+function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
   return (
     <div
       className={cn(
@@ -411,8 +470,9 @@ function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle,
         return (
           <div
             key={event.id}
-            className="absolute left-0.5 right-0.5 rounded-md border-l-[3px] border-accent-foreground/20 bg-accent/60 px-1 py-0.5 overflow-hidden"
+            className="absolute left-0.5 right-0.5 rounded-md border-l-[3px] border-accent-foreground/20 bg-accent/60 px-1 py-0.5 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
             style={{ top, height }}
+            onClick={(e) => onGoogleEventClick?.(event, e)}
           >
             <div className="flex items-center gap-1">
               <Globe className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
