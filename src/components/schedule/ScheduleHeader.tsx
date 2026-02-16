@@ -1,11 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import type { ScheduleStaff } from '@/pages/SchedulePage';
 
@@ -23,6 +24,8 @@ interface ScheduleHeaderProps {
   staffList?: ScheduleStaff[];
   selectedStaffIds?: string[];
   onSelectedStaffChange?: (ids: string[]) => void;
+  isFullCalendar?: boolean;
+  onFullCalendarChange?: (val: boolean) => void;
 }
 
 export function ScheduleHeader({
@@ -37,6 +40,8 @@ export function ScheduleHeader({
   staffList = [],
   selectedStaffIds = [],
   onSelectedStaffChange,
+  isFullCalendar = false,
+  onFullCalendarChange,
 }: ScheduleHeaderProps) {
   const formatHeaderDate = () => {
     if (view === 'day') {
@@ -98,43 +103,66 @@ export function ScheduleHeader({
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <Users className="w-4 h-4" />
-                Staff ({selectedStaffIds.length})
-                <div className="flex -space-x-1.5 ml-1">
-                  {staffList
-                    .filter((s) => selectedStaffIds.includes(s.id))
-                    .slice(0, 3)
-                    .map((s) => (
-                      <Avatar key={s.id} className="h-5 w-5 border-2 border-background">
-                        <AvatarImage src={s.avatar_url || undefined} />
-                        <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
-                          {s.first_name[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                    ))}
-                  {selectedStaffIds.length > 3 && (
-                    <div className="h-5 w-5 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[8px] font-medium text-muted-foreground">
-                      +{selectedStaffIds.length - 3}
-                    </div>
-                  )}
-                </div>
+                {isFullCalendar ? 'Full Calendar' : `Staff (${selectedStaffIds.length})`}
+                {!isFullCalendar && (
+                  <div className="flex -space-x-1.5 ml-1">
+                    {staffList
+                      .filter((s) => selectedStaffIds.includes(s.id))
+                      .slice(0, 3)
+                      .map((s) => (
+                        <Avatar key={s.id} className="h-5 w-5 border-2 border-background">
+                          <AvatarImage src={s.avatar_url || undefined} />
+                          <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                            {s.first_name[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                    {selectedStaffIds.length > 3 && (
+                      <div className="h-5 w-5 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[8px] font-medium text-muted-foreground">
+                        +{selectedStaffIds.length - 3}
+                      </div>
+                    )}
+                  </div>
+                )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-2" align="end">
+            <PopoverContent className="w-64 p-2" align="end">
               <div className="space-y-1">
+                {/* Full Calendar option */}
                 <button
-                  onClick={toggleAll}
-                  className="w-full text-left text-xs font-medium text-primary px-2 py-1.5 hover:bg-muted rounded-md transition-colors"
+                  onClick={() => onFullCalendarChange?.(!isFullCalendar)}
+                  className={cn(
+                    'w-full flex items-center gap-2 px-2 py-2 rounded-md transition-colors text-sm',
+                    isFullCalendar ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-foreground'
+                  )}
                 >
-                  Select All
+                  <CalendarDays className="w-4 h-4" />
+                  Full Calendar
                 </button>
+
+                <Separator className="my-1.5" />
+
+                <div className="flex items-center justify-between px-2 py-1">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Providers</span>
+                  <button
+                    onClick={() => { onFullCalendarChange?.(false); toggleAll(); }}
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
+                    Select All
+                  </button>
+                </div>
                 {staffList.map((s) => (
                   <label
                     key={s.id}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer transition-colors"
+                    className={cn(
+                      'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors',
+                      !isFullCalendar && selectedStaffIds.includes(s.id) ? 'bg-primary/5' : 'hover:bg-muted'
+                    )}
+                    onClick={() => { if (isFullCalendar) onFullCalendarChange?.(false); }}
                   >
                     <Checkbox
-                      checked={selectedStaffIds.includes(s.id)}
-                      onCheckedChange={() => toggleStaff(s.id)}
+                      checked={!isFullCalendar && selectedStaffIds.includes(s.id)}
+                      onCheckedChange={() => { if (isFullCalendar) onFullCalendarChange?.(false); toggleStaff(s.id); }}
                     />
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={s.avatar_url || undefined} />
