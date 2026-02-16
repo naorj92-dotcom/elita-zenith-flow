@@ -8,37 +8,44 @@ import {
   Mail,
   ChevronRight,
   Crown,
-  DollarSign
+  DollarSign,
+  X,
+  Loader2
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Client } from '@/types';
+import { toast } from 'sonner';
 
 export function ClientsPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showNewClient, setShowNewClient] = useState(false);
+
+  const fetchClients = async () => {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .order('last_name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching clients:', error);
+    } else {
+      setClients(data || []);
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    const fetchClients = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .order('last_name', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching clients:', error);
-      } else {
-        setClients(data || []);
-      }
-      setIsLoading(false);
-    };
-
     fetchClients();
   }, []);
 
@@ -66,12 +73,10 @@ export function ClientsPage() {
           <h1 className="font-heading text-3xl text-foreground mb-1">Clients</h1>
           <p className="text-muted-foreground">{clients.length} total clients</p>
         </div>
-        <Link to="/clients/new">
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Client
-          </Button>
-        </Link>
+        <Button className="gap-2" onClick={() => setShowNewClient(true)}>
+          <Plus className="w-4 h-4" />
+          Add Client
+        </Button>
       </motion.div>
 
       {/* Search */}
@@ -113,12 +118,10 @@ export function ClientsPage() {
                   {searchQuery ? 'Try a different search term' : 'Add your first client to get started'}
                 </p>
                 {!searchQuery && (
-                  <Link to="/clients/new">
-                    <Button className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add Client
-                    </Button>
-                  </Link>
+                  <Button className="gap-2" onClick={() => setShowNewClient(true)}>
+                    <Plus className="w-4 h-4" />
+                    Add Client
+                  </Button>
                 )}
               </div>
             ) : (
@@ -200,6 +203,142 @@ export function ClientsPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* New Client Full-Screen Dialog */}
+      {showNewClient && (
+        <NewClientOverlay
+          onClose={() => setShowNewClient(false)}
+          onCreated={(newId) => {
+            setShowNewClient(false);
+            fetchClients();
+            navigate(`/clients/${newId}`);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+// ─── New Client Overlay (Boulevard-style) ────────────────
+function NewClientOverlay({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [marketingOptIn, setMarketingOptIn] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!firstName.trim() || !lastName.trim()) {
+      toast.error('First name and last name are required');
+      return;
+    }
+    setSaving(true);
+    const { data, error } = await supabase.from('clients').insert({
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      email: email.trim() || null,
+      phone: phone.trim() || null,
+      marketing_opt_in: marketingOptIn ? 'Opted In' : 'Opted Out',
+    }).select('id').single();
+
+    setSaving(false);
+    if (error) {
+      toast.error('Failed to create client');
+    } else {
+      toast.success('Client created');
+      onCreated(data.id);
+    }
+  };
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-background flex flex-col"
+    >
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving || !firstName.trim() || !lastName.trim()}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Save
+          </Button>
+        </div>
+      </div>
+
+      {/* Form Content */}
+      <div className="flex-1 overflow-auto flex justify-center pt-12 pb-20 px-6">
+        <div className="w-full max-w-2xl">
+          <h1 className="font-heading text-3xl text-foreground mb-8">New client</h1>
+
+          <div className="bg-card border border-border rounded-lg p-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">First name</Label>
+                <Input
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="h-11 bg-muted/50"
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">Last name</Label>
+                <Input
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="h-11 bg-muted/50"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">Email address</Label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-11 bg-muted/50"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">Phone number</Label>
+                <Input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="h-11 bg-muted/50"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <Checkbox
+                id="marketing-opt-in"
+                checked={marketingOptIn}
+                onCheckedChange={(v) => setMarketingOptIn(!!v)}
+              />
+              <Label htmlFor="marketing-opt-in" className="text-sm text-foreground cursor-pointer">
+                Customer agreed to receive marketing emails.
+              </Label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }
