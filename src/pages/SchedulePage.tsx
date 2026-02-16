@@ -43,6 +43,7 @@ export function SchedulePage() {
   const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isFullCalendar, setIsFullCalendar] = useState(false);
 
   // Fetch active staff on mount
   useEffect(() => {
@@ -155,7 +156,7 @@ export function SchedulePage() {
     setSelectedDate(d);
   };
 
-  const filteredStaff = staffList.filter((s) => selectedStaffIds.includes(s.id));
+  const filteredStaff = isFullCalendar ? [] : staffList.filter((s) => selectedStaffIds.includes(s.id));
 
   return (
     <div className="p-4 md:p-6 max-w-full">
@@ -171,6 +172,8 @@ export function SchedulePage() {
         staffList={staffList}
         selectedStaffIds={selectedStaffIds}
         onSelectedStaffChange={setSelectedStaffIds}
+        isFullCalendar={isFullCalendar}
+        onFullCalendarChange={setIsFullCalendar}
       />
       <CalendarTimeGrid
         dates={getDates()}
