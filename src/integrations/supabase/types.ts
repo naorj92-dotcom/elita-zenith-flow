@@ -542,19 +542,25 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          allergies: string | null
           avatar_url: string | null
           city: string | null
           created_at: string
           date_of_birth: string | null
           email: string | null
+          email_notifications: boolean
           first_name: string
           id: string
           is_vip: boolean
           last_name: string
           last_visit_date: string | null
+          medications: string | null
           notes: string | null
           phone: string | null
+          referral_source: string | null
+          scheduling_alert: string | null
           state: string | null
+          text_notifications: boolean
           total_spent: number
           updated_at: string
           visit_count: number
@@ -562,19 +568,25 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          allergies?: string | null
           avatar_url?: string | null
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
+          email_notifications?: boolean
           first_name: string
           id?: string
           is_vip?: boolean
           last_name: string
           last_visit_date?: string | null
+          medications?: string | null
           notes?: string | null
           phone?: string | null
+          referral_source?: string | null
+          scheduling_alert?: string | null
           state?: string | null
+          text_notifications?: boolean
           total_spent?: number
           updated_at?: string
           visit_count?: number
@@ -582,19 +594,25 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          allergies?: string | null
           avatar_url?: string | null
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
+          email_notifications?: boolean
           first_name?: string
           id?: string
           is_vip?: boolean
           last_name?: string
           last_visit_date?: string | null
+          medications?: string | null
           notes?: string | null
           phone?: string | null
+          referral_source?: string | null
+          scheduling_alert?: string | null
           state?: string | null
+          text_notifications?: boolean
           total_spent?: number
           updated_at?: string
           visit_count?: number
