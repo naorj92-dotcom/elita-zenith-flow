@@ -203,6 +203,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     const start = new Date(apt.scheduled_at);
     const startMin = start.getHours() * 60 + start.getMinutes();
     const top = ((startMin - 7 * 60) / 60) * SLOT_HEIGHT;
+    const startX = e.clientX;
     const startY = e.clientY;
     let isDragging = false;
 
@@ -210,8 +211,10 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     updateColumnRects();
 
     const onMove = (ev: MouseEvent) => {
+      const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
-      if (!isDragging && Math.abs(dy) < 5) return;
+      // Start dragging after 5px threshold in any direction
+      if (!isDragging && Math.sqrt(dx * dx + dy * dy) < 5) return;
       if (!isDragging) {
         isDragging = true;
         dragRef.current = { apt, startY, startTop: top, colDate };
