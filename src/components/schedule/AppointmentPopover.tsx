@@ -42,7 +42,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
     : 0;
 
   return (
-    <div className="w-80 bg-popover border border-border rounded-xl shadow-xl p-4 z-50" onClick={(e) => e.stopPropagation()}>
+    <div data-appointment-popover className="w-80 bg-popover border border-border rounded-xl shadow-xl p-4 z-50" onClick={(e) => e.stopPropagation()}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div>

@@ -66,12 +66,18 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     return () => grid.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close popover on outside click
+  // Close popover on outside click (delayed to avoid closing on the opening click)
   useEffect(() => {
     if (!selectedApt) return;
-    const handler = () => setSelectedApt(null);
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
+    const handler = (e: MouseEvent) => {
+      // Don't close if clicking inside the popover
+      const popoverEl = document.querySelector('[data-appointment-popover]');
+      if (popoverEl && popoverEl.contains(e.target as Node)) return;
+      setSelectedApt(null);
+    };
+    // Delay adding listener so the opening click doesn't immediately close it
+    const timer = setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => { clearTimeout(timer); document.removeEventListener('click', handler); };
   }, [selectedApt]);
 
   const getApptsForDateAndStaff = (date: Date, staffId: string) =>
@@ -116,37 +122,29 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     const start = new Date(apt.scheduled_at);
     const startMin = start.getHours() * 60 + start.getMinutes();
     const top = ((startMin - 7 * 60) / 60) * SLOT_HEIGHT;
-    dragRef.current = { apt, startY: e.clientY, startTop: top, colDate };
-    setDraggingApt(apt.id);
-    setDragGhostTop(top);
+    const startY = e.clientY;
+    let isDragging = false;
 
     const onMove = (ev: MouseEvent) => {
-      if (!dragRef.current) return;
-      const dy = ev.clientY - dragRef.current.startY;
-      const newTop = dragRef.current.startTop + dy;
-      // snap to 15-min increments
+      const dy = ev.clientY - startY;
+      // Only start dragging after 5px threshold to allow clicks
+      if (!isDragging && Math.abs(dy) < 5) return;
+      if (!isDragging) {
+        isDragging = true;
+        dragRef.current = { apt, startY, startTop: top, colDate };
+        setDraggingApt(apt.id);
+      }
+      const newTop = top + dy;
       const snapped = Math.round(newTop / (SLOT_HEIGHT / 4)) * (SLOT_HEIGHT / 4);
       setDragGhostTop(Math.max(0, snapped));
     };
 
-    const onUp = () => {
+    const onUp = (ev: MouseEvent) => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      if (dragRef.current && dragGhostTop !== null) {
-        // Calculate the final top from state won't work since it's stale — recalc
-      }
-      setDraggingApt(null);
-      setDragGhostTop(null);
-      dragRef.current = null;
-    };
-
-    // Use a better approach: store final in ref
-    const onUpFinal = (ev: MouseEvent) => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUpFinal);
-      if (dragRef.current) {
-        const dy = ev.clientY - dragRef.current.startY;
-        const newTop = dragRef.current.startTop + dy;
+      if (isDragging && dragRef.current) {
+        const dy = ev.clientY - startY;
+        const newTop = top + dy;
         const snapped = Math.round(newTop / (SLOT_HEIGHT / 4)) * (SLOT_HEIGHT / 4);
         const finalTop = Math.max(0, snapped);
         const minutesFromStart = (finalTop / SLOT_HEIGHT) * 60;
@@ -158,7 +156,6 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
         newDate.setHours(hours, mins, 0, 0);
 
         const oldStart = new Date(dragRef.current.apt.scheduled_at);
-        // Only fire if actually moved
         if (oldStart.getTime() !== newDate.getTime()) {
           onAppointmentDrop?.(dragRef.current.apt.id, newDate);
         }
@@ -169,7 +166,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     };
 
     document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUpFinal);
+    document.addEventListener('mouseup', onUp);
   };
 
   return (
