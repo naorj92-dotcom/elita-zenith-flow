@@ -17,7 +17,7 @@ const US_STATES = [
   'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'
 ];
 
-const AREAS_OF_FOCUS = ['Face','Chin','Neck','Arms','Abdomen','Flanks','Thighs','Buttocks'];
+const AREAS_OF_FOCUS = ['Face','Chin','Neck','Arms','Abdomen','Flanks','Thighs','Buttocks','Other'];
 const GOALS_TARGET = ['Fat Reduction','Muscle Toning','Skin Tightening','Anti-Aging','Acne','Maintenance'];
 const MEDICAL_CONDITIONS = [
   'Pregnant / Breastfeeding','Diabetes','Stroke / Bell\'s Palsy','HIV / Hepatitis',
