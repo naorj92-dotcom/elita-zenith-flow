@@ -426,21 +426,39 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       </div>
 
       {/* Floating drag ghost that follows cursor */}
-      {draggingApt && dragCursorPos && dragRef.current && (
-        <div
-          className="fixed z-50 pointer-events-none"
-          style={{ left: dragCursorPos.x + 12, top: dragCursorPos.y - 16 }}
-        >
-          <div className="flex items-center gap-1.5">
-            <div className="bg-primary text-primary-foreground rounded-md px-2 py-1 shadow-lg text-xs font-semibold max-w-[160px] truncate">
-              {dragRef.current.apt.client_name}
+      {draggingApt && dragCursorPos && dragRef.current && dragGhostTop !== null && (() => {
+        const apt = dragRef.current!.apt;
+        const minutesFromStart = (dragGhostTop / SLOT_HEIGHT) * 60;
+        const totalMinutes = 7 * 60 + minutesFromStart;
+        const hours = Math.floor(totalMinutes / 60);
+        const mins = Math.round(totalMinutes % 60);
+        const isPM = hours >= 12;
+        const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        const timeLabel = `${displayHour}:${mins.toString().padStart(2, '0')}${isPM ? 'pm' : 'am'}`;
+        const height = Math.max((apt.duration_minutes / 60) * SLOT_HEIGHT, 36);
+
+        return (
+          <div
+            className="fixed z-50 pointer-events-none"
+            style={{ left: dragCursorPos.x + 14, top: dragCursorPos.y - 20 }}
+          >
+            <div
+              className={cn(
+                'rounded-md border-l-[3px] px-1.5 py-1 shadow-xl opacity-90 w-[140px] overflow-hidden',
+                STATUS_COLORS[apt.status] || STATUS_COLORS.scheduled
+              )}
+              style={{ height }}
+            >
+              <p className="text-[9px] text-muted-foreground font-medium">{timeLabel}</p>
+              <p className="text-[10px] font-semibold truncate">{apt.client_name}</p>
+              {height > 36 && <p className="text-[9px] opacity-70 truncate">{apt.service_name}</p>}
             </div>
-            <svg width="18" height="18" viewBox="0 0 18 18" className="text-primary shrink-0">
-              <path d="M9 2 L15 9 L9 16 M15 9 L3 9" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="16" height="16" viewBox="0 0 16 16" className="text-primary -mt-[calc(50%)] ml-[calc(100%+2px)] absolute top-1/2 right-[-20px]">
+              <path d="M3 8h10M10 4l4 4-4 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
