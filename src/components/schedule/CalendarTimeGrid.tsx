@@ -1,9 +1,9 @@
-import React, { useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GoogleCalendarEvent } from '@/hooks/useCalendarSync';
+import { AppointmentPopover } from './AppointmentPopover';
 import type { ScheduleAppointment, ScheduleStaff } from '@/pages/SchedulePage';
 
 interface CalendarTimeGridProps {
@@ -12,10 +12,13 @@ interface CalendarTimeGridProps {
   googleEvents: GoogleCalendarEvent[];
   isLoading: boolean;
   staffList: ScheduleStaff[];
+  onAppointmentDrop?: (appointmentId: string, newScheduledAt: Date) => void;
+  onStatusChange?: (id: string, status: string) => void;
+  clientDetailsMap?: Record<string, { phone?: string | null; email?: string | null; visit_count?: number; total_spent?: number; date_of_birth?: string | null }>;
 }
 
-const HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7am–9pm
-const SLOT_HEIGHT = 64; // px per hour
+const HOURS = Array.from({ length: 15 }, (_, i) => i + 7);
+const SLOT_HEIGHT = 64;
 const MAX_STAFF_WEEK = 3;
 
 const STATUS_COLORS: Record<string, string> = {
@@ -36,9 +39,12 @@ function isToday(d: Date) {
   return isSameDay(d, new Date());
 }
 
-export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList }: CalendarTimeGridProps) {
+export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onStatusChange, clientDetailsMap }: CalendarTimeGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
+  const [selectedApt, setSelectedApt] = useState<ScheduleAppointment | null>(null);
+  const [popoverPos, setPopoverPos] = useState<{ x: number; y: number } | null>(null);
+
   const isDayView = dates.length === 1;
   const isWeekView = dates.length === 7;
   const visibleStaff = staffList.length > 0
@@ -48,12 +54,9 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
   const staffColWidth = isWeekView ? 80 : isDayView ? 160 : 100;
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = SLOT_HEIGHT * 1;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = SLOT_HEIGHT * 1;
   }, []);
 
-  // Sync horizontal scroll between header and grid
   useEffect(() => {
     const grid = scrollRef.current;
     const header = headerScrollRef.current;
@@ -62,6 +65,14 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     grid.addEventListener('scroll', onScroll);
     return () => grid.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!selectedApt) return;
+    const handler = () => setSelectedApt(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [selectedApt]);
 
   const getApptsForDateAndStaff = (date: Date, staffId: string) =>
     appointments.filter((a) => isSameDay(new Date(a.scheduled_at), date) && a.staff_id === staffId);
@@ -83,12 +94,89 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     ? 56 + dates.length * visibleStaff.length * staffColWidth
     : undefined;
 
+  const handleAptClick = (apt: ScheduleAppointment, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const gridRect = scrollRef.current?.getBoundingClientRect();
+    if (!gridRect) return;
+    let x = e.clientX - gridRect.left + (scrollRef.current?.scrollLeft || 0);
+    let y = e.clientY - gridRect.top + (scrollRef.current?.scrollTop || 0);
+    setPopoverPos({ x, y });
+    setSelectedApt(apt);
+  };
+
+  // Drag state
+  const dragRef = useRef<{ apt: ScheduleAppointment; startY: number; startTop: number; colDate: Date } | null>(null);
+  const [dragGhostTop, setDragGhostTop] = useState<number | null>(null);
+  const [draggingApt, setDraggingApt] = useState<string | null>(null);
+
+  const handleDragStart = (apt: ScheduleAppointment, colDate: Date, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const start = new Date(apt.scheduled_at);
+    const startMin = start.getHours() * 60 + start.getMinutes();
+    const top = ((startMin - 7 * 60) / 60) * SLOT_HEIGHT;
+    dragRef.current = { apt, startY: e.clientY, startTop: top, colDate };
+    setDraggingApt(apt.id);
+    setDragGhostTop(top);
+
+    const onMove = (ev: MouseEvent) => {
+      if (!dragRef.current) return;
+      const dy = ev.clientY - dragRef.current.startY;
+      const newTop = dragRef.current.startTop + dy;
+      // snap to 15-min increments
+      const snapped = Math.round(newTop / (SLOT_HEIGHT / 4)) * (SLOT_HEIGHT / 4);
+      setDragGhostTop(Math.max(0, snapped));
+    };
+
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (dragRef.current && dragGhostTop !== null) {
+        // Calculate the final top from state won't work since it's stale — recalc
+      }
+      setDraggingApt(null);
+      setDragGhostTop(null);
+      dragRef.current = null;
+    };
+
+    // Use a better approach: store final in ref
+    const onUpFinal = (ev: MouseEvent) => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUpFinal);
+      if (dragRef.current) {
+        const dy = ev.clientY - dragRef.current.startY;
+        const newTop = dragRef.current.startTop + dy;
+        const snapped = Math.round(newTop / (SLOT_HEIGHT / 4)) * (SLOT_HEIGHT / 4);
+        const finalTop = Math.max(0, snapped);
+        const minutesFromStart = (finalTop / SLOT_HEIGHT) * 60;
+        const totalMinutes = 7 * 60 + minutesFromStart;
+        const hours = Math.floor(totalMinutes / 60);
+        const mins = Math.round(totalMinutes % 60);
+
+        const newDate = new Date(dragRef.current.colDate);
+        newDate.setHours(hours, mins, 0, 0);
+
+        const oldStart = new Date(dragRef.current.apt.scheduled_at);
+        // Only fire if actually moved
+        if (oldStart.getTime() !== newDate.getTime()) {
+          onAppointmentDrop?.(dragRef.current.apt.id, newDate);
+        }
+      }
+      setDraggingApt(null);
+      setDragGhostTop(null);
+      dragRef.current = null;
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUpFinal);
+  };
+
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 160px)' }}>
       {/* Column Headers */}
       <div ref={headerScrollRef} className="border-b border-border bg-card sticky top-0 z-10 overflow-x-hidden">
         <div style={{ minWidth: totalMinWidth }}>
-          {/* Date row */}
           <div className="flex">
             <div className="w-14 shrink-0 border-r border-border" />
             {dates.map((date, i) => (
@@ -114,7 +202,6 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
             ))}
           </div>
 
-          {/* Provider sub-headers */}
           {showProviderColumns && (
             <div className="flex border-t border-border">
               <div className="w-14 shrink-0 border-r border-border" />
@@ -195,6 +282,10 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       nowTop={nowTop}
                       showStaffName={false}
                       colWidth={staffColWidth}
+                      onAptClick={handleAptClick}
+                      onDragStart={handleDragStart}
+                      draggingApt={draggingApt}
+                      dragGhostTop={dragGhostTop}
                     />
                   ))}
                 </div>
@@ -211,10 +302,30 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                 nowTop={nowTop}
                 showStaffName
                 className="flex-1 border-r border-border last:border-r-0"
+                onAptClick={handleAptClick}
+                onDragStart={handleDragStart}
+                draggingApt={draggingApt}
+                dragGhostTop={dragGhostTop}
               />
             );
           })}
         </div>
+
+        {/* Appointment Popover (floating) */}
+        {selectedApt && popoverPos && (
+          <div
+            className="absolute z-30"
+            style={{ left: Math.min(popoverPos.x, (scrollRef.current?.scrollWidth || 400) - 330), top: popoverPos.y }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AppointmentPopover
+              appointment={selectedApt}
+              clientDetails={clientDetailsMap?.[selectedApt.id] || null}
+              onClose={() => setSelectedApt(null)}
+              onStatusChange={onStatusChange}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -229,9 +340,13 @@ interface ProviderColumnProps {
   showStaffName: boolean;
   className?: string;
   colWidth?: number;
+  onAptClick?: (apt: ScheduleAppointment, e: React.MouseEvent) => void;
+  onDragStart?: (apt: ScheduleAppointment, colDate: Date, e: React.MouseEvent) => void;
+  draggingApt?: string | null;
+  dragGhostTop?: number | null;
 }
 
-function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth }: ProviderColumnProps) {
+function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
   return (
     <div
       className={cn(
@@ -242,12 +357,10 @@ function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle,
       )}
       style={colWidth ? { width: colWidth, minWidth: colWidth } : undefined}
     >
-      {/* Horizontal grid lines */}
       {HOURS.map((hour) => (
         <div key={hour} className="absolute w-full border-t border-border/40" style={{ top: (hour - 7) * SLOT_HEIGHT }} />
       ))}
 
-      {/* Now indicator */}
       {isToday(date) && nowTop >= 0 && nowTop <= HOURS.length * SLOT_HEIGHT && (
         <div className="absolute left-0 right-0 z-10 flex items-center pointer-events-none" style={{ top: nowTop }}>
           <div className="w-2 h-2 rounded-full bg-destructive -ml-1" />
@@ -255,23 +368,27 @@ function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle,
         </div>
       )}
 
-      {/* Appointment blocks */}
       {dayAppts.map((apt) => {
         const start = new Date(apt.scheduled_at);
         const startMin = start.getHours() * 60 + start.getMinutes();
         const top = ((startMin - 7 * 60) / 60) * SLOT_HEIGHT;
         const height = Math.max((apt.duration_minutes / 60) * SLOT_HEIGHT, 24);
         const timeLabel = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+        const isDragging = draggingApt === apt.id;
 
         return (
-          <Link
+          <div
             key={apt.id}
-            to={`/schedule/${apt.id}`}
             className={cn(
-              'absolute left-0.5 right-0.5 rounded-md border-l-[3px] px-1 py-0.5 overflow-hidden cursor-pointer transition-all hover:shadow-md hover:z-10',
-              STATUS_COLORS[apt.status] || STATUS_COLORS.scheduled
+              'absolute left-0.5 right-0.5 rounded-md border-l-[3px] px-1 py-0.5 overflow-hidden cursor-grab transition-shadow select-none',
+              STATUS_COLORS[apt.status] || STATUS_COLORS.scheduled,
+              isDragging && 'opacity-50 cursor-grabbing shadow-lg z-20'
             )}
-            style={{ top, height }}
+            style={{ top: isDragging && dragGhostTop !== null ? dragGhostTop : top, height }}
+            onClick={(e) => onAptClick?.(apt, e)}
+            onMouseDown={(e) => {
+              if (e.button === 0) onDragStart?.(apt, date, e);
+            }}
           >
             <p className="text-[9px] text-muted-foreground">{timeLabel}</p>
             <p className="text-[10px] font-semibold truncate">{apt.client_name}</p>
@@ -279,16 +396,14 @@ function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle,
             {showStaffName && height > 48 && apt.staff_name && (
               <p className="text-[8px] opacity-60 truncate">{apt.staff_name}</p>
             )}
-          </Link>
+          </div>
         );
       })}
 
-      {/* Google Calendar events */}
       {dayGoogle.map((event) => {
         const startStr = event.start?.dateTime || event.start?.date || '';
         const endStr = event.end?.dateTime || event.end?.date || '';
         if (!startStr) return null;
-
         const start = new Date(startStr);
         const end = endStr ? new Date(endStr) : new Date(start.getTime() + 3600000);
         const startMin = start.getHours() * 60 + start.getMinutes();
