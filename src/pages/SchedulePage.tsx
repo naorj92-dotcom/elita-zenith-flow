@@ -156,36 +156,9 @@ export function SchedulePage() {
   };
 
   const handleAppointmentDrop = (appointmentId: string, newScheduledAt: Date) => {
+    // Google Calendar events are read-only — ignore drag attempts
     if (appointmentId.startsWith('gcal-')) {
-      const gcalId = appointmentId.replace('gcal-', '');
-      const gEvent = googleEvents.find((e) => e.id === gcalId);
-      if (!gEvent) return;
-
-      // Build a fake ScheduleAppointment from the Google event for the dialog
-      const startStr = gEvent.start?.dateTime || gEvent.start?.date || '';
-      const endStr = gEvent.end?.dateTime || gEvent.end?.date || '';
-      const start = new Date(startStr);
-      const end = endStr ? new Date(endStr) : new Date(start.getTime() + 3600000);
-      const durationMin = Math.round((end.getTime() - start.getTime()) / 60000);
-      const parts = (gEvent.summary || '').split(' - ');
-
-      const fakeApt: ScheduleAppointment = {
-        id: appointmentId,
-        scheduled_at: start.toISOString(),
-        duration_minutes: durationMin,
-        status: 'scheduled',
-        notes: null,
-        total_amount: 0,
-        client_name: parts[1]?.trim() || parts[0]?.trim() || 'Unknown',
-        service_name: parts[0]?.trim() || 'Appointment',
-        staff_name: '',
-        staff_id: null,
-        client_id: null,
-        room_name: null,
-      };
-
-      setRescheduleApt(fakeApt);
-      setRescheduleNewTime(newScheduledAt);
+      toast.info('Google Calendar events are read-only and cannot be moved here');
       return;
     }
     const apt = appointments.find((a) => a.id === appointmentId);
@@ -198,39 +171,16 @@ export function SchedulePage() {
     if (!rescheduleApt || !rescheduleNewTime) return;
     setIsRescheduling(true);
 
-    if (rescheduleApt.id.startsWith('gcal-')) {
-      // Reschedule directly on Google Calendar
-      const gcalId = rescheduleApt.id.replace('gcal-', '');
-      try {
-        const response = await supabase.functions.invoke('sync-google-calendar', {
-          body: {
-            action: 'reschedule_gcal',
-            google_event_id: gcalId,
-            new_start: rescheduleNewTime.toISOString(),
-            duration_minutes: rescheduleApt.duration_minutes,
-          },
-        });
-        if (response.error) {
-          toast.error('Failed to reschedule appointment');
-        } else {
-          toast.success('Appointment rescheduled successfully');
-          await fetchData();
-        }
-      } catch {
-        toast.error('Failed to reschedule appointment');
-      }
-    } else {
-      const { error } = await supabase
-        .from('appointments')
-        .update({ scheduled_at: rescheduleNewTime.toISOString() })
-        .eq('id', rescheduleApt.id);
+    const { error } = await supabase
+      .from('appointments')
+      .update({ scheduled_at: rescheduleNewTime.toISOString() })
+      .eq('id', rescheduleApt.id);
 
-      if (error) {
-        toast.error('Failed to reschedule appointment');
-      } else {
-        toast.success('Appointment rescheduled successfully');
-        await fetchData();
-      }
+    if (error) {
+      toast.error('Failed to reschedule appointment');
+    } else {
+      toast.success('Appointment rescheduled successfully');
+      await fetchData();
     }
 
     setIsRescheduling(false);
