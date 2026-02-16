@@ -412,8 +412,59 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "reschedule_gcal") {
+      // Reschedule a Google Calendar event directly by updating its start/end time
+      const { google_event_id, new_start, duration_minutes } = body;
+      if (!google_event_id || !new_start) {
+        return new Response(JSON.stringify({ error: "google_event_id and new_start are required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const dur = duration_minutes || 60;
+      const startDate = new Date(new_start);
+      const endDate = new Date(startDate.getTime() + dur * 60000);
+
+      // First get the existing event to preserve its data
+      const getResp = await fetch(
+        `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendar_id)}/events/${google_event_id}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!getResp.ok) {
+        const text = await getResp.text();
+        throw new Error(`Failed to fetch event: ${text}`);
+      }
+      const existingEvent = await getResp.json();
+
+      // Update only the start/end times
+      existingEvent.start = { dateTime: startDate.toISOString(), timeZone: "America/New_York" };
+      existingEvent.end = { dateTime: endDate.toISOString(), timeZone: "America/New_York" };
+
+      const updateResp = await fetch(
+        `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendar_id)}/events/${google_event_id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(existingEvent),
+        }
+      );
+      if (!updateResp.ok) {
+        const text = await updateResp.text();
+        throw new Error(`Google Calendar reschedule failed [${updateResp.status}]: ${text}`);
+      }
+      const updated = await updateResp.json();
+
+      return new Response(JSON.stringify({ success: true, action: "rescheduled", event: updated }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(
-      JSON.stringify({ error: "Invalid action. Use: sync, pull, sync_all" }),
+      JSON.stringify({ error: "Invalid action. Use: sync, pull, sync_all, reschedule_gcal" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
