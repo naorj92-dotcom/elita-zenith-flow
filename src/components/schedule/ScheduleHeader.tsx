@@ -103,7 +103,7 @@ export function ScheduleHeader({
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <Users className="w-4 h-4" />
-                {isFullCalendar ? 'Full Calendar' : `Staff (${selectedStaffIds.length})`}
+                {isFullCalendar ? 'Elita Medical Spa' : `Staff (${selectedStaffIds.length})`}
                 {!isFullCalendar && (
                   <div className="flex -space-x-1.5 ml-1">
                     {staffList
@@ -128,7 +128,10 @@ export function ScheduleHeader({
             </PopoverTrigger>
             <PopoverContent className="w-64 p-2" align="end">
               <div className="space-y-1">
-                {/* Full Calendar option */}
+                {/* General Staff / Spa-wide view */}
+                <div className="px-2 py-1">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">General Staff</span>
+                </div>
                 <button
                   onClick={() => onFullCalendarChange?.(!isFullCalendar)}
                   className={cn(
@@ -137,7 +140,7 @@ export function ScheduleHeader({
                   )}
                 >
                   <CalendarDays className="w-4 h-4" />
-                  Full Calendar
+                  Elita Medical Spa
                 </button>
 
                 <Separator className="my-1.5" />
