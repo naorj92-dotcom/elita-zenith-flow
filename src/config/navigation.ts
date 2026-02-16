@@ -84,6 +84,12 @@ export const OWNER_NAVIGATION: NavCategory[] = [
     items: [
       { label: 'Client List', href: '/clients', icon: Users },
       { label: 'Photos', href: '/photos', icon: Camera },
+    ],
+  },
+  {
+    label: 'Messages',
+    icon: MessageCircle,
+    items: [
       { label: 'Messages', href: '/messages', icon: MessageCircle },
     ],
   },
