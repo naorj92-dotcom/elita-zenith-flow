@@ -33,7 +33,8 @@ import {
   Heart,
   Wallet,
   Star,
-  BookOpen
+  BookOpen,
+  MessageCircle
 } from 'lucide-react';
 import { AppRole, EmployeeType } from '@/types/roles';
 
@@ -251,6 +252,13 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
     items: [
       { label: 'Payment History', href: '/portal/payments', icon: Wallet },
       { label: 'Gift Cards', href: '/portal/gift-cards', icon: Gift },
+    ],
+  },
+  {
+    label: 'Messages',
+    icon: MessageCircle,
+    items: [
+      { label: 'Contact Us', href: '/portal/messages', icon: MessageCircle },
     ],
   },
   {

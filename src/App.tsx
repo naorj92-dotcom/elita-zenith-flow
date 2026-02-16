@@ -43,6 +43,7 @@ import { ClientHistoryPage } from "@/pages/portal/ClientHistoryPage";
 import { ClientBookingPage } from "@/pages/portal/ClientBookingPage";
 import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
 import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
+import { ClientMessagesPage } from "@/pages/portal/ClientMessagesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -161,6 +162,7 @@ function AppRoutes() {
         <Route path="payments" element={<ClientHistoryPage />} />
         <Route path="gift-cards" element={<ClientPackagesPage />} />
         <Route path="profile" element={<ClientDashboard />} />
+        <Route path="messages" element={<ClientMessagesPage />} />
       </Route>
       
       {/* ========== 404 ========== */}
