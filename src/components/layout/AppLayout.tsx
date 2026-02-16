@@ -7,6 +7,7 @@ import {
   Search,
   Plus,
   CreditCard,
+  UserPlus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
@@ -274,6 +275,12 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/clients" className="gap-2">
+                <UserPlus className="w-4 h-4" />
+                New Client
+              </Link>
+            </Button>
             <Button variant="outline" size="sm" asChild>
               <Link to="/schedule/new" className="gap-2">
                 <Plus className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, RefreshCw, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
+import { Plus, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -97,13 +97,6 @@ export function ScheduleHeader({
           <RefreshCw className={cn('w-4 h-4', isSyncing && 'animate-spin')} />
           Sync
         </Button>
-
-        <Link to="/clients">
-          <Button variant="outline" size="sm" className="gap-2">
-            <UserPlus className="w-4 h-4" />
-            New Client
-          </Button>
-        </Link>
 
         <Link to="/schedule/new">
           <Button size="sm" className="gap-2">
