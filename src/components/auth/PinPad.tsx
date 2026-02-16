@@ -169,7 +169,7 @@ export function PinPad({
 
         {/* Demo Hint */}
         <p className="text-center text-xs text-muted-foreground mt-8">
-          Demo: 1234 (Provider) · 5678 (Esthetician) · 0000 (Admin)
+          Demo: 1234 (Owner) · 5678 (Esthetician) · 0000 (Front Desk)
         </p>
       </motion.div>
     </div>
