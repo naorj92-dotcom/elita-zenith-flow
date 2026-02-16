@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, User } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GoogleCalendarEvent } from '@/hooks/useCalendarSync';
@@ -37,6 +37,8 @@ function isToday(d: Date) {
 
 export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList }: CalendarTimeGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isDayView = dates.length === 1;
+  const showProviderColumns = isDayView && staffList.length > 0;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -44,13 +46,11 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     }
   }, []);
 
-  const hasStaff = staffList.length > 0;
-
   const getApptsForDateAndStaff = (date: Date, staffId: string) =>
     appointments.filter((a) => isSameDay(new Date(a.scheduled_at), date) && a.staff_id === staffId);
 
-  const getUnassignedApptsForDate = (date: Date) =>
-    appointments.filter((a) => isSameDay(new Date(a.scheduled_at), date) && !a.staff_id);
+  const getApptsForDate = (date: Date) =>
+    appointments.filter((a) => isSameDay(new Date(a.scheduled_at), date));
 
   const getGoogleForDate = (date: Date) =>
     googleEvents.filter((e) => {
@@ -61,9 +61,6 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const nowTop = ((nowMinutes - 7 * 60) / 60) * SLOT_HEIGHT;
-
-  // Total columns = dates * staffList (or dates if no staff)
-  const columnsPerDay = hasStaff ? staffList.length : 1;
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 160px)' }}>
@@ -79,7 +76,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                 'flex-1 text-center py-2 border-r border-border last:border-r-0',
                 isToday(date) && 'bg-primary/5'
               )}
-              style={{ minWidth: hasStaff ? columnsPerDay * 120 : undefined }}
+              style={{ minWidth: showProviderColumns ? staffList.length * 120 : undefined }}
             >
               <p className="text-xs text-muted-foreground uppercase tracking-wide">
                 {date.toLocaleDateString('en-US', { weekday: 'short' })}
@@ -96,8 +93,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
           ))}
         </div>
 
-        {/* Provider sub-headers */}
-        {hasStaff && (
+        {/* Provider sub-headers — only in day view */}
+        {showProviderColumns && (
           <div className="flex border-t border-border">
             <div className="w-14 shrink-0 border-r border-border" />
             {dates.map((date, dateIdx) => (
@@ -129,7 +126,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       </div>
 
       {/* Time Grid */}
-      <div ref={scrollRef} className="flex-1 overflow-auto relative">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto relative">
         {isLoading && (
           <div className="absolute inset-0 bg-card/80 z-20 flex items-center justify-center">
             <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
@@ -150,39 +147,49 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
             ))}
           </div>
 
-          {/* Day Columns — each day subdivided by provider */}
-          {dates.map((date, dateIdx) => (
-            <div
-              key={dateIdx}
-              className={cn(
-                'flex flex-1 border-r border-border last:border-r-0',
-                isToday(date) && 'bg-primary/[0.02]'
-              )}
-            >
-              {hasStaff ? (
-                staffList.map((s, sIdx) => (
-                  <ProviderColumn
-                    key={s.id}
-                    date={date}
-                    staffId={s.id}
-                    appointments={getApptsForDateAndStaff(date, s.id)}
-                    googleEvents={sIdx === 0 ? getGoogleForDate(date) : []}
-                    isLast={sIdx === staffList.length - 1}
-                    nowTop={nowTop}
-                  />
-                ))
-              ) : (
-                <ProviderColumn
-                  date={date}
-                  staffId={null}
-                  appointments={appointments.filter((a) => isSameDay(new Date(a.scheduled_at), date))}
-                  googleEvents={getGoogleForDate(date)}
-                  isLast
-                  nowTop={nowTop}
-                />
-              )}
-            </div>
-          ))}
+          {/* Day Columns */}
+          {dates.map((date, dateIdx) => {
+            const dayGoogle = getGoogleForDate(date);
+
+            if (showProviderColumns) {
+              // Day view: subdivide by provider
+              return (
+                <div
+                  key={dateIdx}
+                  className={cn(
+                    'flex flex-1 border-r border-border last:border-r-0',
+                    isToday(date) && 'bg-primary/[0.02]'
+                  )}
+                >
+                  {staffList.map((s, sIdx) => (
+                    <ProviderColumn
+                      key={s.id}
+                      date={date}
+                      appointments={getApptsForDateAndStaff(date, s.id)}
+                      googleEvents={sIdx === 0 ? dayGoogle : []}
+                      isLast={sIdx === staffList.length - 1}
+                      nowTop={nowTop}
+                      showStaffName={false}
+                    />
+                  ))}
+                </div>
+              );
+            }
+
+            // Multi-day view: single column per day, show staff name on blocks
+            return (
+              <ProviderColumn
+                key={dateIdx}
+                date={date}
+                appointments={getApptsForDate(date)}
+                googleEvents={dayGoogle}
+                isLast={dateIdx === dates.length - 1}
+                nowTop={nowTop}
+                showStaffName
+                className="flex-1 border-r border-border last:border-r-0"
+              />
+            );
+          })}
         </div>
       </div>
     </div>
@@ -191,19 +198,22 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
 
 interface ProviderColumnProps {
   date: Date;
-  staffId: string | null;
   appointments: ScheduleAppointment[];
   googleEvents: GoogleCalendarEvent[];
   isLast: boolean;
   nowTop: number;
+  showStaffName: boolean;
+  className?: string;
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop }: ProviderColumnProps) {
+function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className }: ProviderColumnProps) {
   return (
     <div
       className={cn(
-        'flex-1 relative min-w-[120px]',
-        !isLast && 'border-r border-border/50'
+        'flex-1 relative min-w-[80px]',
+        !isLast && !className && 'border-r border-border/50',
+        isToday(date) && 'bg-primary/[0.02]',
+        className
       )}
     >
       {/* Horizontal grid lines */}
@@ -248,6 +258,9 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
             <p className="text-[11px] font-semibold truncate">{apt.client_name}</p>
             {height > 36 && (
               <p className="text-[10px] opacity-70 truncate">{apt.service_name}</p>
+            )}
+            {showStaffName && height > 48 && apt.staff_name && (
+              <p className="text-[9px] opacity-60 truncate">{apt.staff_name}</p>
             )}
           </Link>
         );
