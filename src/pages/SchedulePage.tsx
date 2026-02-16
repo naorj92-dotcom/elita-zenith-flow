@@ -219,7 +219,7 @@ export function SchedulePage() {
     setSelectedDate(d);
   };
 
-  const filteredStaff = isFullCalendar ? [] : staffList.filter((s) => selectedStaffIds.includes(s.id));
+  const filteredStaff = isFullCalendar ? staffList : staffList.filter((s) => selectedStaffIds.includes(s.id));
 
   return (
     <div className="p-4 md:p-6 max-w-full">
