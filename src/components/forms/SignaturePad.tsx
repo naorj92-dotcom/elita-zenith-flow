@@ -23,8 +23,10 @@ export function SignaturePad({ onSignatureChange, initialSignature, disabled = f
       isDrawingMode: !disabled,
     });
 
-    canvas.freeDrawingBrush.color = '#000000';
-    canvas.freeDrawingBrush.width = 2;
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.color = '#000000';
+      canvas.freeDrawingBrush.width = 2;
+    }
 
     setFabricCanvas(canvas);
 

@@ -46,6 +46,7 @@ import { ClientBookingPage } from "@/pages/portal/ClientBookingPage";
 import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
 import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
 import NotFound from "./pages/NotFound";
+import IntakeFormPage from "./pages/IntakeFormPage";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,9 @@ function OwnerRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
+      {/* ========== PUBLIC FORMS ========== */}
+      <Route path="/intake" element={<IntakeFormPage />} />
+      
       {/* ========== STAFF LOGIN ========== */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
