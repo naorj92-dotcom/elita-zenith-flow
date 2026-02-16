@@ -171,6 +171,31 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
   const dragRef = useRef<{ apt: ScheduleAppointment; startY: number; startTop: number; colDate: Date } | null>(null);
   const [dragGhostTop, setDragGhostTop] = useState<number | null>(null);
   const [draggingApt, setDraggingApt] = useState<string | null>(null);
+  const [dragTargetDate, setDragTargetDate] = useState<Date | null>(null);
+
+  // Build a ref of column rects so we can detect which date column the cursor is over
+  const columnRectsRef = useRef<{ date: Date; left: number; right: number }[]>([]);
+
+  const updateColumnRects = useCallback(() => {
+    const grid = scrollRef.current;
+    if (!grid) return;
+    const cols = grid.querySelectorAll<HTMLElement>('[data-date-col]');
+    const rects: { date: Date; left: number; right: number }[] = [];
+    cols.forEach((col) => {
+      const dateStr = col.getAttribute('data-date-col');
+      if (!dateStr) return;
+      const rect = col.getBoundingClientRect();
+      rects.push({ date: new Date(dateStr), left: rect.left, right: rect.right });
+    });
+    columnRectsRef.current = rects;
+  }, []);
+
+  const findDateAtX = useCallback((clientX: number): Date | null => {
+    for (const col of columnRectsRef.current) {
+      if (clientX >= col.left && clientX < col.right) return col.date;
+    }
+    return null;
+  }, []);
 
   const handleDragStart = (apt: ScheduleAppointment, colDate: Date, e: React.MouseEvent) => {
     e.preventDefault();
@@ -181,9 +206,11 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
     const startY = e.clientY;
     let isDragging = false;
 
+    // Snapshot column rects at drag start
+    updateColumnRects();
+
     const onMove = (ev: MouseEvent) => {
       const dy = ev.clientY - startY;
-      // Only start dragging after 5px threshold to allow clicks
       if (!isDragging && Math.abs(dy) < 5) return;
       if (!isDragging) {
         isDragging = true;
@@ -193,6 +220,10 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       const newTop = top + dy;
       const snapped = Math.round(newTop / (SLOT_HEIGHT / 4)) * (SLOT_HEIGHT / 4);
       setDragGhostTop(Math.max(0, snapped));
+
+      // Detect horizontal date column change
+      const hoveredDate = findDateAtX(ev.clientX);
+      setDragTargetDate(hoveredDate);
     };
 
     const onUp = (ev: MouseEvent) => {
@@ -208,7 +239,9 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
         const hours = Math.floor(totalMinutes / 60);
         const mins = Math.round(totalMinutes % 60);
 
-        const newDate = new Date(dragRef.current.colDate);
+        // Use the date column the cursor is over, or fall back to the original column
+        const targetDate = findDateAtX(ev.clientX) || dragRef.current.colDate;
+        const newDate = new Date(targetDate);
         newDate.setHours(hours, mins, 0, 0);
 
         const oldStart = new Date(dragRef.current.apt.scheduled_at);
@@ -218,6 +251,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       }
       setDraggingApt(null);
       setDragGhostTop(null);
+      setDragTargetDate(null);
       dragRef.current = null;
     };
 
@@ -322,6 +356,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
               return (
                 <div
                   key={dateIdx}
+                  data-date-col={date.toISOString()}
                   className={cn('flex border-r border-border last:border-r-0', isToday(date) && 'bg-primary/[0.02]')}
                   style={{ width: visibleStaff.length * staffColWidth, minWidth: visibleStaff.length * staffColWidth }}
                 >
@@ -347,21 +382,22 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
             }
 
             return (
-              <ProviderColumn
-                key={dateIdx}
-                date={date}
-                appointments={getApptsForDate(date)}
-                googleEvents={dayGoogle}
-                isLast={dateIdx === dates.length - 1}
-                nowTop={nowTop}
-                showStaffName
-                className="flex-1 border-r border-border last:border-r-0"
-                onAptClick={handleAptClick}
-                onGoogleEventClick={handleGoogleEventClick}
-                onDragStart={handleDragStart}
-                draggingApt={draggingApt}
-                dragGhostTop={dragGhostTop}
-              />
+              <div key={dateIdx} data-date-col={date.toISOString()} className="flex-1 border-r border-border last:border-r-0">
+                <ProviderColumn
+                  date={date}
+                  appointments={getApptsForDate(date)}
+                  googleEvents={dayGoogle}
+                  isLast={dateIdx === dates.length - 1}
+                  nowTop={nowTop}
+                  showStaffName
+                  className="h-full"
+                  onAptClick={handleAptClick}
+                  onGoogleEventClick={handleGoogleEventClick}
+                  onDragStart={handleDragStart}
+                  draggingApt={draggingApt}
+                  dragGhostTop={dragGhostTop}
+                />
+              </div>
             );
           })}
         </div>
