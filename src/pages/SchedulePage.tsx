@@ -6,7 +6,7 @@ import { useCalendarSync, GoogleCalendarEvent } from '@/hooks/useCalendarSync';
 import { ScheduleHeader, CalendarView } from '@/components/schedule/ScheduleHeader';
 import { CalendarTimeGrid } from '@/components/schedule/CalendarTimeGrid';
 
-interface ScheduleAppointment {
+export interface ScheduleAppointment {
   id: string;
   scheduled_at: string;
   duration_minutes: number;
@@ -16,7 +16,16 @@ interface ScheduleAppointment {
   client_name: string;
   service_name: string;
   staff_name: string;
+  staff_id: string | null;
   room_name: string | null;
+}
+
+export interface ScheduleStaff {
+  id: string;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+  role: string;
 }
 
 export function SchedulePage() {
@@ -30,14 +39,33 @@ export function SchedulePage() {
   const [view, setView] = useState<CalendarView>('day');
   const [appointments, setAppointments] = useState<ScheduleAppointment[]>([]);
   const [googleEvents, setGoogleEvents] = useState<GoogleCalendarEvent[]>([]);
+  const [staffList, setStaffList] = useState<ScheduleStaff[]>([]);
+  const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Fetch active staff on mount
+  useEffect(() => {
+    const fetchStaff = async () => {
+      const { data } = await supabase
+        .from('staff')
+        .select('id, first_name, last_name, avatar_url, role')
+        .eq('is_active', true)
+        .order('first_name', { ascending: true });
+      if (data) {
+        setStaffList(data);
+        // Default: show all providers
+        setSelectedStaffIds(data.map((s) => s.id));
+      }
+    };
+    fetchStaff();
+  }, []);
 
   const getDates = useCallback((): Date[] => {
     const count = view === 'day' ? 1 : view === '4day' ? 4 : 7;
     const start = new Date(selectedDate);
     if (view === 'week') {
-      start.setDate(start.getDate() - start.getDay()); // start on Sunday
+      start.setDate(start.getDate() - start.getDay());
     }
     return Array.from({ length: count }, (_, i) => {
       const d = new Date(start);
@@ -60,7 +88,7 @@ export function SchedulePage() {
       supabase
         .from('appointments')
         .select(`
-          id, scheduled_at, duration_minutes, status, notes, total_amount,
+          id, scheduled_at, duration_minutes, status, notes, total_amount, staff_id,
           clients (first_name, last_name),
           services (name),
           staff (first_name, last_name),
@@ -81,6 +109,7 @@ export function SchedulePage() {
           status: apt.status as AppointmentStatus,
           notes: apt.notes,
           total_amount: apt.total_amount,
+          staff_id: apt.staff_id,
           client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Walk-in',
           service_name: apt.services?.name || 'Service',
           staff_name: apt.staff ? `${apt.staff.first_name} ${apt.staff.last_name}` : '',
@@ -126,6 +155,8 @@ export function SchedulePage() {
     setSelectedDate(d);
   };
 
+  const filteredStaff = staffList.filter((s) => selectedStaffIds.includes(s.id));
+
   return (
     <div className="p-4 md:p-6 max-w-full">
       <ScheduleHeader
@@ -137,12 +168,16 @@ export function SchedulePage() {
         onToday={handleToday}
         onSync={handleSync}
         isSyncing={isSyncing}
+        staffList={staffList}
+        selectedStaffIds={selectedStaffIds}
+        onSelectedStaffChange={setSelectedStaffIds}
       />
       <CalendarTimeGrid
         dates={getDates()}
         appointments={appointments}
         googleEvents={googleEvents}
         isLoading={isLoading}
+        staffList={filteredStaff}
       />
     </div>
   );

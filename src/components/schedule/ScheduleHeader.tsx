@@ -1,9 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import type { ScheduleStaff } from '@/pages/SchedulePage';
 
 export type CalendarView = 'day' | '4day' | 'week';
 
@@ -16,6 +20,9 @@ interface ScheduleHeaderProps {
   onToday: () => void;
   onSync: () => void;
   isSyncing: boolean;
+  staffList?: ScheduleStaff[];
+  selectedStaffIds?: string[];
+  onSelectedStaffChange?: (ids: string[]) => void;
 }
 
 export function ScheduleHeader({
@@ -27,6 +34,9 @@ export function ScheduleHeader({
   onToday,
   onSync,
   isSyncing,
+  staffList = [],
+  selectedStaffIds = [],
+  onSelectedStaffChange,
 }: ScheduleHeaderProps) {
   const formatHeaderDate = () => {
     if (view === 'day') {
@@ -44,6 +54,23 @@ export function ScheduleHeader({
       return `${selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} – ${endDate.getDate()}, ${endDate.getFullYear()}`;
     }
     return `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  };
+
+  const toggleStaff = (id: string) => {
+    if (!onSelectedStaffChange) return;
+    if (selectedStaffIds.includes(id)) {
+      if (selectedStaffIds.length > 1) {
+        onSelectedStaffChange(selectedStaffIds.filter((s) => s !== id));
+      }
+    } else {
+      onSelectedStaffChange([...selectedStaffIds, id]);
+    }
+  };
+
+  const toggleAll = () => {
+    if (!onSelectedStaffChange) return;
+    if (selectedStaffIds.length === staffList.length) return;
+    onSelectedStaffChange(staffList.map((s) => s.id));
   };
 
   return (
@@ -64,7 +91,65 @@ export function ScheduleHeader({
         <h1 className="font-heading text-xl md:text-2xl text-foreground">{formatHeaderDate()}</h1>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Staff Filter */}
+        {staffList.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Users className="w-4 h-4" />
+                Staff ({selectedStaffIds.length})
+                <div className="flex -space-x-1.5 ml-1">
+                  {staffList
+                    .filter((s) => selectedStaffIds.includes(s.id))
+                    .slice(0, 3)
+                    .map((s) => (
+                      <Avatar key={s.id} className="h-5 w-5 border-2 border-background">
+                        <AvatarImage src={s.avatar_url || undefined} />
+                        <AvatarFallback className="text-[8px] bg-primary/10 text-primary">
+                          {s.first_name[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
+                  {selectedStaffIds.length > 3 && (
+                    <div className="h-5 w-5 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[8px] font-medium text-muted-foreground">
+                      +{selectedStaffIds.length - 3}
+                    </div>
+                  )}
+                </div>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2" align="end">
+              <div className="space-y-1">
+                <button
+                  onClick={toggleAll}
+                  className="w-full text-left text-xs font-medium text-primary px-2 py-1.5 hover:bg-muted rounded-md transition-colors"
+                >
+                  Select All
+                </button>
+                {staffList.map((s) => (
+                  <label
+                    key={s.id}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer transition-colors"
+                  >
+                    <Checkbox
+                      checked={selectedStaffIds.includes(s.id)}
+                      onCheckedChange={() => toggleStaff(s.id)}
+                    />
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={s.avatar_url || undefined} />
+                      <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                        {s.first_name[0]}{s.last_name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{s.first_name} {s.last_name}</span>
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
         <Button variant="outline" size="sm" onClick={onToday}>
           Today
         </Button>
