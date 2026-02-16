@@ -11,6 +11,7 @@ import { ClientPortalLayout } from "@/components/layout/ClientPortalLayout";
 // Pages
 import { LoginPage } from "@/pages/LoginPage";
 import { Dashboard } from "@/pages/Dashboard";
+import ClientProfilePage from "@/pages/ClientProfilePage";
 import { PayrollPage } from "@/pages/PayrollPage";
 import { SchedulePage } from "@/pages/SchedulePage";
 import { ClientsPage } from "@/pages/ClientsPage";
@@ -113,7 +114,7 @@ function AppRoutes() {
       
       {/* ========== CLIENTS (All Staff) ========== */}
       <Route path="/clients" element={<StaffRoute><ClientsPage /></StaffRoute>} />
-      <Route path="/clients/:id" element={<StaffRoute><ClientsPage /></StaffRoute>} />
+      <Route path="/clients/:id" element={<StaffRoute><ClientProfilePage /></StaffRoute>} />
       <Route path="/photos" element={<StaffRoute><ClientPhotosManagementPage /></StaffRoute>} />
       <Route path="/messages" element={<OwnerRoute><MessagesManagementPage /></OwnerRoute>} />
       
