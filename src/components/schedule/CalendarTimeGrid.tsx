@@ -172,6 +172,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
   const [dragGhostTop, setDragGhostTop] = useState<number | null>(null);
   const [draggingApt, setDraggingApt] = useState<string | null>(null);
   const [dragTargetDate, setDragTargetDate] = useState<Date | null>(null);
+  const [dragCursorPos, setDragCursorPos] = useState<{ x: number; y: number } | null>(null);
 
   // Build a ref of column rects so we can detect which date column the cursor is over
   const columnRectsRef = useRef<{ date: Date; left: number; right: number }[]>([]);
@@ -223,6 +224,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       const newTop = top + dy;
       const snapped = Math.round(newTop / (SLOT_HEIGHT / 4)) * (SLOT_HEIGHT / 4);
       setDragGhostTop(Math.max(0, snapped));
+      setDragCursorPos({ x: ev.clientX, y: ev.clientY });
 
       // Detect horizontal date column change
       const hoveredDate = findDateAtX(ev.clientX);
@@ -255,6 +257,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       setDraggingApt(null);
       setDragGhostTop(null);
       setDragTargetDate(null);
+      setDragCursorPos(null);
       dragRef.current = null;
     };
 
@@ -421,6 +424,23 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
           </div>
         )}
       </div>
+
+      {/* Floating drag ghost that follows cursor */}
+      {draggingApt && dragCursorPos && dragRef.current && (
+        <div
+          className="fixed z-50 pointer-events-none"
+          style={{ left: dragCursorPos.x + 12, top: dragCursorPos.y - 16 }}
+        >
+          <div className="flex items-center gap-1.5">
+            <div className="bg-primary text-primary-foreground rounded-md px-2 py-1 shadow-lg text-xs font-semibold max-w-[160px] truncate">
+              {dragRef.current.apt.client_name}
+            </div>
+            <svg width="18" height="18" viewBox="0 0 18 18" className="text-primary shrink-0">
+              <path d="M9 2 L15 9 L9 16 M15 9 L3 9" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
