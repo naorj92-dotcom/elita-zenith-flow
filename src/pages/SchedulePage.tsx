@@ -156,6 +156,27 @@ export function SchedulePage() {
   };
 
   const handleAppointmentDrop = (appointmentId: string, newScheduledAt: Date) => {
+    // For Google Calendar events, find matching DB appointment by time
+    if (appointmentId.startsWith('gcal-')) {
+      const gcalId = appointmentId.replace('gcal-', '');
+      const gEvent = googleEvents.find((e) => e.id === gcalId);
+      if (gEvent) {
+        const gStart = gEvent.start?.dateTime || gEvent.start?.date || '';
+        // Find DB appointment that matches this Google event's start time
+        const matchingApt = appointments.find((a) => {
+          const aptStart = new Date(a.scheduled_at);
+          const eventStart = new Date(gStart);
+          return Math.abs(aptStart.getTime() - eventStart.getTime()) < 60000; // within 1 min
+        });
+        if (matchingApt) {
+          setRescheduleApt(matchingApt);
+          setRescheduleNewTime(newScheduledAt);
+          return;
+        }
+      }
+      toast.error('Cannot reschedule external Google Calendar events from here');
+      return;
+    }
     const apt = appointments.find((a) => a.id === appointmentId);
     if (!apt) return;
     setRescheduleApt(apt);

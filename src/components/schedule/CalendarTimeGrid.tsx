@@ -466,13 +466,21 @@ function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle,
         const durationMin = (end.getTime() - start.getTime()) / 60000;
         const top = ((startMin - 7 * 60) / 60) * SLOT_HEIGHT;
         const height = Math.max((durationMin / 60) * SLOT_HEIGHT, 24);
+        const fakeApt = googleEventToAppointment(event);
+        const isDragging = draggingApt === fakeApt.id;
 
         return (
           <div
             key={event.id}
-            className="absolute left-0.5 right-0.5 rounded-md border-l-[3px] border-accent-foreground/20 bg-accent/60 px-1 py-0.5 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-            style={{ top, height }}
+            className={cn(
+              'absolute left-0.5 right-0.5 rounded-md border-l-[3px] border-accent-foreground/20 bg-accent/60 px-1 py-0.5 overflow-hidden cursor-grab hover:shadow-md transition-shadow select-none',
+              isDragging && 'opacity-50 cursor-grabbing shadow-lg z-20'
+            )}
+            style={{ top: isDragging && dragGhostTop !== null ? dragGhostTop : top, height }}
             onClick={(e) => onGoogleEventClick?.(event, e)}
+            onMouseDown={(e) => {
+              if (e.button === 0) onDragStart?.(fakeApt, date, e);
+            }}
           >
             <div className="flex items-center gap-1">
               <Globe className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
