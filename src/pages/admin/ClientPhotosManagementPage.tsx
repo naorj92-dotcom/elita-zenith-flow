@@ -169,9 +169,15 @@ export function ClientPhotosManagementPage() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('Photos uploaded successfully');
       queryClient.invalidateQueries({ queryKey: ['admin-photos'] });
+      
+      // Notify client if photos are visible to them
+      if (uploadForm.isVisibleToClient && uploadForm.clientId) {
+        await notifyClientOfNewPhotos(uploadForm.clientId);
+      }
+      
       setIsUploadDialogOpen(false);
       setUploadForm({
         clientId: '',
@@ -189,18 +195,60 @@ export function ClientPhotosManagementPage() {
 
   // Toggle visibility mutation
   const toggleVisibilityMutation = useMutation({
-    mutationFn: async ({ id, isVisible }: { id: string; isVisible: boolean }) => {
+    mutationFn: async ({ id, isVisible, clientId }: { id: string; isVisible: boolean; clientId: string }) => {
       const { error } = await supabase
         .from('before_after_photos')
         .update({ is_visible_to_client: isVisible })
         .eq('id', id);
       if (error) throw error;
+      return { isVisible, clientId };
     },
-    onSuccess: () => {
+    onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ['admin-photos'] });
       toast.success('Visibility updated');
+      if (result.isVisible) {
+        await notifyClientOfNewPhotos(result.clientId);
+      }
     },
   });
+
+  // Notify client when new photos are shared with them
+  const notifyClientOfNewPhotos = async (clientId: string) => {
+    try {
+      // Find the client's email
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('email, first_name')
+        .eq('id', clientId)
+        .single();
+
+      if (clientData?.email) {
+        // Log the notification
+        await supabase.from('notification_logs').insert({
+          client_id: clientId,
+          type: 'email',
+          category: 'photo_shared',
+          recipient: clientData.email,
+          subject: 'New Progress Photos Available',
+          body: `Hi ${clientData.first_name}, new progress photos from your recent treatment have been shared with you. Log in to your client portal to view them.`,
+          status: 'pending',
+        });
+
+        // Send via edge function
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            to: clientData.email,
+            subject: 'New Progress Photos Available ✨',
+            body: `Hi ${clientData.first_name},\n\nNew progress photos from your recent treatment have been shared with you.\n\nLog in to your client portal to view your before & after results.\n\nBest regards,\nElita Medical Spa`,
+            type: 'email',
+          },
+        });
+      }
+    } catch (err) {
+      console.error('Failed to send photo notification:', err);
+      // Don't block the main flow for notification failures
+    }
+  };
 
   // Save annotated photo
   const saveAnnotatedPhoto = async (dataUrl: string) => {
@@ -548,7 +596,7 @@ export function ClientPhotosManagementPage() {
                       <Switch
                         checked={photo.is_visible_to_client}
                         onCheckedChange={(checked) => 
-                          toggleVisibilityMutation.mutate({ id: photo.id, isVisible: checked })
+                          toggleVisibilityMutation.mutate({ id: photo.id, isVisible: checked, clientId: photo.client_id })
                         }
                       />
                     </div>
