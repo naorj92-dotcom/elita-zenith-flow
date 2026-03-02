@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.sync-google-calendar]
 verify_jwt = false
+
+[functions.bootstrap-owner]
+verify_jwt = false

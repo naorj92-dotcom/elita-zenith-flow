@@ -47,6 +47,7 @@ import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
 import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
 import NotFound from "./pages/NotFound";
 import IntakeFormPage from "./pages/IntakeFormPage";
+import { SetupPage } from "./pages/SetupPage";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,7 @@ function AppRoutes() {
     <Routes>
       {/* ========== PUBLIC FORMS ========== */}
       <Route path="/intake" element={<IntakeFormPage />} />
+      <Route path="/setup" element={<SetupPage />} />
       
       {/* ========== STAFF LOGIN ========== */}
       <Route path="/login" element={<LoginPage />} />
