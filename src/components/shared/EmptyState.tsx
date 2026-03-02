@@ -15,7 +15,7 @@ interface EmptyStateProps {
   compact?: boolean;
 }
 
-export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(function EmptyState({
+export function EmptyState({
   icon: Icon,
   title,
   description,
@@ -24,7 +24,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(func
   onAction,
   className,
   compact = false,
-}, ref) {
+}: EmptyStateProps) {
   const ActionButton = actionLabel ? (
     actionHref ? (
       <Button asChild className="mt-4">
@@ -71,4 +71,4 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(func
       {ActionButton}
     </motion.div>
   );
-});
+}
