@@ -446,12 +446,12 @@ export function ClientPhotosManagementPage() {
             className="pl-12"
           />
         </div>
-        <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+        <Select value={selectedClientId || 'all'} onValueChange={(v) => setSelectedClientId(v === 'all' ? '' : v)}>
           <SelectTrigger className="w-full sm:w-[250px]">
             <SelectValue placeholder="Filter by client" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Clients</SelectItem>
+            <SelectItem value="all">All Clients</SelectItem>
             {clients?.map((client) => (
               <SelectItem key={client.id} value={client.id}>
                 {client.first_name} {client.last_name}

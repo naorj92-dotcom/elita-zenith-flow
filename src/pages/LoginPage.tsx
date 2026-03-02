@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PinPad } from '@/components/auth/PinPad';
-import { Loader2, Mail, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, KeyRound, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import elitaLogo from '@/assets/elita-logo.png';
 
 export function LoginPage() {
@@ -18,6 +20,9 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSending, setForgotSending] = useState(false);
 
   if (isAuthenticated) {
     if (role === 'client') {
@@ -36,6 +41,22 @@ export function LoginPage() {
       setError(result.error);
     }
     setSubmitting(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) return;
+    setForgotSending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setForgotSending(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Password reset email sent! Check your inbox.');
+      setShowForgotPassword(false);
+    }
   };
 
   return (
@@ -127,6 +148,14 @@ export function LoginPage() {
                         </>
                       ) : 'Sign In'}
                     </Button>
+
+                    <button
+                      type="button"
+                      onClick={() => { setShowForgotPassword(true); setForgotEmail(email); }}
+                      className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      Forgot password?
+                    </button>
                   </form>
                 </CardContent>
               </Card>
@@ -144,6 +173,49 @@ export function LoginPage() {
           </Tabs>
         </motion.div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-sm"
+          >
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <button
+                  onClick={() => setShowForgotPassword(false)}
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back to login
+                </button>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">Reset Password</h2>
+                  <p className="text-sm text-muted-foreground mt-1">We'll send you a link to reset your password.</p>
+                </div>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="forgot-email">Email</Label>
+                    <Input
+                      id="forgot-email"
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="you@elitamedspa.com"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={forgotSending}>
+                    {forgotSending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                    Send Reset Link
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      )}
 
       {/* Client Portal Link */}
       <div className="text-center pb-8">
