@@ -56,6 +56,30 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
 
     if (profile?.clients) {
       setClient(profile.clients as Client);
+    } else {
+      // No profile yet — try to create one (handles post-email-confirmation)
+      const { data: { user } } = await supabase.auth.getUser();
+      const meta = user?.user_metadata;
+      if (meta?.first_name && meta?.last_name && user?.email) {
+        const { data: clientId, error: rpcError } = await supabase
+          .rpc('register_client', {
+            p_user_id: userId,
+            p_first_name: meta.first_name,
+            p_last_name: meta.last_name,
+            p_email: user.email,
+          });
+        if (!rpcError && clientId) {
+          // Re-fetch the newly created profile
+          const { data: newProfile } = await supabase
+            .from('client_profiles')
+            .select('*, clients(*)')
+            .eq('user_id', userId)
+            .maybeSingle();
+          if (newProfile?.clients) {
+            setClient(newProfile.clients as Client);
+          }
+        }
+      }
     }
   }, []);
 
@@ -116,26 +140,7 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
         return { error: error.message };
       }
 
-      if (data.user) {
-        // Use secure RPC function to create client record + profile + role atomically
-        const { data: clientId, error: rpcError } = await supabase
-          .rpc('register_client', {
-            p_user_id: data.user.id,
-            p_first_name: firstName,
-            p_last_name: lastName,
-            p_email: email,
-          });
-
-        if (rpcError) {
-          console.error('Error registering client:', rpcError);
-          return { error: 'Failed to create client profile.' };
-        }
-
-        // Fetch the created client data
-        if (clientId) {
-          await fetchClientProfile(data.user.id);
-        }
-      }
+      // Client profile will be created on first sign-in via fetchClientProfile
 
       return { error: null };
     } catch (err) {
