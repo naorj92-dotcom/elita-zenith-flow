@@ -1817,6 +1817,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      register_client: {
+        Args: {
+          p_email: string
+          p_first_name: string
+          p_last_name: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      register_staff_auth: {
+        Args: { p_staff_id: string; p_user_id: string }
+        Returns: undefined
+      }
       validate_staff_pin: {
         Args: { p_pin: string }
         Returns: {

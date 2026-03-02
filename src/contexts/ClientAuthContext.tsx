@@ -117,35 +117,24 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.user) {
-        // Create client record
-        const { data: clientData, error: clientError } = await supabase
-          .from('clients')
-          .insert({
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-          })
-          .select()
-          .single();
+        // Use secure RPC function to create client record + profile + role atomically
+        const { data: clientId, error: rpcError } = await supabase
+          .rpc('register_client', {
+            p_user_id: data.user.id,
+            p_first_name: firstName,
+            p_last_name: lastName,
+            p_email: email,
+          });
 
-        if (clientError) {
-          console.error('Error creating client:', clientError);
+        if (rpcError) {
+          console.error('Error registering client:', rpcError);
           return { error: 'Failed to create client profile.' };
         }
 
-        // Link to client_profiles
-        const { error: profileError } = await supabase
-          .from('client_profiles')
-          .insert({
-            user_id: data.user.id,
-            client_id: clientData.id,
-          });
-
-        if (profileError) {
-          console.error('Error creating client profile link:', profileError);
+        // Fetch the created client data
+        if (clientId) {
+          await fetchClientProfile(data.user.id);
         }
-
-        setClient(clientData as Client);
       }
 
       return { error: null };
