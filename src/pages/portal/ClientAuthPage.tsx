@@ -262,21 +262,7 @@ export function ClientAuthPage() {
               </TabsContent>
             </Tabs>
 
-            {/* Demo Access */}
-            <div className="mt-6 pt-6 border-t border-border">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={enterDemoMode}
-                disabled={isLoading}
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                Try Demo Access
-              </Button>
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Explore the portal with sample data
-              </p>
-            </div>
+            {/* Removed demo mode for production */}
           </CardContent>
         </Card>
 

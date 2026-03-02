@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Staff, StaffRole } from '@/types';
-import { Plus, Pencil, User, Phone, Mail, DollarSign, Percent, Loader2 } from 'lucide-react';
+import { Plus, Pencil, User, Phone, Mail, DollarSign, Percent, Loader2, ShieldCheck, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { staffSchema, validateInput } from '@/lib/validations';
 
@@ -57,6 +57,46 @@ export function StaffManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [formData, setFormData] = useState<StaffFormData>(initialFormData);
+  const [showCreateAuth, setShowCreateAuth] = useState<Staff | null>(null);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [showAuthPassword, setShowAuthPassword] = useState(false);
+  const [showPin, setShowPin] = useState<string | null>(null);
+
+  // Fetch which staff already have auth accounts
+  const { data: staffWithAuth } = useQuery({
+    queryKey: ['staff-auth-accounts'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('staff_id')
+        .not('staff_id', 'is', null)
+        .eq('is_active', true);
+      return new Set((data || []).map(r => r.staff_id));
+    },
+  });
+
+  // Register staff auth mutation
+  const registerStaffMutation = useMutation({
+    mutationFn: async ({ staffId, email, password }: { staffId: string; email: string; password: string }) => {
+      const { data, error } = await supabase.functions.invoke('register-staff', {
+        body: { staff_id: staffId, email, password },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ title: 'Account Created', description: data.message });
+      queryClient.invalidateQueries({ queryKey: ['staff-auth-accounts'] });
+      setShowCreateAuth(null);
+      setAuthEmail('');
+      setAuthPassword('');
+    },
+    onError: (error) => {
+      toast({ title: 'Failed', description: error.message, variant: 'destructive' });
+    },
+  });
 
   // Only admins can access this page
   if (currentStaff?.role !== 'admin') {
@@ -460,19 +500,114 @@ export function StaffManagementPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t">
+                <div className="mt-4 pt-4 border-t space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      PIN: {showPin === staff.id ? (
+                        <span className="font-mono">{staff.pin}</span>
+                      ) : (
+                        <span className="font-mono">••••</span>
+                      )}
+                    </p>
+                    <button
+                      onClick={() => setShowPin(showPin === staff.id ? null : staff.id)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      {showPin === staff.id ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    PIN: <span className="font-mono">{staff.pin}</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
                     Commission: {staff.service_commission_tier1}% / {staff.service_commission_tier2}% / {staff.service_commission_tier3}%
                   </p>
+                  {staffWithAuth?.has(staff.id) ? (
+                    <Badge variant="outline" className="gap-1 text-xs">
+                      <ShieldCheck className="h-3 w-3" />
+                      Auth Account Active
+                    </Badge>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-1.5 text-xs mt-1"
+                      onClick={() => {
+                        setShowCreateAuth(staff);
+                        setAuthEmail(staff.email || '');
+                        setAuthPassword('');
+                      }}
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      Create Login Account
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Create Auth Account Dialog */}
+      <Dialog open={!!showCreateAuth} onOpenChange={() => setShowCreateAuth(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Login Account</DialogTitle>
+            <DialogDescription>
+              Create an email/password login for {showCreateAuth?.first_name} {showCreateAuth?.last_name}. This enables secure authentication instead of PIN-only access.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="space-y-2">
+              <Label htmlFor="auth-email">Email</Label>
+              <Input
+                id="auth-email"
+                type="email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                placeholder="staff@elitamedspa.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="auth-password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="auth-password"
+                  type={showAuthPassword ? 'text' : 'password'}
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAuthPassword(!showAuthPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showAuthPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateAuth(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (showCreateAuth && authEmail && authPassword) {
+                  registerStaffMutation.mutate({
+                    staffId: showCreateAuth.id,
+                    email: authEmail,
+                    password: authPassword,
+                  });
+                }
+              }}
+              disabled={registerStaffMutation.isPending || !authEmail || authPassword.length < 6}
+            >
+              {registerStaffMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Creating...</>
+              ) : 'Create Account'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
