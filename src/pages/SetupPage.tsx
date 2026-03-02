@@ -154,7 +154,7 @@ export function SetupPage() {
               Owner Account
             </CardTitle>
             <CardDescription>
-              This is a one-time setup. The account will be linked to the admin staff record (Maria Santos).
+              This is a one-time setup. The account will be linked to your admin staff record (Naor Jerbi).
             </CardDescription>
           </CardHeader>
           <CardContent>
