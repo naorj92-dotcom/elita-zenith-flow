@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -181,20 +182,22 @@ function AppRoutes() {
   );
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <UnifiedAuthProvider>
-        <ClientAuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </ClientAuthProvider>
-      </UnifiedAuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = React.forwardRef<HTMLDivElement>(function App(_props, _ref) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <UnifiedAuthProvider>
+          <ClientAuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </ClientAuthProvider>
+        </UnifiedAuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+});
 
 export default App;
