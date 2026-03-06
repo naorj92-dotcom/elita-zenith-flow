@@ -1,16 +1,36 @@
 import React, { useState } from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Loader2, LogOut, Menu, X } from 'lucide-react';
 import { CLIENT_NAVIGATION, CLIENT_MOBILE_NAV } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 import elitaLogo from '@/assets/elita-logo.png';
 
 export function ClientPortalLayout() {
-  const { isAuthenticated, isLoading, signOut, client } = useClientAuth();
+  const { isAuthenticated, isLoading, signOut, client, isDemo } = useClientAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Fetch pending forms count for badge
+  const { data: pendingFormsCount = 0 } = useQuery({
+    queryKey: ['client-pending-forms-badge', client?.id, isDemo],
+    queryFn: async () => {
+      if (isDemo) return 2;
+      if (!client?.id) return 0;
+      const { count } = await supabase
+        .from('client_forms')
+        .select('*', { count: 'exact', head: true })
+        .eq('client_id', client.id)
+        .eq('status', 'pending');
+      return count || 0;
+    },
+    enabled: (!!client?.id || isDemo) && isAuthenticated,
+    refetchInterval: 30000, // Poll every 30s for new form assignments
+  });
 
   if (isLoading) {
     return (
@@ -25,6 +45,7 @@ export function ClientPortalLayout() {
   }
 
   const flatNavItems = CLIENT_NAVIGATION.flatMap(cat => cat.items).slice(0, 6);
+  const isFormsLink = (href: string) => href === '/portal/forms';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -44,15 +65,21 @@ export function ClientPortalLayout() {
             {flatNavItems.map((item) => {
               const isActive = location.pathname === item.href;
               const Icon = item.icon;
+              const showBadge = isFormsLink(item.href) && pendingFormsCount > 0;
               return (
                 <Link key={item.href} to={item.href}>
                   <Button 
                     variant={isActive ? 'default' : 'ghost'} 
                     size="sm"
-                    className="gap-2"
+                    className="gap-2 relative"
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
+                    {showBadge && (
+                      <Badge className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px] bg-destructive text-destructive-foreground border-0">
+                        {pendingFormsCount}
+                      </Badge>
+                    )}
                   </Button>
                 </Link>
               );
@@ -89,6 +116,7 @@ export function ClientPortalLayout() {
                 {category.items.map((item) => {
                   const isActive = location.pathname === item.href;
                   const Icon = item.icon;
+                  const showBadge = isFormsLink(item.href) && pendingFormsCount > 0;
                   return (
                     <Link 
                       key={item.href} 
@@ -102,6 +130,11 @@ export function ClientPortalLayout() {
                       >
                         <Icon className="h-4 w-4" />
                         {item.label}
+                        {showBadge && (
+                          <Badge className="ml-auto h-5 min-w-[20px] px-1.5 text-[10px] bg-destructive text-destructive-foreground border-0">
+                            {pendingFormsCount}
+                          </Badge>
+                        )}
                       </Button>
                     </Link>
                   );
@@ -122,17 +155,25 @@ export function ClientPortalLayout() {
         {CLIENT_MOBILE_NAV.map((item) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
+          const showBadge = isFormsLink(item.href) && pendingFormsCount > 0;
           
           return (
             <Link
               key={item.href}
               to={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px]",
+                "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px] relative",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <Icon className="w-5 h-5" />
+              <div className="relative">
+                <Icon className="w-5 h-5" />
+                {showBadge && (
+                  <span className="absolute -top-1.5 -right-2.5 h-4 min-w-[16px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                    {pendingFormsCount}
+                  </span>
+                )}
+              </div>
               <span className="text-xs font-medium">{item.label}</span>
             </Link>
           );
