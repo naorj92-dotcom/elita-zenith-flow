@@ -64,6 +64,25 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
   const set = (key: string, value: any) => onChange({ ...formData, [key]: value });
   const fields = formData.fields;
 
+  const createField = (type: string): FormField => {
+    if (type === 'logo' || type === 'image' || type === 'photo') {
+      return {
+        id: `field_${Date.now()}`,
+        type: 'text',
+        label: type === 'logo' ? 'Logo' : type === 'image' ? 'Image' : 'Photo upload',
+        required: false,
+        placeholder: type === 'logo' ? '[Logo placeholder]' : type === 'image' ? '[Image placeholder]' : '[Photo upload]',
+      };
+    }
+    return {
+      id: `field_${Date.now()}`,
+      type: type as FormField['type'],
+      label: type === 'checkbox' ? 'Checkbox label' : type === 'select' ? 'Select an option' : type === 'radio' ? 'Multiple choice' : `New ${type} field`,
+      required: false,
+      options: type === 'select' || type === 'radio' ? ['Option 1', 'Option 2'] : undefined,
+    };
+  };
+
   const addField = (type: string) => {
     if (type === 'logo' || type === 'image' || type === 'photo') {
       // These are decorative/special — add as text placeholders for now
