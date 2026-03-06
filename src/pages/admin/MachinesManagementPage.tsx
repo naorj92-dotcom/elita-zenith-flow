@@ -128,6 +128,24 @@ export function MachinesManagementPage() {
     },
   });
 
+  const deleteMachineMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('machines').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Machine deleted successfully' });
+      queryClient.invalidateQueries({ queryKey: ['admin-machines'] });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Failed to delete machine', 
+        description: error.message,
+        variant: 'destructive' 
+      });
+    },
+  });
+
   const resetForm = () => {
     setFormData(initialFormData);
     setEditingMachine(null);
