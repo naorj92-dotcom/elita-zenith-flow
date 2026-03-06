@@ -246,8 +246,30 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
           )}
         </div>
 
-        {/* Right Sidebar — Boulevard style tabs */}
-        <div className="w-[280px] border-l border-border bg-card shrink-0 flex flex-col">
+        {/* Right Sidebar — resizable */}
+        <div
+          className="border-l border-border bg-card shrink-0 flex flex-col relative"
+          style={{ width: `${sidebarWidth}px`, minWidth: 220, maxWidth: 450 }}
+        >
+          {/* Resize handle */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-primary/20 active:bg-primary/30 transition-colors z-10"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const startX = e.clientX;
+              const startWidth = sidebarWidth;
+              const onMove = (ev: MouseEvent) => {
+                const newWidth = Math.max(220, Math.min(450, startWidth - (ev.clientX - startX)));
+                setSidebarWidth(newWidth);
+              };
+              const onUp = () => {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+              };
+              document.addEventListener('mousemove', onMove);
+              document.addEventListener('mouseup', onUp);
+            }}
+          />
           <div className="border-b border-border">
             <div className="flex">
               {[
