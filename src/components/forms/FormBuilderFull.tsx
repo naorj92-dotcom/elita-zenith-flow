@@ -84,21 +84,30 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
   };
 
   const addField = (type: string) => {
-    if (type === 'logo' || type === 'image' || type === 'photo') {
-      // These are decorative/special — add as text placeholders for now
-      const newField: FormField = {
-        id: `field_${Date.now()}`,
-        type: 'text',
-        label: type === 'logo' ? 'Logo' : type === 'image' ? 'Image' : 'Photo upload',
-        required: false,
-        placeholder: type === 'logo' ? '[Logo placeholder]' : type === 'image' ? '[Image placeholder]' : '[Photo upload]',
-      };
-      const newFields = [...fields, newField];
-      set('fields', newFields);
-      setSelectedFieldIndex(newFields.length - 1);
-      return;
-    }
-    const newField: FormField = {
+    const newField = createField(type);
+    const newFields = [...fields, newField];
+    set('fields', newFields);
+    setSelectedFieldIndex(newFields.length - 1);
+  };
+
+  const insertFieldAt = (type: string, index: number) => {
+    const newField = createField(type);
+    const newFields = [...fields];
+    newFields.splice(index, 0, newField);
+    set('fields', newFields);
+    setSelectedFieldIndex(index);
+  };
+
+  const moveFieldToIndex = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const newFields = [...fields];
+    const [moved] = newFields.splice(fromIndex, 1);
+    newFields.splice(toIndex > fromIndex ? toIndex - 1 : toIndex, 0, moved);
+    set('fields', newFields);
+    setSelectedFieldIndex(toIndex > fromIndex ? toIndex - 1 : toIndex);
+  };
+
+  const updateField = (index: number, updates: Partial<FormField>) => {
       id: `field_${Date.now()}`,
       type: type as FormField['type'],
       label: type === 'checkbox' ? 'Checkbox label' : type === 'select' ? 'Select an option' : type === 'radio' ? 'Multiple choice' : `New ${type} field`,
