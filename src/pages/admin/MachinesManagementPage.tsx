@@ -47,6 +47,7 @@ const machineTypes = [
   'Ultrasound',
   'Cryotherapy',
   'IPL',
+  'EMS',
   'Other',
 ];
 
