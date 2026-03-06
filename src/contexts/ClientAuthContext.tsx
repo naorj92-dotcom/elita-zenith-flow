@@ -169,11 +169,13 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    setClient(null);
     setUser(null);
     setSession(null);
-    setClient(null);
     setIsDemo(false);
+    await supabase.auth.signOut();
+    // Force navigation to auth page
+    window.location.href = '/portal/auth';
   };
 
   const enterDemoMode = () => {
