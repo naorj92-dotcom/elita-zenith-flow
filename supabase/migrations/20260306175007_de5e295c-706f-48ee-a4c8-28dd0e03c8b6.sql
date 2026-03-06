@@ -1,0 +1,1 @@
+ALTER TABLE public.packages ADD COLUMN pricing_tiers jsonb NOT NULL DEFAULT '[]'::jsonb;

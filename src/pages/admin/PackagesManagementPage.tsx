@@ -13,17 +13,41 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Plus, Package, Edit2, DollarSign, Hash, Trash2 } from 'lucide-react';
+import { Plus, Package, Edit2, DollarSign, Trash2, TrendingDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ClientPackagesTable } from '@/components/admin/ClientPackagesTable';
 
+export interface PricingTier {
+  sessions: number;
+  total_price: number;
+  price_per_session: number;
+  value_percent: number;
+}
+
 interface PackageFormData {
   name: string;
   description: string;
-  price: number;
-  total_sessions: number;
   is_active: boolean;
+  pricing_tiers: PricingTier[];
+}
+
+const DEFAULT_TIERS: PricingTier[] = [
+  { sessions: 1, total_price: 0, price_per_session: 0, value_percent: 0 },
+  { sessions: 3, total_price: 0, price_per_session: 0, value_percent: 0 },
+  { sessions: 6, total_price: 0, price_per_session: 0, value_percent: 0 },
+  { sessions: 10, total_price: 0, price_per_session: 0, value_percent: 0 },
+];
+
+function recalcTiers(tiers: PricingTier[]): PricingTier[] {
+  const singlePrice = tiers[0]?.total_price || 0;
+  return tiers.map((t) => {
+    const pps = t.sessions > 0 ? Math.round((t.total_price / t.sessions) * 100) / 100 : 0;
+    const valuePct = singlePrice > 0 && t.sessions > 1
+      ? Math.round(((singlePrice - pps) / singlePrice) * 100)
+      : 0;
+    return { ...t, price_per_session: pps, value_percent: Math.max(0, valuePct) };
+  });
 }
 
 export function PackagesManagementPage() {
@@ -34,17 +58,14 @@ export function PackagesManagementPage() {
   const [formData, setFormData] = useState<PackageFormData>({
     name: '',
     description: '',
-    price: 0,
-    total_sessions: 1,
     is_active: true,
+    pricing_tiers: [...DEFAULT_TIERS],
   });
 
-  // Redirect non-admin users
   if (staff?.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Fetch packages
   const { data: packages, isLoading } = useQuery({
     queryKey: ['packages'],
     queryFn: async () => {
@@ -52,13 +73,11 @@ export function PackagesManagementPage() {
         .from('packages')
         .select('*')
         .order('name');
-      
       if (error) throw error;
       return data;
     },
   });
 
-  // Delete package definition
   const deletePackageMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('packages').delete().eq('id', id);
@@ -71,35 +90,30 @@ export function PackagesManagementPage() {
     onError: () => toast.error('Failed to delete package'),
   });
 
-  // Create/Update mutation
   const saveMutation = useMutation({
     mutationFn: async (data: PackageFormData) => {
+      const tiers = recalcTiers(data.pricing_tiers);
+      const singleTier = tiers[0];
+      // price = single session price, total_sessions = 1 (base), tiers stored in pricing_tiers
+      const payload = {
+        name: data.name,
+        description: data.description,
+        is_active: data.is_active,
+        price: singleTier?.total_price || 0,
+        total_sessions: 1,
+        pricing_tiers: JSON.stringify(tiers),
+        services: [] as any[],
+        updated_at: new Date().toISOString(),
+      };
+
       if (editingPackage) {
         const { error } = await supabase
           .from('packages')
-          .update({
-            name: data.name,
-            description: data.description,
-            price: data.price,
-            total_sessions: data.total_sessions,
-            is_active: data.is_active,
-            updated_at: new Date().toISOString(),
-          })
+          .update(payload)
           .eq('id', editingPackage.id);
-        
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('packages')
-          .insert({
-            name: data.name,
-            description: data.description,
-            price: data.price,
-            total_sessions: data.total_sessions,
-            is_active: data.is_active,
-            services: [],
-          });
-        
+        const { error } = await supabase.from('packages').insert(payload);
         if (error) throw error;
       }
     },
@@ -118,9 +132,8 @@ export function PackagesManagementPage() {
     setFormData({
       name: '',
       description: '',
-      price: 0,
-      total_sessions: 1,
       is_active: true,
+      pricing_tiers: [...DEFAULT_TIERS],
     });
     setEditingPackage(null);
     setDialogOpen(false);
@@ -128,14 +141,39 @@ export function PackagesManagementPage() {
 
   const handleEdit = (pkg: any) => {
     setEditingPackage(pkg);
+    const tiers: PricingTier[] = (pkg.pricing_tiers && Array.isArray(pkg.pricing_tiers) && pkg.pricing_tiers.length > 0)
+      ? pkg.pricing_tiers
+      : [
+          { sessions: 1, total_price: pkg.price, price_per_session: pkg.price, value_percent: 0 },
+          { sessions: 3, total_price: pkg.price * 3 * 0.8, price_per_session: 0, value_percent: 0 },
+          { sessions: 6, total_price: pkg.price * 6 * 0.75, price_per_session: 0, value_percent: 0 },
+          { sessions: 10, total_price: pkg.price * 10 * 0.7, price_per_session: 0, value_percent: 0 },
+        ];
     setFormData({
       name: pkg.name,
       description: pkg.description || '',
-      price: pkg.price,
-      total_sessions: pkg.total_sessions,
       is_active: pkg.is_active,
+      pricing_tiers: recalcTiers(tiers),
     });
     setDialogOpen(true);
+  };
+
+  const handleTierChange = (index: number, field: 'sessions' | 'total_price', value: number) => {
+    const updated = [...formData.pricing_tiers];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData({ ...formData, pricing_tiers: recalcTiers(updated) });
+  };
+
+  const addTier = () => {
+    const lastSessions = formData.pricing_tiers[formData.pricing_tiers.length - 1]?.sessions || 1;
+    const updated = [...formData.pricing_tiers, { sessions: lastSessions + 5, total_price: 0, price_per_session: 0, value_percent: 0 }];
+    setFormData({ ...formData, pricing_tiers: updated });
+  };
+
+  const removeTier = (index: number) => {
+    if (formData.pricing_tiers.length <= 1) return;
+    const updated = formData.pricing_tiers.filter((_, i) => i !== index);
+    setFormData({ ...formData, pricing_tiers: recalcTiers(updated) });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -143,11 +181,14 @@ export function PackagesManagementPage() {
     saveMutation.mutate(formData);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+
+  const getTiers = (pkg: any): PricingTier[] => {
+    if (pkg.pricing_tiers && Array.isArray(pkg.pricing_tiers) && pkg.pricing_tiers.length > 0) {
+      return pkg.pricing_tiers;
+    }
+    return [{ sessions: pkg.total_sessions, total_price: pkg.price, price_per_session: pkg.price / pkg.total_sessions, value_percent: 0 }];
   };
 
   return (
@@ -157,7 +198,7 @@ export function PackagesManagementPage() {
         <div>
           <h1 className="font-heading text-3xl text-foreground">Packages</h1>
           <p className="text-muted-foreground mt-1">
-            Manage service packages and bundles
+            Manage service packages with tiered session pricing
           </p>
         </div>
 
@@ -171,7 +212,7 @@ export function PackagesManagementPage() {
               Add Package
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingPackage ? 'Edit Package' : 'Create Package'}
@@ -179,12 +220,12 @@ export function PackagesManagementPage() {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Package Name</Label>
+                <Label htmlFor="name">Service / Package Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Laser Hair Removal - 6 Pack"
+                  placeholder="e.g., Cryo Sculpt (Small)"
                   required
                 />
               </div>
@@ -196,42 +237,89 @@ export function PackagesManagementPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Package details..."
-                  rows={3}
+                  rows={2}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                      className="pl-9"
-                      required
-                    />
-                  </div>
+              {/* Pricing Tiers */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2">
+                    <TrendingDown className="w-4 h-4 text-primary" />
+                    Program Pricing Tiers
+                  </Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addTier}>
+                    <Plus className="w-3 h-3 mr-1" /> Add Tier
+                  </Button>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="sessions">Total Sessions</Label>
-                  <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="sessions"
-                      type="number"
-                      min="1"
-                      value={formData.total_sessions}
-                      onChange={(e) => setFormData({ ...formData, total_sessions: parseInt(e.target.value) || 1 })}
-                      className="pl-9"
-                      required
-                    />
-                  </div>
+                <p className="text-xs text-muted-foreground">
+                  Set the total price for each session count. Per-session price and value % are calculated automatically.
+                </p>
+                <div className="rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[80px]">Sessions</TableHead>
+                        <TableHead>Total Price</TableHead>
+                        <TableHead>Per Session</TableHead>
+                        <TableHead className="w-[80px]">Value</TableHead>
+                        <TableHead className="w-[40px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {formData.pricing_tiers.map((tier, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={tier.sessions}
+                              onChange={(e) => handleTierChange(idx, 'sessions', parseInt(e.target.value) || 1)}
+                              className="w-16 h-8 text-center"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="relative">
+                              <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                              <Input
+                                type="number"
+                                step="1"
+                                min={0}
+                                value={tier.total_price}
+                                onChange={(e) => handleTierChange(idx, 'total_price', parseFloat(e.target.value) || 0)}
+                                className="pl-6 h-8"
+                              />
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground font-medium">
+                            {formatCurrency(tier.price_per_session)}
+                          </TableCell>
+                          <TableCell>
+                            {tier.value_percent > 0 ? (
+                              <Badge variant="secondary" className="text-xs">
+                                {tier.value_percent}%
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {formData.pricing_tiers.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={() => removeTier(idx)}
+                              >
+                                <Trash2 className="w-3 h-3 text-destructive" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
 
@@ -299,17 +387,17 @@ export function PackagesManagementPage() {
                     packages?.reduce((sum, p) => sum + (p.is_active ? p.price : 0), 0) || 0
                   )}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Value (Active)</p>
+                <p className="text-sm text-muted-foreground">Base Price Total (Active)</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Packages Table */}
+      {/* Packages Table with Tiered Pricing */}
       <Card>
         <CardHeader>
-          <CardTitle>All Packages</CardTitle>
+          <CardTitle>All Packages — Program Pricing</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -319,80 +407,80 @@ export function PackagesManagementPage() {
               No packages found. Create your first package to get started.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Package Name</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Sessions</TableHead>
-                  <TableHead>Per Session</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {packages?.map((pkg) => (
-                  <TableRow key={pkg.id}>
-                    <TableCell>
+            <div className="space-y-6">
+              {packages?.map((pkg) => {
+                const tiers = getTiers(pkg);
+                return (
+                  <div key={pkg.id} className="border rounded-lg overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 bg-muted/50">
                       <div>
-                        <p className="font-medium">{pkg.name}</p>
+                        <p className="font-semibold text-foreground">{pkg.name}</p>
                         {pkg.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {pkg.description}
-                          </p>
+                          <p className="text-sm text-muted-foreground">{pkg.description}</p>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {formatCurrency(pkg.price)}
-                    </TableCell>
-                    <TableCell>{pkg.total_sessions}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatCurrency(pkg.price / pkg.total_sessions)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={pkg.is_active ? 'default' : 'secondary'}>
-                        {pkg.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {format(new Date(pkg.created_at), 'MMM d, yyyy')}
-                    </TableCell>
-                    <TableCell className="text-right space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(pkg)}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Package?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete this package definition. Client packages already assigned will not be affected.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deletePackageMutation.mutate(pkg.id)}>
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={pkg.is_active ? 'default' : 'secondary'}>
+                          {pkg.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(pkg)}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Package?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete this package definition.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deletePackageMutation.mutate(pkg.id)}>
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Sessions</TableHead>
+                          <TableHead>Total Price</TableHead>
+                          <TableHead>Price / Session</TableHead>
+                          <TableHead>Program Value</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {tiers.map((tier, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-medium">{tier.sessions}</TableCell>
+                            <TableCell className="font-medium">{formatCurrency(tier.total_price)}</TableCell>
+                            <TableCell>{formatCurrency(tier.price_per_session)}</TableCell>
+                            <TableCell>
+                              {tier.value_percent > 0 ? (
+                                <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                                  {tier.value_percent}% Value
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
