@@ -368,11 +368,22 @@ export function FormsManagementPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{form.description || 'No description'}</p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>{form.fields?.length || 0} fields</span>
-                      {form.requires_signature && (
-                        <span className="flex items-center gap-1"><FileSignature className="w-3 h-3" />Signature required</span>
-                      )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span>{form.fields?.length || 0} fields</span>
+                        {form.requires_signature && (
+                          <span className="flex items-center gap-1"><FileSignature className="w-3 h-3" />Signature required</span>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={(e) => { e.stopPropagation(); openAssignDialog(form.id); }}
+                      >
+                        <Send className="w-3 h-3" />
+                        Assign
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
