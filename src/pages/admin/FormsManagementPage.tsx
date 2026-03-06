@@ -73,6 +73,12 @@ export function FormsManagementPage() {
   // Create dialog state
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
+  // Assign form dialog state
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [assignFormId, setAssignFormId] = useState<string | null>(null);
+  const [assignClientSearch, setAssignClientSearch] = useState('');
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
+
   // Builder state
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [builderMode, setBuilderMode] = useState<'form' | 'chart'>('form');
