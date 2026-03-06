@@ -2,12 +2,14 @@ import React from 'react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Package, Calendar, CheckCircle2, Eye } from 'lucide-react';
+import { Package, Calendar, CheckCircle2, Eye, ShoppingBag, Sparkles } from 'lucide-react';
 import { DEMO_PACKAGES } from '@/hooks/useDemoData';
+import { toast } from 'sonner';
 
 export function ClientPackagesPage() {
   const { client, isDemo } = useClientAuth();
@@ -29,9 +31,36 @@ export function ClientPackagesPage() {
     enabled: !!client?.id || isDemo,
   });
 
+  // Fetch available packages for purchase
+  const { data: availablePackages } = useQuery({
+    queryKey: ['available-packages', isDemo],
+    queryFn: async () => {
+      if (isDemo) {
+        return [
+          { id: 'demo-1', name: 'HydraFacial Series', description: 'Deep cleansing and hydration treatment series', price: 750, total_sessions: 6, is_active: true },
+          { id: 'demo-2', name: 'Laser Hair Removal - Full Legs', description: 'Complete laser hair removal package', price: 1200, total_sessions: 4, is_active: true },
+          { id: 'demo-3', name: 'Microneedling Package', description: 'Skin rejuvenation microneedling sessions', price: 900, total_sessions: 3, is_active: true },
+        ];
+      }
+      const { data } = await supabase
+        .from('packages')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      return data || [];
+    },
+  });
+
   const activePackages = packages?.filter(p => p.status === 'active') || [];
   const completedPackages = packages?.filter(p => p.status === 'completed') || [];
   const expiredPackages = packages?.filter(p => p.status === 'expired') || [];
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+
+  const handleInquire = (pkgName: string) => {
+    toast.success(`We'll reach out about the ${pkgName} package! Contact us to complete your purchase.`);
+  };
 
   return (
     <div className="space-y-6">
@@ -40,7 +69,6 @@ export function ClientPackagesPage() {
         <p className="text-muted-foreground mt-1">Track your treatment packages and sessions</p>
       </div>
 
-      {/* Demo Mode Banner */}
       {isDemo && (
         <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
           <Eye className="h-5 w-5 text-primary" />
@@ -68,13 +96,12 @@ export function ClientPackagesPage() {
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Packages Yet</h3>
             <p className="text-muted-foreground">
-              Ask about our treatment packages during your next visit!
+              Browse our available packages below to get started!
             </p>
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Active Packages */}
           {activePackages.length > 0 && (
             <section>
               <h2 className="text-xl font-heading font-medium mb-4">Active Packages</h2>
@@ -82,7 +109,6 @@ export function ClientPackagesPage() {
                 {activePackages.map((pkg) => {
                   const progress = (pkg.sessions_used / pkg.sessions_total) * 100;
                   const remaining = pkg.sessions_total - pkg.sessions_used;
-                  
                   return (
                     <Card key={pkg.id} className="card-luxury">
                       <CardHeader className="pb-2">
@@ -107,7 +133,6 @@ export function ClientPackagesPage() {
                             {remaining} session{remaining !== 1 ? 's' : ''} remaining
                           </p>
                         </div>
-                        
                         <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-4 w-4" />
@@ -127,7 +152,6 @@ export function ClientPackagesPage() {
             </section>
           )}
 
-          {/* Completed Packages */}
           {completedPackages.length > 0 && (
             <section>
               <h2 className="text-xl font-heading font-medium mb-4">Completed Packages</h2>
@@ -154,7 +178,6 @@ export function ClientPackagesPage() {
             </section>
           )}
 
-          {/* Expired Packages */}
           {expiredPackages.length > 0 && (
             <section>
               <h2 className="text-xl font-heading font-medium mb-4">Expired Packages</h2>
@@ -178,6 +201,46 @@ export function ClientPackagesPage() {
             </section>
           )}
         </>
+      )}
+
+      {/* Available Packages to Purchase */}
+      {availablePackages && availablePackages.length > 0 && (
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <ShoppingBag className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-heading font-medium">Available Packages</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {availablePackages.map((pkg: any) => (
+              <Card key={pkg.id} className="card-luxury border-primary/10 hover:border-primary/30 transition-colors">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-lg font-heading">{pkg.name}</CardTitle>
+                    <div className="flex items-center gap-1 text-primary">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                  </div>
+                  {pkg.description && (
+                    <CardDescription>{pkg.description}</CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-2xl font-bold">{formatCurrency(pkg.price)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {pkg.total_sessions} sessions • {formatCurrency(pkg.price / pkg.total_sessions)}/session
+                      </p>
+                    </div>
+                    <Button size="sm" onClick={() => handleInquire(pkg.name)}>
+                      Inquire
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

@@ -13,8 +13,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Plus, Package, Edit2, DollarSign, Hash } from 'lucide-react';
+import { Plus, Package, Edit2, DollarSign, Hash, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ClientPackagesTable } from '@/components/admin/ClientPackagesTable';
 
 interface PackageFormData {
   name: string;
@@ -54,6 +56,19 @@ export function PackagesManagementPage() {
       if (error) throw error;
       return data;
     },
+  });
+
+  // Delete package definition
+  const deletePackageMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('packages').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
+      toast.success('Package deleted');
+    },
+    onError: () => toast.error('Failed to delete package'),
   });
 
   // Create/Update mutation
@@ -344,7 +359,7 @@ export function PackagesManagementPage() {
                     <TableCell className="text-muted-foreground">
                       {format(new Date(pkg.created_at), 'MMM d, yyyy')}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right space-x-1">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -352,6 +367,27 @@ export function PackagesManagementPage() {
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Package?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete this package definition. Client packages already assigned will not be affected.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deletePackageMutation.mutate(pkg.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -360,6 +396,9 @@ export function PackagesManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Client Package Assignments */}
+      <ClientPackagesTable />
     </div>
   );
 }
