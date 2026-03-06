@@ -108,18 +108,6 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
   };
 
   const updateField = (index: number, updates: Partial<FormField>) => {
-      id: `field_${Date.now()}`,
-      type: type as FormField['type'],
-      label: type === 'checkbox' ? 'Checkbox label' : type === 'select' ? 'Select an option' : type === 'radio' ? 'Multiple choice' : `New ${type} field`,
-      required: false,
-      options: type === 'select' || type === 'radio' ? ['Option 1', 'Option 2'] : undefined,
-    };
-    const newFields = [...fields, newField];
-    set('fields', newFields);
-    setSelectedFieldIndex(newFields.length - 1);
-  };
-
-  const updateField = (index: number, updates: Partial<FormField>) => {
     const newFields = [...fields];
     newFields[index] = { ...newFields[index], ...updates };
     set('fields', newFields);
