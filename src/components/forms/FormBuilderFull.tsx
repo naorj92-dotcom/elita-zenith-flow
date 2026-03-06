@@ -396,6 +396,36 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
   );
 }
 
+/* ─── Drop Zone — explicit target between fields ───── */
+function DropZone({ index, isActive, onDrop }: { index: number; isActive: boolean; onDrop: (e: React.DragEvent, index: number) => void }) {
+  const [hovering, setHovering] = React.useState(false);
+
+  return (
+    <div
+      className={cn(
+        'transition-all -mx-3 rounded',
+        hovering ? 'h-10 bg-primary/10 border-2 border-dashed border-primary/40 my-1 flex items-center justify-center' :
+        isActive ? 'h-2 bg-primary/30 my-1 rounded-full' : 'h-2'
+      )}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'copy';
+        setHovering(true);
+      }}
+      onDragLeave={() => setHovering(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setHovering(false);
+        onDrop(e, index);
+      }}
+    >
+      {hovering && <span className="text-xs text-primary font-medium pointer-events-none">Drop here</span>}
+    </div>
+  );
+}
+
 /* ─── Form Canvas (Build mode) — full-surface drag & drop ───── */
 function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpdateField, onRemoveField, onMoveField, onInsertFieldAt, onMoveFieldToIndex }: {
   fields: FormField[];
@@ -408,55 +438,31 @@ function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpd
   onInsertFieldAt: (type: string, index: number) => void;
   onMoveFieldToIndex: (from: number, to: number) => void;
 }) {
-  const [dropIndex, setDropIndex] = React.useState<number | null>(null);
   const [isDraggingOver, setIsDraggingOver] = React.useState(false);
-  const fieldRefs = React.useRef<(HTMLDivElement | null)[]>([]);
-  const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Calculate drop index from mouse Y position relative to all fields
-  const calcDropIndex = React.useCallback((clientY: number) => {
-    for (let i = 0; i < fieldRefs.current.length; i++) {
-      const el = fieldRefs.current[i];
-      if (!el) continue;
-      const rect = el.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      if (clientY < midY) return i;
-    }
-    return fields.length;
-  }, [fields.length]);
-
-  const executeDrop = React.useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const idx = calcDropIndex(e.clientY);
-    setDropIndex(null);
-    setIsDraggingOver(false);
+  const handleDrop = React.useCallback((e: React.DragEvent, index: number) => {
     const fieldType = e.dataTransfer.getData('fieldType');
     const dragFieldIndex = e.dataTransfer.getData('dragFieldIndex');
     if (fieldType) {
-      onInsertFieldAt(fieldType, idx);
+      onInsertFieldAt(fieldType, index);
     } else if (dragFieldIndex !== '') {
-      onMoveFieldToIndex(parseInt(dragFieldIndex), idx);
+      onMoveFieldToIndex(parseInt(dragFieldIndex), index);
     }
-  }, [calcDropIndex, onInsertFieldAt, onMoveFieldToIndex]);
+    setIsDraggingOver(false);
+  }, [onInsertFieldAt, onMoveFieldToIndex]);
 
   return (
     <div
-      ref={containerRef}
       className="max-w-[780px] mx-auto py-8 px-6 min-h-full"
       onDragOver={(e) => {
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
         setIsDraggingOver(true);
-        setDropIndex(calcDropIndex(e.clientY));
       }}
       onDragLeave={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-          setDropIndex(null);
           setIsDraggingOver(false);
         }
       }}
-      onDrop={executeDrop}
     >
       {formData.description && (
         <div className="bg-card rounded-lg p-6 mb-6 text-sm text-foreground leading-relaxed">
@@ -468,106 +474,99 @@ function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpd
         "bg-card rounded-lg px-8 py-6 min-h-[300px] transition-all",
         isDraggingOver && 'ring-2 ring-primary/20'
       )}>
-        {fields.length === 0 && (
-          <div className={cn(
-            'py-16 text-center rounded-lg transition-all border-2 border-dashed',
-            isDraggingOver ? 'border-primary/40 bg-primary/5' : 'border-muted-foreground/20'
-          )}>
+        {fields.length === 0 ? (
+          <div
+            className={cn(
+              'py-16 text-center rounded-lg transition-all border-2 border-dashed',
+              isDraggingOver ? 'border-primary/40 bg-primary/5' : 'border-muted-foreground/20'
+            )}
+            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleDrop(e, 0); }}
+          >
             <p className="text-sm text-muted-foreground mb-1">No fields yet</p>
             <p className="text-xs text-muted-foreground">Drag fields from the sidebar or click to add</p>
           </div>
-        )}
+        ) : (
+          <>
+            {/* Drop zone before first field */}
+            <DropZone index={0} isActive={isDraggingOver} onDrop={handleDrop} />
 
-        {fields.map((field, index) => (
-          <React.Fragment key={field.id}>
-            {/* Drop indicator line — shown above this field */}
-            <div className={cn(
-              'transition-all duration-150 -mx-3 rounded-full',
-              dropIndex === index
-                ? 'h-1 bg-primary my-2 shadow-sm'
-                : 'h-0 my-0'
-            )} />
+            {fields.map((field, index) => (
+              <React.Fragment key={field.id}>
+                <div
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('dragFieldIndex', index.toString());
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onClick={() => onSelectField(index)}
+                  className={cn(
+                    'relative group cursor-pointer rounded-md transition-all -mx-3 px-3 py-2',
+                    selectedFieldIndex === index
+                      ? 'ring-2 ring-primary/30 bg-primary/[0.02]'
+                      : 'hover:bg-accent/30'
+                  )}
+                >
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <GripVertical className="w-3.5 h-3.5 text-muted-foreground/30 cursor-grab active:cursor-grabbing shrink-0" />
+                    <label className="text-sm font-medium text-foreground pointer-events-none">
+                      {field.label}
+                      {field.required && <span className="text-destructive ml-0.5">*</span>}
+                    </label>
+                    <Link2 className="w-3.5 h-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
 
-            <div
-              ref={(el) => { fieldRefs.current[index] = el; }}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('dragFieldIndex', index.toString());
-                e.dataTransfer.effectAllowed = 'move';
-              }}
-              onClick={() => onSelectField(index)}
-              className={cn(
-                'relative group cursor-pointer rounded-md transition-all -mx-3 px-3 py-2',
-                selectedFieldIndex === index
-                  ? 'ring-2 ring-primary/30 bg-primary/[0.02]'
-                  : 'hover:bg-accent/30'
-              )}
-            >
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <GripVertical className="w-3.5 h-3.5 text-muted-foreground/30 cursor-grab active:cursor-grabbing shrink-0" />
-                <label className="text-sm font-medium text-foreground">
-                  {field.label}
-                  {field.required && <span className="text-destructive ml-0.5">*</span>}
-                </label>
-                <Link2 className="w-3.5 h-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-
-              {field.type === 'text' || field.type === 'email' || field.type === 'phone' ? (
-                <div className="h-10 border border-border rounded-md bg-background ml-5" />
-              ) : field.type === 'textarea' ? (
-                <div className="h-24 border border-border rounded-md bg-background ml-5" />
-              ) : field.type === 'date' ? (
-                <div className="h-10 border border-border rounded-md bg-background flex items-center px-3 justify-between ml-5">
-                  <span className="text-sm text-muted-foreground">MM/DD/YYYY</span>
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                </div>
-              ) : field.type === 'select' ? (
-                <div className="h-10 border border-border rounded-md bg-background flex items-center px-3 justify-between ml-5">
-                  <span className="text-sm text-muted-foreground">Select...</span>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                </div>
-              ) : field.type === 'checkbox' ? (
-                <div className="flex items-center gap-2.5 mt-1 ml-5">
-                  <div className="w-4 h-4 border-2 border-border rounded-sm bg-background" />
-                  <span className="text-sm text-muted-foreground">{field.label}</span>
-                </div>
-              ) : field.type === 'radio' ? (
-                <div className="space-y-1.5 mt-1 ml-5">
-                  {field.options?.map((opt, i) => (
-                    <div key={i} className="flex items-center gap-2.5">
-                      <div className="w-4 h-4 border-2 border-border rounded-full bg-background" />
-                      <span className="text-sm text-muted-foreground">{opt}</span>
+                  {field.type === 'text' || field.type === 'email' || field.type === 'phone' ? (
+                    <div className="h-10 border border-border rounded-md bg-background ml-5 pointer-events-none" />
+                  ) : field.type === 'textarea' ? (
+                    <div className="h-24 border border-border rounded-md bg-background ml-5 pointer-events-none" />
+                  ) : field.type === 'date' ? (
+                    <div className="h-10 border border-border rounded-md bg-background flex items-center px-3 justify-between ml-5 pointer-events-none">
+                      <span className="text-sm text-muted-foreground">MM/DD/YYYY</span>
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
                     </div>
-                  ))}
+                  ) : field.type === 'select' ? (
+                    <div className="h-10 border border-border rounded-md bg-background flex items-center px-3 justify-between ml-5 pointer-events-none">
+                      <span className="text-sm text-muted-foreground">Select...</span>
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  ) : field.type === 'checkbox' ? (
+                    <div className="flex items-center gap-2.5 mt-1 ml-5 pointer-events-none">
+                      <div className="w-4 h-4 border-2 border-border rounded-sm bg-background" />
+                      <span className="text-sm text-muted-foreground">{field.label}</span>
+                    </div>
+                  ) : field.type === 'radio' ? (
+                    <div className="space-y-1.5 mt-1 ml-5 pointer-events-none">
+                      {field.options?.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2.5">
+                          <div className="w-4 h-4 border-2 border-border rounded-full bg-background" />
+                          <span className="text-sm text-muted-foreground">{opt}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  <div className={cn(
+                    'absolute top-1 right-1 flex items-center gap-0.5 transition-opacity',
+                    selectedFieldIndex === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  )}>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onMoveField(index, 'up'); }} disabled={index === 0}>
+                      <MoveUp className="w-3 h-3" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onMoveField(index, 'down'); }} disabled={index === fields.length - 1}>
+                      <MoveDown className="w-3 h-3" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={e => { e.stopPropagation(); onRemoveField(index); }}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
-              ) : null}
 
-              <div className={cn(
-                'absolute top-1 right-1 flex items-center gap-0.5 transition-opacity',
-                selectedFieldIndex === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-              )}>
-                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onMoveField(index, 'up'); }} disabled={index === 0}>
-                  <MoveUp className="w-3 h-3" />
-                </Button>
-                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onMoveField(index, 'down'); }} disabled={index === fields.length - 1}>
-                  <MoveDown className="w-3 h-3" />
-                </Button>
-                <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={e => { e.stopPropagation(); onRemoveField(index); }}>
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-          </React.Fragment>
-        ))}
-
-        {/* Bottom drop indicator */}
-        {fields.length > 0 && (
-          <div className={cn(
-            'transition-all duration-150 -mx-3 rounded-full',
-            dropIndex === fields.length
-              ? 'h-1 bg-primary my-2 shadow-sm'
-              : 'h-0 my-0'
-          )} />
+                {/* Drop zone after each field */}
+                <DropZone index={index + 1} isActive={isDraggingOver} onDrop={handleDrop} />
+              </React.Fragment>
+            ))}
+          </>
         )}
 
         {formData.requires_signature && (
