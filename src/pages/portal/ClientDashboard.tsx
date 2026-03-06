@@ -111,6 +111,22 @@ export function ClientDashboard() {
     enabled: !!client?.id || isDemo,
   });
 
+  // Fetch pending forms count
+  const { data: pendingFormsCount = 0 } = useQuery({
+    queryKey: ['client-pending-forms-count', client?.id, isDemo],
+    queryFn: async () => {
+      if (isDemo) return 2;
+      if (!client?.id) return 0;
+      const { count } = await supabase
+        .from('client_forms')
+        .select('*', { count: 'exact', head: true })
+        .eq('client_id', client.id)
+        .eq('status', 'pending');
+      return count || 0;
+    },
+    enabled: !!client?.id || isDemo,
+  });
+
   return (
     <div className="space-y-6">
       {/* Demo Mode Banner */}
