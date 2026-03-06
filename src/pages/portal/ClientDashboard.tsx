@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isValid } from 'date-fns';
-import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye, History, Crown, Flag, Gift, TrendingUp } from 'lucide-react';
+import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye, History, Crown, Flag, Gift, TrendingUp, FileText, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
   DEMO_PACKAGES, 
@@ -111,6 +111,22 @@ export function ClientDashboard() {
     enabled: !!client?.id || isDemo,
   });
 
+  // Fetch pending forms count
+  const { data: pendingFormsCount = 0 } = useQuery({
+    queryKey: ['client-pending-forms-count', client?.id, isDemo],
+    queryFn: async () => {
+      if (isDemo) return 2;
+      if (!client?.id) return 0;
+      const { count } = await supabase
+        .from('client_forms')
+        .select('*', { count: 'exact', head: true })
+        .eq('client_id', client.id)
+        .eq('status', 'pending');
+      return count || 0;
+    },
+    enabled: !!client?.id || isDemo,
+  });
+
   return (
     <div className="space-y-6">
       {/* Demo Mode Banner */}
@@ -137,6 +153,27 @@ export function ClientDashboard() {
           <MembershipBadge isVip className="mt-3" />
         )}
       </div>
+
+      {/* Pending Forms Alert */}
+      {pendingFormsCount > 0 && (
+        <Link to="/portal/forms">
+          <Card className="border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50 transition-colors cursor-pointer">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <FileText className="h-6 w-6 text-amber-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  {pendingFormsCount} Form{pendingFormsCount !== 1 ? 's' : ''} Require{pendingFormsCount === 1 ? 's' : ''} Your Attention
+                </h3>
+                <p className="text-sm text-muted-foreground">Please complete your pending forms before your appointment</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-amber-500" />
+            </CardContent>
+          </Card>
+        </Link>
+      )}
 
       {/* Next Appointment */}
       <Card className="card-luxury">
