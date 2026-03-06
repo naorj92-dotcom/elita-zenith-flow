@@ -21,11 +21,8 @@ interface PricingTier {
 
 const DEMO_AVAILABLE_PACKAGES = [
   {
-    id: 'demo-1',
-    name: 'Cryo Sculpt (Small)',
-    description: 'Targeted fat reduction for small areas',
-    price: 495,
-    is_active: true,
+    id: 'demo-cs-s', name: 'Cryo Sculpt (Small)', description: 'Targeted fat reduction for small areas',
+    price: 495, is_active: true,
     pricing_tiers: [
       { sessions: 1, total_price: 495, price_per_session: 495, value_percent: 0 },
       { sessions: 3, total_price: 1185, price_per_session: 395, value_percent: 20 },
@@ -34,16 +31,53 @@ const DEMO_AVAILABLE_PACKAGES = [
     ],
   },
   {
-    id: 'demo-2',
-    name: 'Vacuum + RF (Medium)',
-    description: 'Skin tightening and contouring for medium areas',
-    price: 445,
-    is_active: true,
+    id: 'demo-cs-m', name: 'Cryo Sculpt (Medium)', description: 'Targeted fat reduction for medium areas',
+    price: 595, is_active: true,
+    pricing_tiers: [
+      { sessions: 1, total_price: 595, price_per_session: 595, value_percent: 0 },
+      { sessions: 3, total_price: 1485, price_per_session: 495, value_percent: 17 },
+      { sessions: 6, total_price: 2790, price_per_session: 465, value_percent: 22 },
+      { sessions: 10, total_price: 4250, price_per_session: 425, value_percent: 29 },
+    ],
+  },
+  {
+    id: 'demo-cs-l', name: 'Cryo Sculpt (Large)', description: 'Targeted fat reduction for large areas',
+    price: 695, is_active: true,
+    pricing_tiers: [
+      { sessions: 1, total_price: 695, price_per_session: 695, value_percent: 0 },
+      { sessions: 3, total_price: 1785, price_per_session: 595, value_percent: 14 },
+      { sessions: 6, total_price: 3390, price_per_session: 565, value_percent: 19 },
+      { sessions: 10, total_price: 5250, price_per_session: 525, value_percent: 24 },
+    ],
+  },
+  {
+    id: 'demo-vrf-s', name: 'Vacuum + RF (Small)', description: 'Skin tightening for small areas',
+    price: 345, is_active: true,
+    pricing_tiers: [
+      { sessions: 1, total_price: 345, price_per_session: 345, value_percent: 0 },
+      { sessions: 3, total_price: 885, price_per_session: 295, value_percent: 14 },
+      { sessions: 6, total_price: 1590, price_per_session: 265, value_percent: 23 },
+      { sessions: 10, total_price: 2390, price_per_session: 239, value_percent: 31 },
+    ],
+  },
+  {
+    id: 'demo-vrf-m', name: 'Vacuum + RF (Medium)', description: 'Skin tightening for medium areas',
+    price: 445, is_active: true,
     pricing_tiers: [
       { sessions: 1, total_price: 445, price_per_session: 445, value_percent: 0 },
       { sessions: 3, total_price: 1125, price_per_session: 375, value_percent: 16 },
       { sessions: 6, total_price: 2070, price_per_session: 345, value_percent: 22 },
       { sessions: 10, total_price: 3190, price_per_session: 319, value_percent: 28 },
+    ],
+  },
+  {
+    id: 'demo-vrf-l', name: 'Vacuum + RF (Large)', description: 'Skin tightening for large areas',
+    price: 545, is_active: true,
+    pricing_tiers: [
+      { sessions: 1, total_price: 545, price_per_session: 545, value_percent: 0 },
+      { sessions: 3, total_price: 1365, price_per_session: 455, value_percent: 17 },
+      { sessions: 6, total_price: 2550, price_per_session: 425, value_percent: 22 },
+      { sessions: 10, total_price: 3990, price_per_session: 399, value_percent: 27 },
     ],
   },
 ];
