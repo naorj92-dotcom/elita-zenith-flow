@@ -394,7 +394,7 @@ export function PackagesManagementPage() {
         </Card>
       </div>
 
-      {/* Packages Table with Tiered Pricing */}
+      {/* Packages Table — Grouped by Service */}
       <Card>
         <CardHeader>
           <CardTitle>All Packages — Program Pricing</CardTitle>
@@ -406,82 +406,104 @@ export function PackagesManagementPage() {
             <div className="text-center py-8 text-muted-foreground">
               No packages found. Create your first package to get started.
             </div>
-          ) : (
-            <div className="space-y-6">
-              {packages?.map((pkg) => {
-                const tiers = getTiers(pkg);
-                return (
-                  <div key={pkg.id} className="border rounded-lg overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-3 bg-muted/50">
-                      <div>
-                        <p className="font-semibold text-foreground">{pkg.name}</p>
-                        {pkg.description && (
-                          <p className="text-sm text-muted-foreground">{pkg.description}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={pkg.is_active ? 'default' : 'secondary'}>
-                          {pkg.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(pkg)}>
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Package?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete this package definition.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => deletePackageMutation.mutate(pkg.id)}>
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
+          ) : (() => {
+            // Group packages by base name (e.g. "Cryo Sculpt" from "Cryo Sculpt (Small)")
+            const grouped = (packages || []).reduce((acc: Record<string, any[]>, pkg: any) => {
+              const match = pkg.name.match(/^(.+?)\s*\((.+)\)$/);
+              const groupName = match ? match[1].trim() : pkg.name;
+              if (!acc[groupName]) acc[groupName] = [];
+              acc[groupName].push({ ...pkg, sizeName: match ? match[2].trim() : '' });
+              return acc;
+            }, {} as Record<string, any[]>);
+
+            return (
+              <div className="space-y-6">
+                {Object.entries(grouped).map(([groupName, pkgs]) => (
+                  <div key={groupName} className="border rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-muted/50">
+                      <p className="font-semibold text-foreground text-lg">{groupName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {(pkgs as any[]).length > 1
+                          ? `${(pkgs as any[]).length} size variants: ${(pkgs as any[]).map((p: any) => p.sizeName).join(', ')}`
+                          : (pkgs as any[])[0]?.description || ''}
+                      </p>
                     </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Sessions</TableHead>
-                          <TableHead>Total Price</TableHead>
-                          <TableHead>Price / Session</TableHead>
-                          <TableHead>Program Value</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {tiers.map((tier, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell className="font-medium">{tier.sessions}</TableCell>
-                            <TableCell className="font-medium">{formatCurrency(tier.total_price)}</TableCell>
-                            <TableCell>{formatCurrency(tier.price_per_session)}</TableCell>
-                            <TableCell>
-                              {tier.value_percent > 0 ? (
-                                <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-                                  {tier.value_percent}% Value
-                                </Badge>
-                              ) : (
-                                <span className="text-muted-foreground">—</span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    {(pkgs as any[]).map((pkg: any) => {
+                      const tiers = getTiers(pkg);
+                      return (
+                        <div key={pkg.id}>
+                          <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-t">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-foreground">
+                                {pkg.sizeName || pkg.name}
+                              </span>
+                              <Badge variant={pkg.is_active ? 'default' : 'secondary'} className="text-xs">
+                                {pkg.is_active ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="sm" onClick={() => handleEdit(pkg)}>
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Package?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete this package definition.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => deletePackageMutation.mutate(pkg.id)}>
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Sessions</TableHead>
+                                <TableHead>Total Price</TableHead>
+                                <TableHead>Price / Session</TableHead>
+                                <TableHead>Program Value</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {tiers.map((tier, idx) => (
+                                <TableRow key={idx}>
+                                  <TableCell className="font-medium">{tier.sessions}</TableCell>
+                                  <TableCell className="font-medium">{formatCurrency(tier.total_price)}</TableCell>
+                                  <TableCell>{formatCurrency(tier.price_per_session)}</TableCell>
+                                  <TableCell>
+                                    {tier.value_percent > 0 ? (
+                                      <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                                        {tier.value_percent}% Value
+                                      </Badge>
+                                    ) : (
+                                      <span className="text-muted-foreground">—</span>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          )}
+                ))}
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
 
