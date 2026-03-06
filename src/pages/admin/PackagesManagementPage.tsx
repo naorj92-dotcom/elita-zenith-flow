@@ -396,6 +396,9 @@ export function PackagesManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Client Package Assignments */}
+      <ClientPackagesTable />
     </div>
   );
 }
