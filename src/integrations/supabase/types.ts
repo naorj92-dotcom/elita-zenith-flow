@@ -1069,6 +1069,7 @@ export type Database = {
           is_active: boolean
           name: string
           price: number
+          pricing_tiers: Json
           services: Json
           total_sessions: number
           updated_at: string
@@ -1080,6 +1081,7 @@ export type Database = {
           is_active?: boolean
           name: string
           price: number
+          pricing_tiers?: Json
           services?: Json
           total_sessions?: number
           updated_at?: string
@@ -1091,6 +1093,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           price?: number
+          pricing_tiers?: Json
           services?: Json
           total_sessions?: number
           updated_at?: string
