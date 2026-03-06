@@ -82,7 +82,32 @@ export function FormFieldRenderer({ field, value, onChange, disabled = false }: 
         </div>
       );
 
-    case 'select':
+    case 'radio':
+      return (
+        <div className="space-y-2">
+          <Label className="flex items-center gap-1">
+            {field.label}
+            {field.required && <span className="text-destructive">*</span>}
+          </Label>
+          <div className="space-y-2">
+            {field.options?.map((option) => (
+              <label key={option} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name={fieldId}
+                  value={option}
+                  checked={value === option}
+                  onChange={() => onChange(option)}
+                  disabled={disabled}
+                  className="w-4 h-4 text-primary"
+                />
+                <span className="text-sm">{option}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      );
+
       return (
         <div className="space-y-2">
           <Label htmlFor={fieldId} className="flex items-center gap-1">
