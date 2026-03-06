@@ -439,6 +439,67 @@ export function FormsManagementPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Assign Form to Clients Dialog */}
+      <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="w-5 h-5" />
+              Assign Form to Clients
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search clients by name or email..."
+                value={assignClientSearch}
+                onChange={e => setAssignClientSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <ScrollArea className="h-[300px] border rounded-lg">
+              <div className="p-2 space-y-1">
+                {filteredClients.map(client => (
+                  <div
+                    key={client.id}
+                    className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                    onClick={() => setSelectedClientIds(prev =>
+                      prev.includes(client.id) ? prev.filter(id => id !== client.id) : [...prev, client.id]
+                    )}
+                  >
+                    <Checkbox checked={selectedClientIds.includes(client.id)} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{client.first_name} {client.last_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{client.email || client.phone || 'No contact info'}</p>
+                    </div>
+                  </div>
+                ))}
+                {filteredClients.length === 0 && (
+                  <p className="text-center py-8 text-sm text-muted-foreground">No clients found</p>
+                )}
+              </div>
+            </ScrollArea>
+            {selectedClientIds.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {selectedClientIds.length} client{selectedClientIds.length > 1 ? 's' : ''} selected
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssignDialog(false)}>Cancel</Button>
+            <Button
+              onClick={() => assignMutation.mutate()}
+              disabled={selectedClientIds.length === 0 || assignMutation.isPending}
+              className="gap-2"
+            >
+              <Send className="w-4 h-4" />
+              {assignMutation.isPending ? 'Assigning...' : `Assign to ${selectedClientIds.length || ''} Client${selectedClientIds.length !== 1 ? 's' : ''}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
