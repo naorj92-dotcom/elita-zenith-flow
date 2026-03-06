@@ -59,7 +59,7 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
   const [activeTab, setActiveTab] = useState<'build' | 'settings' | 'preview'>('build');
   const [selectedFieldIndex, setSelectedFieldIndex] = useState<number | null>(null);
   const [newOption, setNewOption] = useState('');
-  const [showTemplates, setShowTemplates] = useState(!isEditing);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
 
   const set = (key: string, value: any) => onChange({ ...formData, [key]: value });
   const fields = formData.fields;
