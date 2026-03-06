@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,8 +16,13 @@ import {
   ArrowLeft, Crown, MapPin, ShoppingCart, FileText, MessageCircle,
   Mail, Calendar, MoreHorizontal, User, Phone, Save, Loader2,
   Clock, Camera, Package, CreditCard, Sparkles, ClipboardList,
-  Image as ImageIcon, FolderOpen, AlertTriangle, Pill, ShieldAlert
+  Image as ImageIcon, FolderOpen, AlertTriangle, Pill, ShieldAlert,
+  Upload, Eye, EyeOff, Plus
 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { SignedImage } from '@/components/photos/SignedImage';
 import { format, isValid } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -296,7 +301,7 @@ export default function ClientProfilePage() {
 
               {/* GALLERY */}
               <TabsContent value="gallery" className="mt-0">
-                <GalleryTab photos={photos} />
+                <GalleryTab photos={photos} clientId={client.id} />
               </TabsContent>
 
               {/* ACCOMMODATIONS */}
@@ -643,29 +648,173 @@ function FormsTab({ forms }: { forms: any[] }) {
 }
 
 // ─── Gallery Tab ─────────────────────────────────────────
-function GalleryTab({ photos }: { photos: any[] }) {
-  if (photos.length === 0) {
-    return <EmptyState icon={ImageIcon} title="No photos" description="No before/after photos on file." compact />;
-  }
+function GalleryTab({ photos, clientId }: { photos: any[]; clientId: string }) {
+  const queryClient = useQueryClient();
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [beforeFile, setBeforeFile] = useState<File | null>(null);
+  const [afterFile, setAfterFile] = useState<File | null>(null);
+  const [serviceId, setServiceId] = useState('');
+  const [notes, setNotes] = useState('');
+  const [visibleToClient, setVisibleToClient] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const beforeRef = useRef<HTMLInputElement>(null);
+  const afterRef = useRef<HTMLInputElement>(null);
+
+  const { data: services } = useQuery({
+    queryKey: ['services-for-photos'],
+    queryFn: async () => {
+      const { data } = await supabase.from('services').select('id, name').eq('is_active', true).order('name');
+      return data || [];
+    },
+  });
+
+  const handleUpload = async () => {
+    if (!beforeFile && !afterFile) {
+      toast.error('Please select at least one photo');
+      return;
+    }
+    setUploading(true);
+    try {
+      let beforeUrl: string | null = null;
+      let afterUrl: string | null = null;
+
+      if (beforeFile) {
+        const ext = beforeFile.name.split('.').pop();
+        const path = `${clientId}/before-${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('treatment-photos').upload(path, beforeFile);
+        if (error) throw error;
+        beforeUrl = `treatment-photos/${path}`;
+      }
+
+      if (afterFile) {
+        const ext = afterFile.name.split('.').pop();
+        const path = `${clientId}/after-${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('treatment-photos').upload(path, afterFile);
+        if (error) throw error;
+        afterUrl = `treatment-photos/${path}`;
+      }
+
+      const { error } = await supabase.from('before_after_photos').insert({
+        client_id: clientId,
+        service_id: serviceId || null,
+        before_photo_url: beforeUrl,
+        after_photo_url: afterUrl,
+        notes: notes || null,
+        is_visible_to_client: visibleToClient,
+      });
+      if (error) throw error;
+
+      toast.success('Photos uploaded successfully');
+      queryClient.invalidateQueries({ queryKey: ['client-photos-profile', clientId] });
+      setIsUploadOpen(false);
+      setBeforeFile(null);
+      setAfterFile(null);
+      setServiceId('');
+      setNotes('');
+      setVisibleToClient(true);
+    } catch (err: any) {
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      {photos.map((p) => (
-        <div key={p.id} className="rounded-lg border border-border overflow-hidden bg-card">
-          <div className="aspect-square bg-muted flex items-center justify-center">
-            {p.before_photo_url ? (
-              <img src={p.before_photo_url} alt="Before" className="w-full h-full object-cover" />
-            ) : (
-              <Camera className="h-8 w-8 text-muted-foreground" />
-            )}
-          </div>
-          <div className="p-2">
-            <p className="text-xs font-medium truncate">{p.services?.name || 'Treatment'}</p>
-            <p className="text-[10px] text-muted-foreground">
-              {isValid(new Date(p.taken_date)) ? format(new Date(p.taken_date), 'MMM d, yyyy') : '—'}
-            </p>
-          </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Before & After Photos</h3>
+        <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-2">
+              <Upload className="h-4 w-4" /> Upload Photos
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Upload Treatment Photos</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label>Service</Label>
+                <Select value={serviceId} onValueChange={setServiceId}>
+                  <SelectTrigger><SelectValue placeholder="Select service (optional)" /></SelectTrigger>
+                  <SelectContent>
+                    {services?.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Before Photo</Label>
+                  <Input ref={beforeRef} type="file" accept="image/*" onChange={(e) => setBeforeFile(e.target.files?.[0] || null)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>After Photo</Label>
+                  <Input ref={afterRef} type="file" accept="image/*" onChange={(e) => setAfterFile(e.target.files?.[0] || null)} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Treatment notes..." />
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={visibleToClient} onCheckedChange={setVisibleToClient} />
+                <Label>Visible to client in portal</Label>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button variant="outline" onClick={() => setIsUploadOpen(false)}>Cancel</Button>
+                <Button onClick={handleUpload} disabled={uploading}>
+                  {uploading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Uploading...</> : 'Upload'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {photos.length === 0 ? (
+        <EmptyState icon={ImageIcon} title="No photos" description="Upload before/after treatment photos for this client." compact />
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {photos.map((p) => (
+            <div key={p.id} className="rounded-lg border border-border overflow-hidden bg-card">
+              <div className="grid grid-cols-2 aspect-square">
+                <div className="bg-muted flex items-center justify-center relative">
+                  {p.before_photo_url ? (
+                    <SignedImage src={p.before_photo_url} alt="Before" className="w-full h-full object-cover" />
+                  ) : (
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                  )}
+                  <Badge className="absolute bottom-1 left-1 text-[9px] px-1 py-0 bg-background/80 text-foreground">Before</Badge>
+                </div>
+                <div className="bg-muted flex items-center justify-center relative">
+                  {p.after_photo_url ? (
+                    <SignedImage src={p.after_photo_url} alt="After" className="w-full h-full object-cover" />
+                  ) : (
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                  )}
+                  <Badge className="absolute bottom-1 right-1 text-[9px] px-1 py-0 bg-primary text-primary-foreground">After</Badge>
+                </div>
+              </div>
+              <div className="p-2 flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium truncate">{p.services?.name || 'Treatment'}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {isValid(new Date(p.taken_date)) ? format(new Date(p.taken_date), 'MMM d, yyyy') : '—'}
+                  </p>
+                </div>
+                {p.is_visible_to_client ? (
+                  <Eye className="h-3.5 w-3.5 text-success shrink-0" />
+                ) : (
+                  <EyeOff className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
