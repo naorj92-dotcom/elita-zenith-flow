@@ -65,15 +65,21 @@ export function ClientPortalLayout() {
             {flatNavItems.map((item) => {
               const isActive = location.pathname === item.href;
               const Icon = item.icon;
+              const showBadge = isFormsLink(item.href) && pendingFormsCount > 0;
               return (
                 <Link key={item.href} to={item.href}>
                   <Button 
                     variant={isActive ? 'default' : 'ghost'} 
                     size="sm"
-                    className="gap-2"
+                    className="gap-2 relative"
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
+                    {showBadge && (
+                      <Badge className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px] bg-destructive text-destructive-foreground border-0">
+                        {pendingFormsCount}
+                      </Badge>
+                    )}
                   </Button>
                 </Link>
               );
