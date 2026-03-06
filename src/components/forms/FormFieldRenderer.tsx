@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export interface FormField {
   id: string;
-  type: 'text' | 'textarea' | 'checkbox' | 'select' | 'date' | 'email' | 'phone';
+  type: 'text' | 'textarea' | 'checkbox' | 'select' | 'radio' | 'date' | 'email' | 'phone';
   label: string;
   required: boolean;
   options?: string[];
