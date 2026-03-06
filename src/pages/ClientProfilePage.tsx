@@ -301,7 +301,7 @@ export default function ClientProfilePage() {
 
               {/* GALLERY */}
               <TabsContent value="gallery" className="mt-0">
-                <GalleryTab photos={photos} />
+                <GalleryTab photos={photos} clientId={client.id} />
               </TabsContent>
 
               {/* ACCOMMODATIONS */}
