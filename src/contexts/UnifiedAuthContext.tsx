@@ -236,7 +236,7 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
 
   // Sign out
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    // Clear local state first to unblock UI immediately
     setUser(null);
     setSession(null);
     setUserRole(null);
@@ -244,6 +244,13 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
     setStaff(null);
     setClient(null);
     setClockStatus(null);
+    
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      // Ignore errors (e.g. session_not_found) — state is already cleared
+      console.warn('Sign out error (ignored):', err);
+    }
   }, []);
 
   // Legacy PIN login for staff (maintains backward compatibility)
