@@ -253,69 +253,10 @@ Deno.serve(async (req) => {
     }
 
     if (action === "sync" && appointment_id) {
-      // Fetch appointment with details
-      const { data: appt, error: apptError } = await supabase
-        .from("appointments")
-        .select(`
-          id, scheduled_at, duration_minutes, status, notes,
-          client:clients(first_name, last_name),
-          staff:staff(first_name, last_name),
-          service:services(name),
-          room:rooms(name),
-          machine:machines(name)
-        `)
-        .eq("id", appointment_id)
-        .maybeSingle();
-
-      if (apptError || !appt) {
-        throw new Error(`Appointment not found: ${apptError?.message}`);
-      }
-
-      const event = appointmentToEvent(appt as unknown as AppointmentDetails, calendar_id);
-
-      // Check if already synced
-      const { data: existing } = await supabase
-        .from("calendar_sync")
-        .select("*")
-        .eq("appointment_id", appointment_id)
-        .maybeSingle();
-
-      if (appt.status === "cancelled" || appt.status === "no_show") {
-        // Delete from Google Calendar if synced
-        if (existing) {
-          await deleteCalendarEvent(accessToken, existing.google_calendar_id, existing.google_event_id);
-          await supabase.from("calendar_sync").delete().eq("id", existing.id);
-        }
-        return new Response(JSON.stringify({ success: true, action: "deleted" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      if (existing) {
-        // Update existing event
-        await updateCalendarEvent(accessToken, existing.google_calendar_id, existing.google_event_id, event);
-        await supabase
-          .from("calendar_sync")
-          .update({ last_synced_at: new Date().toISOString(), sync_status: "synced", sync_error: null })
-          .eq("id", existing.id);
-
-        return new Response(JSON.stringify({ success: true, action: "updated", event_id: existing.google_event_id }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      } else {
-        // Create new event
-        const created = await createCalendarEvent(accessToken, calendar_id, event);
-        await supabase.from("calendar_sync").insert({
-          appointment_id,
-          google_event_id: created.id,
-          google_calendar_id: calendar_id,
-          sync_status: "synced",
-        });
-
-        return new Response(JSON.stringify({ success: true, action: "created", event_id: created.id }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+      // Read-only mode: skip writing to Google Calendar
+      return new Response(JSON.stringify({ success: true, action: "skipped", message: "Read-only mode — not pushing to Google Calendar" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     if (action === "pull") {
