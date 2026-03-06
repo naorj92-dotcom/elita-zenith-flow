@@ -387,34 +387,45 @@ function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpd
 }) {
   const [dropIndex, setDropIndex] = React.useState<number | null>(null);
   const [isDraggingOver, setIsDraggingOver] = React.useState(false);
+  const fieldRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const getDropIndex = (e: React.DragEvent, fieldIndex: number) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    return e.clientY < midY ? fieldIndex : fieldIndex + 1;
-  };
+  // Calculate drop index from mouse Y position relative to all fields
+  const calcDropIndex = React.useCallback((clientY: number) => {
+    for (let i = 0; i < fieldRefs.current.length; i++) {
+      const el = fieldRefs.current[i];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      if (clientY < midY) return i;
+    }
+    return fields.length;
+  }, [fields.length]);
 
-  const executeDrop = (e: React.DragEvent, index: number) => {
+  const executeDrop = React.useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const idx = calcDropIndex(e.clientY);
     setDropIndex(null);
     setIsDraggingOver(false);
     const fieldType = e.dataTransfer.getData('fieldType');
     const dragFieldIndex = e.dataTransfer.getData('dragFieldIndex');
     if (fieldType) {
-      onInsertFieldAt(fieldType, index);
+      onInsertFieldAt(fieldType, idx);
     } else if (dragFieldIndex !== '') {
-      onMoveFieldToIndex(parseInt(dragFieldIndex), index);
+      onMoveFieldToIndex(parseInt(dragFieldIndex), idx);
     }
-  };
+  }, [calcDropIndex, onInsertFieldAt, onMoveFieldToIndex]);
 
   return (
     <div
-      className="max-w-[780px] mx-auto py-8 px-6"
+      ref={containerRef}
+      className="max-w-[780px] mx-auto py-8 px-6 min-h-full"
       onDragOver={(e) => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
         setIsDraggingOver(true);
-        if (fields.length === 0) setDropIndex(0);
+        setDropIndex(calcDropIndex(e.clientY));
       }}
       onDragLeave={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -422,10 +433,7 @@ function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpd
           setIsDraggingOver(false);
         }
       }}
-      onDrop={(e) => {
-        if (fields.length === 0) executeDrop(e, 0);
-        else executeDrop(e, dropIndex ?? fields.length);
-      }}
+      onDrop={executeDrop}
     >
       {formData.description && (
         <div className="bg-card rounded-lg p-6 mb-6 text-sm text-foreground leading-relaxed">
@@ -433,7 +441,10 @@ function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpd
         </div>
       )}
 
-      <div className="bg-card rounded-lg px-8 py-6">
+      <div className={cn(
+        "bg-card rounded-lg px-8 py-6 min-h-[300px] transition-all",
+        isDraggingOver && 'ring-2 ring-primary/20'
+      )}>
         {fields.length === 0 && (
           <div className={cn(
             'py-16 text-center rounded-lg transition-all border-2 border-dashed',
@@ -446,26 +457,21 @@ function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpd
 
         {fields.map((field, index) => (
           <React.Fragment key={field.id}>
-            {/* Drop indicator line */}
+            {/* Drop indicator line — shown above this field */}
             <div className={cn(
-              'transition-all -mx-3 rounded',
+              'transition-all duration-150 -mx-3 rounded-full',
               dropIndex === index
-                ? 'h-1 bg-primary/50 my-2'
-                : 'h-0'
+                ? 'h-1 bg-primary my-2 shadow-sm'
+                : 'h-0 my-0'
             )} />
 
             <div
+              ref={(el) => { fieldRefs.current[index] = el; }}
               draggable
               onDragStart={(e) => {
                 e.dataTransfer.setData('dragFieldIndex', index.toString());
                 e.dataTransfer.effectAllowed = 'move';
               }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setDropIndex(getDropIndex(e, index));
-              }}
-              onDrop={(e) => executeDrop(e, getDropIndex(e, index))}
               onClick={() => onSelectField(index)}
               className={cn(
                 'relative group cursor-pointer rounded-md transition-all -mx-3 px-3 py-2',
@@ -534,10 +540,10 @@ function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpd
         {/* Bottom drop indicator */}
         {fields.length > 0 && (
           <div className={cn(
-            'transition-all -mx-3 rounded',
+            'transition-all duration-150 -mx-3 rounded-full',
             dropIndex === fields.length
-              ? 'h-1 bg-primary/50 my-2'
-              : 'h-0'
+              ? 'h-1 bg-primary my-2 shadow-sm'
+              : 'h-0 my-0'
           )} />
         )}
 
