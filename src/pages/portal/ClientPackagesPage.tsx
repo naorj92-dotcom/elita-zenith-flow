@@ -232,80 +232,109 @@ export function ClientPackagesPage() {
         </>
       )}
 
-      {/* Available Packages — Tiered Pricing Tables */}
-      {availablePackages && availablePackages.length > 0 && (
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-heading font-medium">Program Pricing</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Save more with multi-session programs. The more sessions you commit to, the lower the price per session.
-          </p>
-          <div className="space-y-6">
-            {availablePackages.map((pkg: any) => {
-              const tiers = getTiers(pkg);
-              return (
-                <Card key={pkg.id} className="card-luxury overflow-hidden">
-                  <CardHeader className="pb-2 bg-muted/30">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-lg font-heading flex items-center gap-2">
-                          {pkg.name}
-                          <TrendingDown className="h-4 w-4 text-primary" />
-                        </CardTitle>
-                        {pkg.description && (
-                          <CardDescription>{pkg.description}</CardDescription>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Sessions</TableHead>
-                          <TableHead>Total Price</TableHead>
-                          <TableHead>Price / Session</TableHead>
-                          <TableHead>Program Value</TableHead>
-                          <TableHead className="text-right"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {tiers.map((tier, idx) => (
-                          <TableRow key={idx} className={idx === tiers.length - 1 ? 'bg-primary/5' : ''}>
-                            <TableCell className="font-semibold">{tier.sessions}</TableCell>
-                            <TableCell className="font-medium">{formatCurrency(tier.total_price)}</TableCell>
-                            <TableCell>{formatCurrency(tier.price_per_session)}</TableCell>
-                            <TableCell>
-                              {tier.value_percent > 0 ? (
-                                <Badge variant="secondary" className="bg-success/10 text-success border-success/20 text-xs">
-                                  {tier.value_percent}% Value
-                                </Badge>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">—</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                size="sm"
-                                variant={idx === tiers.length - 1 ? 'default' : 'outline'}
-                                onClick={() => handleInquire(pkg.name, tier)}
-                              >
-                                Inquire
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {/* Available Packages — Grouped Pricing Tables */}
+      {availablePackages && availablePackages.length > 0 && (() => {
+        // Group packages by base service name (e.g. "Cryo Sculpt" from "Cryo Sculpt (Small)")
+        const grouped = (availablePackages as any[]).reduce((acc: Record<string, any[]>, pkg: any) => {
+          const match = pkg.name.match(/^(.+?)\s*\((.+)\)$/);
+          const groupName = match ? match[1].trim() : pkg.name;
+          if (!acc[groupName]) acc[groupName] = [];
+          acc[groupName].push({ ...pkg, sizeName: match ? match[2].trim() : '' });
+          return acc;
+        }, {} as Record<string, any[]>);
+
+        return (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <ShoppingBag className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-heading font-medium">Program Pricing</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Save more with multi-session programs. The more sessions you commit to, the lower the price per session.
+            </p>
+            <div className="space-y-6">
+              {Object.entries(grouped).map(([groupName, pkgs]) => {
+                // Collect all unique session counts across variants
+                const allTiers = (pkgs as any[]).map((pkg: any) => ({
+                  pkg,
+                  tiers: getTiers(pkg),
+                }));
+
+                return (
+                  <Card key={groupName} className="card-luxury overflow-hidden">
+                    <CardHeader className="pb-2 bg-muted/30">
+                      <CardTitle className="text-lg font-heading flex items-center gap-2">
+                        {groupName}
+                        <TrendingDown className="h-4 w-4 text-primary" />
+                      </CardTitle>
+                      <CardDescription>
+                        {(pkgs as any[]).length > 1
+                          ? `Available in ${(pkgs as any[]).map((p: any) => p.sizeName).join(', ')}`
+                          : (pkgs as any[])[0]?.description || ''}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {(pkgs as any[]).map((pkg: any) => {
+                        const tiers = getTiers(pkg);
+                        return (
+                          <div key={pkg.id}>
+                            {(pkgs as any[]).length > 1 && (
+                              <div className="px-4 py-2 bg-muted/20 border-t">
+                                <span className="text-sm font-semibold text-foreground">{pkg.sizeName || pkg.name}</span>
+                                {pkg.description && (
+                                  <span className="text-xs text-muted-foreground ml-2">— {pkg.description}</span>
+                                )}
+                              </div>
+                            )}
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Sessions</TableHead>
+                                  <TableHead>Total Price</TableHead>
+                                  <TableHead>Price / Session</TableHead>
+                                  <TableHead>Program Value</TableHead>
+                                  <TableHead className="text-right"></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {tiers.map((tier, idx) => (
+                                  <TableRow key={idx} className={idx === tiers.length - 1 ? 'bg-primary/5' : ''}>
+                                    <TableCell className="font-semibold">{tier.sessions}</TableCell>
+                                    <TableCell className="font-medium">{formatCurrency(tier.total_price)}</TableCell>
+                                    <TableCell>{formatCurrency(tier.price_per_session)}</TableCell>
+                                    <TableCell>
+                                      {tier.value_percent > 0 ? (
+                                        <Badge variant="secondary" className="bg-success/10 text-success border-success/20 text-xs">
+                                          {tier.value_percent}% Value
+                                        </Badge>
+                                      ) : (
+                                        <span className="text-muted-foreground text-sm">—</span>
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Button
+                                        size="sm"
+                                        variant={idx === tiers.length - 1 ? 'default' : 'outline'}
+                                        onClick={() => handleInquire(pkg.name, tier)}
+                                      >
+                                        Inquire
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })()}
     </div>
   );
 }
