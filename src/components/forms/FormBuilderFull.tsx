@@ -185,6 +185,8 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
                 onUpdateField={updateField}
                 onRemoveField={removeField}
                 onMoveField={moveField}
+                onInsertFieldAt={insertFieldAt}
+                onMoveFieldToIndex={moveFieldToIndex}
               />
             )}
           </div>
