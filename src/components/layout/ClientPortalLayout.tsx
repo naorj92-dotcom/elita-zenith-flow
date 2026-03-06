@@ -11,9 +11,26 @@ import { cn } from '@/lib/utils';
 import elitaLogo from '@/assets/elita-logo.png';
 
 export function ClientPortalLayout() {
-  const { isAuthenticated, isLoading, signOut, client } = useClientAuth();
+  const { isAuthenticated, isLoading, signOut, client, isDemo } = useClientAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Fetch pending forms count for badge
+  const { data: pendingFormsCount = 0 } = useQuery({
+    queryKey: ['client-pending-forms-badge', client?.id, isDemo],
+    queryFn: async () => {
+      if (isDemo) return 2;
+      if (!client?.id) return 0;
+      const { count } = await supabase
+        .from('client_forms')
+        .select('*', { count: 'exact', head: true })
+        .eq('client_id', client.id)
+        .eq('status', 'pending');
+      return count || 0;
+    },
+    enabled: (!!client?.id || isDemo) && isAuthenticated,
+    refetchInterval: 30000, // Poll every 30s for new form assignments
+  });
 
   if (isLoading) {
     return (
@@ -28,6 +45,7 @@ export function ClientPortalLayout() {
   }
 
   const flatNavItems = CLIENT_NAVIGATION.flatMap(cat => cat.items).slice(0, 6);
+  const isFormsLink = (href: string) => href === '/portal/forms';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
