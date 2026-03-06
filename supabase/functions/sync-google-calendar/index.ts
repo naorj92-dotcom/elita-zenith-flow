@@ -288,118 +288,15 @@ Deno.serve(async (req) => {
     }
 
     if (action === "sync_all") {
-      // Sync all upcoming appointments
-      const { data: appointments, error: listError } = await supabase
-        .from("appointments")
-        .select("id")
-        .gte("scheduled_at", new Date().toISOString())
-        .in("status", ["scheduled", "confirmed", "checked_in", "in_progress"])
-        .order("scheduled_at", { ascending: true })
-        .limit(50);
-
-      if (listError) throw new Error(`Failed to list appointments: ${listError.message}`);
-
-      const results = [];
-      for (const appt of appointments || []) {
-        try {
-          // Recursive call within the function for each appointment
-          const { data: fullAppt } = await supabase
-            .from("appointments")
-            .select(`
-              id, scheduled_at, duration_minutes, status, notes,
-              client:clients(first_name, last_name),
-              staff:staff(first_name, last_name),
-              service:services(name),
-              room:rooms(name),
-              machine:machines(name)
-            `)
-            .eq("id", appt.id)
-            .maybeSingle();
-
-          if (!fullAppt) continue;
-
-          const event = appointmentToEvent(fullAppt as unknown as AppointmentDetails, calendar_id);
-
-          const { data: existing } = await supabase
-            .from("calendar_sync")
-            .select("*")
-            .eq("appointment_id", appt.id)
-            .maybeSingle();
-
-          if (existing) {
-            await updateCalendarEvent(accessToken, existing.google_calendar_id, existing.google_event_id, event);
-            await supabase
-              .from("calendar_sync")
-              .update({ last_synced_at: new Date().toISOString(), sync_status: "synced" })
-              .eq("id", existing.id);
-            results.push({ id: appt.id, action: "updated" });
-          } else {
-            const created = await createCalendarEvent(accessToken, calendar_id, event);
-            await supabase.from("calendar_sync").insert({
-              appointment_id: appt.id,
-              google_event_id: created.id,
-              google_calendar_id: calendar_id,
-            });
-            results.push({ id: appt.id, action: "created" });
-          }
-        } catch (e) {
-          const errorMsg = e instanceof Error ? e.message : "Unknown error";
-          results.push({ id: appt.id, action: "error", error: errorMsg });
-        }
-      }
-
-      return new Response(JSON.stringify({ success: true, results }), {
+      // Read-only mode: skip writing to Google Calendar
+      return new Response(JSON.stringify({ success: true, results: [], message: "Read-only mode — not pushing to Google Calendar" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (action === "reschedule_gcal") {
-      // Reschedule a Google Calendar event directly by updating its start/end time
-      const { google_event_id, new_start, duration_minutes } = body;
-      if (!google_event_id || !new_start) {
-        return new Response(JSON.stringify({ error: "google_event_id and new_start are required" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const dur = duration_minutes || 60;
-      const startDate = new Date(new_start);
-      const endDate = new Date(startDate.getTime() + dur * 60000);
-
-      // First get the existing event to preserve its data
-      const getResp = await fetch(
-        `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendar_id)}/events/${google_event_id}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      if (!getResp.ok) {
-        const text = await getResp.text();
-        throw new Error(`Failed to fetch event: ${text}`);
-      }
-      const existingEvent = await getResp.json();
-
-      // Update only the start/end times
-      existingEvent.start = { dateTime: startDate.toISOString(), timeZone: "America/New_York" };
-      existingEvent.end = { dateTime: endDate.toISOString(), timeZone: "America/New_York" };
-
-      const updateResp = await fetch(
-        `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendar_id)}/events/${google_event_id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(existingEvent),
-        }
-      );
-      if (!updateResp.ok) {
-        const text = await updateResp.text();
-        throw new Error(`Google Calendar reschedule failed [${updateResp.status}]: ${text}`);
-      }
-      const updated = await updateResp.json();
-
-      return new Response(JSON.stringify({ success: true, action: "rescheduled", event: updated }), {
+      // Read-only mode: skip writing to Google Calendar
+      return new Response(JSON.stringify({ success: true, action: "skipped", message: "Read-only mode — not pushing to Google Calendar" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
