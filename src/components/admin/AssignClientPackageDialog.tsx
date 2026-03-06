@@ -10,6 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { addDays } from 'date-fns';
 
+interface PricingTier {
+  sessions: number;
+  total_price: number;
+  price_per_session: number;
+  value_percent: number;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -20,13 +27,13 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
   const queryClient = useQueryClient();
   const [clientId, setClientId] = useState(editingClientPackage?.client_id || '');
   const [packageId, setPackageId] = useState(editingClientPackage?.package_id || '');
+  const [selectedTierIdx, setSelectedTierIdx] = useState('0');
   const [sessionsUsed, setSessionsUsed] = useState(editingClientPackage?.sessions_used || 0);
   const [sessionsTotal, setSessionsTotal] = useState(editingClientPackage?.sessions_total || 0);
   const [status, setStatus] = useState(editingClientPackage?.status || 'active');
   const [expiryDays, setExpiryDays] = useState(180);
   const [notes, setNotes] = useState(editingClientPackage?.notes || '');
 
-  // Fetch clients
   const { data: clients } = useQuery({
     queryKey: ['clients-list'],
     queryFn: async () => {
@@ -38,7 +45,6 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
     },
   });
 
-  // Fetch packages
   const { data: packages } = useQuery({
     queryKey: ['packages-active'],
     queryFn: async () => {
@@ -52,6 +58,15 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
   });
 
   const selectedPackage = packages?.find(p => p.id === packageId);
+  const tiers: PricingTier[] = selectedPackage?.pricing_tiers && Array.isArray(selectedPackage.pricing_tiers) && selectedPackage.pricing_tiers.length > 0
+    ? selectedPackage.pricing_tiers
+    : selectedPackage
+      ? [{ sessions: selectedPackage.total_sessions, total_price: selectedPackage.price, price_per_session: selectedPackage.price / selectedPackage.total_sessions, value_percent: 0 }]
+      : [];
+  const selectedTier = tiers[parseInt(selectedTierIdx)] || tiers[0];
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -72,11 +87,11 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
           .insert({
             client_id: clientId,
             package_id: packageId,
-            sessions_total: selectedPackage?.total_sessions || sessionsTotal,
+            sessions_total: selectedTier?.sessions || 1,
             sessions_used: 0,
             status: 'active',
             expiry_date: addDays(new Date(), expiryDays).toISOString(),
-            notes: notes || null,
+            notes: notes ? `${notes} | Tier: ${selectedTier?.sessions} sessions @ ${formatCurrency(selectedTier?.total_price || 0)}` : `Tier: ${selectedTier?.sessions} sessions @ ${formatCurrency(selectedTier?.total_price || 0)}`,
           });
         if (error) throw error;
       }
@@ -94,10 +109,7 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
 
   const handlePackageSelect = (id: string) => {
     setPackageId(id);
-    const pkg = packages?.find(p => p.id === id);
-    if (pkg) {
-      setSessionsTotal(pkg.total_sessions);
-    }
+    setSelectedTierIdx('0');
   };
 
   return (
@@ -142,12 +154,48 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
                   <SelectContent>
                     {packages?.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
-                        {p.name} — ${p.price} ({p.total_sessions} sessions)
+                        {p.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Tier Selection */}
+              {tiers.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Program Tier</Label>
+                  <Select value={selectedTierIdx} onValueChange={setSelectedTierIdx}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tiers.map((tier, idx) => (
+                        <SelectItem key={idx} value={String(idx)}>
+                          {tier.sessions} session{tier.sessions !== 1 ? 's' : ''} — {formatCurrency(tier.total_price)} ({formatCurrency(tier.price_per_session)}/session)
+                          {tier.value_percent > 0 ? ` • ${tier.value_percent}% value` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedTier && (
+                    <div className="bg-muted/50 rounded-md p-3 text-sm space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Sessions:</span>
+                        <span className="font-medium">{selectedTier.sessions}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total:</span>
+                        <span className="font-medium">{formatCurrency(selectedTier.total_price)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Per Session:</span>
+                        <span className="font-medium">{formatCurrency(selectedTier.price_per_session)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>Expiry (days from today)</Label>
