@@ -151,6 +151,24 @@ export function ServicesManagementPage() {
     },
   });
 
+  const deleteServiceMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('services').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Service deleted successfully' });
+      queryClient.invalidateQueries({ queryKey: ['admin-services'] });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Failed to delete service', 
+        description: error.message,
+        variant: 'destructive' 
+      });
+    },
+  });
+
   const resetForm = () => {
     setFormData(initialFormData);
     setEditingService(null);
