@@ -156,30 +156,16 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize auth state
   useEffect(() => {
-    const initAuth = async () => {
-      setIsLoading(true);
-      
-      // Get initial session
-      const { data: { session: initialSession } } = await supabase.auth.getSession();
-      
-      if (initialSession?.user) {
-        setSession(initialSession);
-        setUser(initialSession.user);
-        await fetchUserRole(initialSession.user.id);
-      }
-      
-      setIsLoading(false);
-    };
-
-    initAuth();
-
-    // Listen for auth changes
+    // IMPORTANT: Set up listener BEFORE getSession per Supabase best practices
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
       
       if (newSession?.user) {
-        await fetchUserRole(newSession.user.id);
+        // Use setTimeout to avoid Supabase auth deadlock
+        setTimeout(() => {
+          fetchUserRole(newSession.user.id).finally(() => setIsLoading(false));
+        }, 0);
       } else {
         // Clear all state on sign out
         setUserRole(null);
@@ -187,8 +173,31 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
         setStaff(null);
         setClient(null);
         setClockStatus(null);
+        setIsLoading(false);
       }
     });
+
+    // Get initial session
+    const initAuth = async () => {
+      try {
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
+        if (error || !initialSession?.user) {
+          setIsLoading(false);
+          return;
+        }
+        
+        setSession(initialSession);
+        setUser(initialSession.user);
+        await fetchUserRole(initialSession.user.id);
+      } catch (err) {
+        console.error('Auth init error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
 
     return () => subscription.unsubscribe();
   }, [fetchUserRole]);
