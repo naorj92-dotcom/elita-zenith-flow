@@ -115,7 +115,57 @@ export function FormsManagementPage() {
     },
   });
 
-  // Save mutation
+  // Fetch clients for assign dialog
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients-for-assign'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, first_name, last_name, email, phone')
+        .order('first_name', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: showAssignDialog,
+  });
+
+  const filteredClients = clients.filter(c => {
+    if (!assignClientSearch) return true;
+    const q = assignClientSearch.toLowerCase();
+    return `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q);
+  });
+
+  // Assign form mutation
+  const assignMutation = useMutation({
+    mutationFn: async () => {
+      if (!assignFormId || selectedClientIds.length === 0) return;
+      const rows = selectedClientIds.map(clientId => ({
+        form_id: assignFormId,
+        client_id: clientId,
+        status: 'pending' as const,
+      }));
+      const { error } = await supabase.from('client_forms').insert(rows);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['client-forms'] });
+      toast.success(`Form assigned to ${selectedClientIds.length} client(s)`);
+      setShowAssignDialog(false);
+      setAssignFormId(null);
+      setSelectedClientIds([]);
+      setAssignClientSearch('');
+    },
+    onError: (error: any) => toast.error(error.message || 'Failed to assign form'),
+  });
+
+  const openAssignDialog = (formId: string) => {
+    setAssignFormId(formId);
+    setSelectedClientIds([]);
+    setAssignClientSearch('');
+    setShowAssignDialog(true);
+  };
+
+
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
       if (editingForm) {
