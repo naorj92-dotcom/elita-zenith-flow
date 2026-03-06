@@ -294,8 +294,13 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
                       <button
                         key={item.type}
                         type="button"
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('fieldType', item.type);
+                          e.dataTransfer.effectAllowed = 'copy';
+                        }}
                         onClick={() => addField(item.type)}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm text-foreground hover:bg-accent transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm text-foreground hover:bg-accent transition-colors cursor-grab active:cursor-grabbing"
                       >
                         <item.icon className="w-5 h-5 text-muted-foreground" />
                         <span className="flex-1 text-left">{item.label}</span>
