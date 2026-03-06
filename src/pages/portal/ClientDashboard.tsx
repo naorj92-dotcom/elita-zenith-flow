@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isValid } from 'date-fns';
-import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye, History, Crown, Flag, Gift, TrendingUp } from 'lucide-react';
+import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye, History, Crown, Flag, Gift, TrendingUp, FileText, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
   DEMO_PACKAGES, 
