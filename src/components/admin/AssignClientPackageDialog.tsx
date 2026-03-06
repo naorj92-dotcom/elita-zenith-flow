@@ -58,8 +58,9 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
   });
 
   const selectedPackage = packages?.find(p => p.id === packageId);
-  const tiers: PricingTier[] = selectedPackage?.pricing_tiers && Array.isArray(selectedPackage.pricing_tiers) && selectedPackage.pricing_tiers.length > 0
-    ? selectedPackage.pricing_tiers
+  const rawTiers = selectedPackage?.pricing_tiers;
+  const tiers: PricingTier[] = rawTiers && Array.isArray(rawTiers) && rawTiers.length > 0
+    ? (rawTiers as unknown as PricingTier[])
     : selectedPackage
       ? [{ sessions: selectedPackage.total_sessions, total_price: selectedPackage.price, price_per_session: selectedPackage.price / selectedPackage.total_sessions, value_percent: 0 }]
       : [];
