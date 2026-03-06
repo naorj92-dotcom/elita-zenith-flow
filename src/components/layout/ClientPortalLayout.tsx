@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Loader2, LogOut, Menu, X } from 'lucide-react';
 import { CLIENT_NAVIGATION, CLIENT_MOBILE_NAV } from '@/config/navigation';
 import { cn } from '@/lib/utils';
