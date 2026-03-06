@@ -9,9 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Search, FileText, ClipboardCheck, FileSignature, Scroll, Eye, Users, X } from 'lucide-react';
+import { Plus, Search, FileText, ClipboardCheck, FileSignature, Scroll, Eye, Users, Send } from 'lucide-react';
 import { FormField } from '@/components/forms/FormFieldRenderer';
 import { FormBuilderFull } from '@/components/forms/FormBuilderFull';
 import { format } from 'date-fns';
@@ -70,6 +73,12 @@ export function FormsManagementPage() {
   // Create dialog state
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
+  // Assign form dialog state
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [assignFormId, setAssignFormId] = useState<string | null>(null);
+  const [assignClientSearch, setAssignClientSearch] = useState('');
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
+
   // Builder state
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [builderMode, setBuilderMode] = useState<'form' | 'chart'>('form');
@@ -106,7 +115,57 @@ export function FormsManagementPage() {
     },
   });
 
-  // Save mutation
+  // Fetch clients for assign dialog
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients-for-assign'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, first_name, last_name, email, phone')
+        .order('first_name', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: showAssignDialog,
+  });
+
+  const filteredClients = clients.filter(c => {
+    if (!assignClientSearch) return true;
+    const q = assignClientSearch.toLowerCase();
+    return `${c.first_name} ${c.last_name}`.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q);
+  });
+
+  // Assign form mutation
+  const assignMutation = useMutation({
+    mutationFn: async () => {
+      if (!assignFormId || selectedClientIds.length === 0) return;
+      const rows = selectedClientIds.map(clientId => ({
+        form_id: assignFormId,
+        client_id: clientId,
+        status: 'pending' as const,
+      }));
+      const { error } = await supabase.from('client_forms').insert(rows);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['client-forms'] });
+      toast.success(`Form assigned to ${selectedClientIds.length} client(s)`);
+      setShowAssignDialog(false);
+      setAssignFormId(null);
+      setSelectedClientIds([]);
+      setAssignClientSearch('');
+    },
+    onError: (error: any) => toast.error(error.message || 'Failed to assign form'),
+  });
+
+  const openAssignDialog = (formId: string) => {
+    setAssignFormId(formId);
+    setSelectedClientIds([]);
+    setAssignClientSearch('');
+    setShowAssignDialog(true);
+  };
+
+
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
       if (editingForm) {
@@ -309,11 +368,22 @@ export function FormsManagementPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{form.description || 'No description'}</p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>{form.fields?.length || 0} fields</span>
-                      {form.requires_signature && (
-                        <span className="flex items-center gap-1"><FileSignature className="w-3 h-3" />Signature required</span>
-                      )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span>{form.fields?.length || 0} fields</span>
+                        {form.requires_signature && (
+                          <span className="flex items-center gap-1"><FileSignature className="w-3 h-3" />Signature required</span>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={(e) => { e.stopPropagation(); openAssignDialog(form.id); }}
+                      >
+                        <Send className="w-3 h-3" />
+                        Assign
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -369,6 +439,67 @@ export function FormsManagementPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Assign Form to Clients Dialog */}
+      <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="w-5 h-5" />
+              Assign Form to Clients
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search clients by name or email..."
+                value={assignClientSearch}
+                onChange={e => setAssignClientSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <ScrollArea className="h-[300px] border rounded-lg">
+              <div className="p-2 space-y-1">
+                {filteredClients.map(client => (
+                  <div
+                    key={client.id}
+                    className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                    onClick={() => setSelectedClientIds(prev =>
+                      prev.includes(client.id) ? prev.filter(id => id !== client.id) : [...prev, client.id]
+                    )}
+                  >
+                    <Checkbox checked={selectedClientIds.includes(client.id)} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{client.first_name} {client.last_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{client.email || client.phone || 'No contact info'}</p>
+                    </div>
+                  </div>
+                ))}
+                {filteredClients.length === 0 && (
+                  <p className="text-center py-8 text-sm text-muted-foreground">No clients found</p>
+                )}
+              </div>
+            </ScrollArea>
+            {selectedClientIds.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {selectedClientIds.length} client{selectedClientIds.length > 1 ? 's' : ''} selected
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssignDialog(false)}>Cancel</Button>
+            <Button
+              onClick={() => assignMutation.mutate()}
+              disabled={selectedClientIds.length === 0 || assignMutation.isPending}
+              className="gap-2"
+            >
+              <Send className="w-4 h-4" />
+              {assignMutation.isPending ? 'Assigning...' : `Assign to ${selectedClientIds.length || ''} Client${selectedClientIds.length !== 1 ? 's' : ''}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
