@@ -155,17 +155,25 @@ export function ClientPortalLayout() {
         {CLIENT_MOBILE_NAV.map((item) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
+          const showBadge = isFormsLink(item.href) && pendingFormsCount > 0;
           
           return (
             <Link
               key={item.href}
               to={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px]",
+                "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px] relative",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <Icon className="w-5 h-5" />
+              <div className="relative">
+                <Icon className="w-5 h-5" />
+                {showBadge && (
+                  <span className="absolute -top-1.5 -right-2.5 h-4 min-w-[16px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                    {pendingFormsCount}
+                  </span>
+                )}
+              </div>
               <span className="text-xs font-medium">{item.label}</span>
             </Link>
           );
