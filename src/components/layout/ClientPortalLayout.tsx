@@ -116,6 +116,7 @@ export function ClientPortalLayout() {
                 {category.items.map((item) => {
                   const isActive = location.pathname === item.href;
                   const Icon = item.icon;
+                  const showBadge = isFormsLink(item.href) && pendingFormsCount > 0;
                   return (
                     <Link 
                       key={item.href} 
@@ -129,6 +130,11 @@ export function ClientPortalLayout() {
                       >
                         <Icon className="h-4 w-4" />
                         {item.label}
+                        {showBadge && (
+                          <Badge className="ml-auto h-5 min-w-[20px] px-1.5 text-[10px] bg-destructive text-destructive-foreground border-0">
+                            {pendingFormsCount}
+                          </Badge>
+                        )}
                       </Button>
                     </Link>
                   );
