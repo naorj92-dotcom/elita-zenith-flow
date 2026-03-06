@@ -16,8 +16,13 @@ import {
   ArrowLeft, Crown, MapPin, ShoppingCart, FileText, MessageCircle,
   Mail, Calendar, MoreHorizontal, User, Phone, Save, Loader2,
   Clock, Camera, Package, CreditCard, Sparkles, ClipboardList,
-  Image as ImageIcon, FolderOpen, AlertTriangle, Pill, ShieldAlert
+  Image as ImageIcon, FolderOpen, AlertTriangle, Pill, ShieldAlert,
+  Upload, Eye, EyeOff, Plus
 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { SignedImage } from '@/components/photos/SignedImage';
 import { format, isValid } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
