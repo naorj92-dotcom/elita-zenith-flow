@@ -58,6 +58,19 @@ export function PackagesManagementPage() {
     },
   });
 
+  // Delete package definition
+  const deletePackageMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('packages').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['packages'] });
+      toast.success('Package deleted');
+    },
+    onError: () => toast.error('Failed to delete package'),
+  });
+
   // Create/Update mutation
   const saveMutation = useMutation({
     mutationFn: async (data: PackageFormData) => {
