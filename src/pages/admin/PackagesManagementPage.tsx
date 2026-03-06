@@ -359,7 +359,7 @@ export function PackagesManagementPage() {
                     <TableCell className="text-muted-foreground">
                       {format(new Date(pkg.created_at), 'MMM d, yyyy')}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right space-x-1">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -367,6 +367,27 @@ export function PackagesManagementPage() {
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Package?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete this package definition. Client packages already assigned will not be affected.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deletePackageMutation.mutate(pkg.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
