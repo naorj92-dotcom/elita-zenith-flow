@@ -154,6 +154,27 @@ export function ClientDashboard() {
         )}
       </div>
 
+      {/* Pending Forms Alert */}
+      {pendingFormsCount > 0 && (
+        <Link to="/portal/forms">
+          <Card className="border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50 transition-colors cursor-pointer">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <FileText className="h-6 w-6 text-amber-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  {pendingFormsCount} Form{pendingFormsCount !== 1 ? 's' : ''} Require{pendingFormsCount === 1 ? 's' : ''} Your Attention
+                </h3>
+                <p className="text-sm text-muted-foreground">Please complete your pending forms before your appointment</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-amber-500" />
+            </CardContent>
+          </Card>
+        </Link>
+      )}
+
       {/* Next Appointment */}
       <Card className="card-luxury">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
