@@ -373,8 +373,8 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
   );
 }
 
-/* ─── Form Canvas (Build mode) — Boulevard inline style ───── */
-function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpdateField, onRemoveField, onMoveField }: {
+/* ─── Form Canvas (Build mode) — Boulevard inline style with drag & drop ───── */
+function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpdateField, onRemoveField, onMoveField, onInsertFieldAt, onMoveFieldToIndex }: {
   fields: FormField[];
   formData: any;
   selectedFieldIndex: number | null;
@@ -382,89 +382,148 @@ function FormCanvas({ fields, formData, selectedFieldIndex, onSelectField, onUpd
   onUpdateField: (i: number, u: Partial<FormField>) => void;
   onRemoveField: (i: number) => void;
   onMoveField: (i: number, d: 'up' | 'down') => void;
+  onInsertFieldAt: (type: string, index: number) => void;
+  onMoveFieldToIndex: (from: number, to: number) => void;
 }) {
+  const [dropIndex, setDropIndex] = React.useState<number | null>(null);
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = e.dataTransfer.types.includes('fieldtype') ? 'copy' : 'move';
+    setDropIndex(index);
+  };
+
+  const handleDrop = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDropIndex(null);
+    const fieldType = e.dataTransfer.getData('fieldType');
+    const dragFieldIndex = e.dataTransfer.getData('dragFieldIndex');
+    if (fieldType) {
+      onInsertFieldAt(fieldType, index);
+    } else if (dragFieldIndex !== '') {
+      onMoveFieldToIndex(parseInt(dragFieldIndex), index);
+    }
+  };
+
+  const handleDragLeave = () => setDropIndex(null);
+
+  const DropIndicator = ({ index }: { index: number }) => (
+    <div
+      onDragOver={(e) => handleDragOver(e, index)}
+      onDrop={(e) => handleDrop(e, index)}
+      onDragLeave={handleDragLeave}
+      className={cn(
+        'h-2 -mx-3 transition-all rounded',
+        dropIndex === index ? 'bg-primary/20 h-8 border-2 border-dashed border-primary/40 flex items-center justify-center' : ''
+      )}
+    >
+      {dropIndex === index && <span className="text-xs text-primary font-medium">Drop here</span>}
+    </div>
+  );
+
   return (
-    <div className="max-w-[780px] mx-auto py-8 px-6">
-      {/* Description block — editable paragraph like Boulevard */}
+    <div
+      className="max-w-[780px] mx-auto py-8 px-6"
+      onDragOver={(e) => { e.preventDefault(); if (fields.length === 0) setDropIndex(0); }}
+      onDrop={(e) => { if (fields.length === 0) handleDrop(e, 0); }}
+      onDragLeave={handleDragLeave}
+    >
       {formData.description && (
         <div className="bg-card rounded-lg p-6 mb-6 text-sm text-foreground leading-relaxed">
           {formData.description}
         </div>
       )}
 
-      {/* Fields rendered inline like Boulevard — no card wrappers, just labels + inputs on white surface */}
-      <div className="bg-card rounded-lg px-8 py-6 space-y-6">
-        {fields.map((field, index) => (
-          <div
-            key={field.id}
-            onClick={() => onSelectField(index)}
-            className={cn(
-              'relative group cursor-pointer rounded-md transition-all -mx-3 px-3 py-2',
-              selectedFieldIndex === index
-                ? 'ring-2 ring-primary/30 bg-primary/[0.02]'
-                : 'hover:bg-accent/30'
-            )}
-          >
-            {/* Field label with required asterisk and link icon */}
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <label className="text-sm font-medium text-foreground">
-                {field.label}
-                {field.required && <span className="text-destructive ml-0.5">*</span>}
-              </label>
-              <Link2 className="w-3.5 h-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-
-            {/* Field input representation */}
-            {field.type === 'text' || field.type === 'email' || field.type === 'phone' ? (
-              <div className="h-10 border border-border rounded-md bg-background" />
-            ) : field.type === 'textarea' ? (
-              <div className="h-24 border border-border rounded-md bg-background" />
-            ) : field.type === 'date' ? (
-              <div className="h-10 border border-border rounded-md bg-background flex items-center px-3 justify-between">
-                <span className="text-sm text-muted-foreground">MM/DD/YYYY</span>
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-              </div>
-            ) : field.type === 'select' ? (
-              <div className="h-10 border border-border rounded-md bg-background flex items-center px-3 justify-between">
-                <span className="text-sm text-muted-foreground">Select...</span>
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              </div>
-            ) : field.type === 'checkbox' ? (
-              <div className="flex items-center gap-2.5 mt-1">
-                <div className="w-4 h-4 border-2 border-border rounded-sm bg-background" />
-                <span className="text-sm text-muted-foreground">{field.label}</span>
-              </div>
-            ) : null}
-
-            {/* Hover/selected controls */}
-            <div className={cn(
-              'absolute top-1 right-1 flex items-center gap-0.5 transition-opacity',
-              selectedFieldIndex === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-            )}>
-              <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onMoveField(index, 'up'); }} disabled={index === 0}>
-                <MoveUp className="w-3 h-3" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onMoveField(index, 'down'); }} disabled={index === fields.length - 1}>
-                <MoveDown className="w-3 h-3" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={e => { e.stopPropagation(); onRemoveField(index); }}>
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-        ))}
-
+      <div className="bg-card rounded-lg px-8 py-6">
         {fields.length === 0 && (
-          <div className="py-16 text-center">
+          <div className={cn(
+            'py-16 text-center rounded-lg transition-all border-2 border-dashed',
+            dropIndex === 0 ? 'border-primary/40 bg-primary/5' : 'border-transparent'
+          )}>
             <p className="text-sm text-muted-foreground mb-1">No fields yet</p>
-            <p className="text-xs text-muted-foreground">Use the sidebar to add fields to your form</p>
+            <p className="text-xs text-muted-foreground">Drag fields from the sidebar or click to add</p>
           </div>
         )}
 
-        {/* Signature block */}
+        {fields.length > 0 && <DropIndicator index={0} />}
+
+        {fields.map((field, index) => (
+          <React.Fragment key={field.id}>
+            <div
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('dragFieldIndex', index.toString());
+                e.dataTransfer.effectAllowed = 'move';
+              }}
+              onClick={() => onSelectField(index)}
+              className={cn(
+                'relative group cursor-pointer rounded-md transition-all -mx-3 px-3 py-2',
+                selectedFieldIndex === index
+                  ? 'ring-2 ring-primary/30 bg-primary/[0.02]'
+                  : 'hover:bg-accent/30'
+              )}
+            >
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <GripVertical className="w-3.5 h-3.5 text-muted-foreground/30 cursor-grab active:cursor-grabbing shrink-0" />
+                <label className="text-sm font-medium text-foreground">
+                  {field.label}
+                  {field.required && <span className="text-destructive ml-0.5">*</span>}
+                </label>
+                <Link2 className="w-3.5 h-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+
+              {field.type === 'text' || field.type === 'email' || field.type === 'phone' ? (
+                <div className="h-10 border border-border rounded-md bg-background ml-5" />
+              ) : field.type === 'textarea' ? (
+                <div className="h-24 border border-border rounded-md bg-background ml-5" />
+              ) : field.type === 'date' ? (
+                <div className="h-10 border border-border rounded-md bg-background flex items-center px-3 justify-between ml-5">
+                  <span className="text-sm text-muted-foreground">MM/DD/YYYY</span>
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                </div>
+              ) : field.type === 'select' ? (
+                <div className="h-10 border border-border rounded-md bg-background flex items-center px-3 justify-between ml-5">
+                  <span className="text-sm text-muted-foreground">Select...</span>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </div>
+              ) : field.type === 'checkbox' ? (
+                <div className="flex items-center gap-2.5 mt-1 ml-5">
+                  <div className="w-4 h-4 border-2 border-border rounded-sm bg-background" />
+                  <span className="text-sm text-muted-foreground">{field.label}</span>
+                </div>
+              ) : field.type === 'radio' ? (
+                <div className="space-y-1.5 mt-1 ml-5">
+                  {field.options?.map((opt, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <div className="w-4 h-4 border-2 border-border rounded-full bg-background" />
+                      <span className="text-sm text-muted-foreground">{opt}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className={cn(
+                'absolute top-1 right-1 flex items-center gap-0.5 transition-opacity',
+                selectedFieldIndex === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              )}>
+                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onMoveField(index, 'up'); }} disabled={index === 0}>
+                  <MoveUp className="w-3 h-3" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onMoveField(index, 'down'); }} disabled={index === fields.length - 1}>
+                  <MoveDown className="w-3 h-3" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={e => { e.stopPropagation(); onRemoveField(index); }}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+            <DropIndicator index={index + 1} />
+          </React.Fragment>
+        ))}
+
         {formData.requires_signature && (
           <>
-            <Separator />
+            <Separator className="mt-4" />
             <div className="space-y-4 pt-2">
               <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Signatures</h3>
               <div className="grid grid-cols-2 gap-4">
