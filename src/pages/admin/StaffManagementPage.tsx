@@ -37,7 +37,6 @@ const initialFormData: StaffFormData = {
   last_name: '',
   email: '',
   phone: '',
-  pin: '',
   role: 'provider',
   hourly_rate: 0,
   is_active: true,
