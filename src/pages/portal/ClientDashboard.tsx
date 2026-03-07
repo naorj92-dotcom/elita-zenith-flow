@@ -106,6 +106,9 @@ export function ClientDashboard() {
         )}
       </div>
 
+      {/* Deals Notifications */}
+      <DealsNotificationBanner />
+
       {/* Visit Streak */}
       <VisitStreakWidget />
 
