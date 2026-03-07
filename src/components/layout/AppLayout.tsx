@@ -276,6 +276,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
+            {role !== 'client' && <StaffNotificationBell />}
             <Button variant="outline" size="sm" asChild>
               <Link to="/clients" className="gap-2">
                 <UserPlus className="w-4 h-4" />
