@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ArrowLeft, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import elitaLogo from '@/assets/elita-logo.png';
@@ -211,14 +211,21 @@ export function LoginPage() {
         </div>
       )}
 
-      {/* Client Portal Link */}
-      <div className="text-center pb-8">
-        <p className="text-sm text-muted-foreground">
-          Client?{' '}
-          <Link to="/portal/auth" className="text-primary hover:text-primary-hover transition-colors">
-            Access Client Portal
+      {/* Sign Up / Portal Links */}
+      <div className="pb-8 px-4 w-full flex flex-col items-center gap-3">
+        <div className="w-full max-w-sm space-y-2">
+          <Link to="/portal/auth" className="block">
+            <Button variant="outline" className="w-full gap-2">
+              <UserPlus className="h-4 w-4" />
+              Client Sign Up / Portal
+            </Button>
           </Link>
-        </p>
+          <p className="text-center text-xs text-muted-foreground">
+            New provider?{' '}
+            <span className="text-foreground font-medium">Contact your admin</span>{' '}
+            to get your staff account created.
+          </p>
+        </div>
       </div>
     </div>
   );
