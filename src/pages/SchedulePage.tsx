@@ -208,7 +208,6 @@ export function SchedulePage() {
     setIsRescheduling(true);
 
     if (rescheduleApt.id.startsWith('gcal-')) {
-      // Local-only move: update the google event position in state without syncing to Google
       const gcalId = rescheduleApt.id.replace('gcal-', '');
       setGoogleEvents((prev) =>
         prev.map((ev) => {
@@ -224,15 +223,23 @@ export function SchedulePage() {
       );
       toast.success('Appointment moved locally (not synced to Google)');
     } else {
+      const updateData: Record<string, any> = { scheduled_at: rescheduleNewTime.toISOString() };
+      if (rescheduleNewStaffId && rescheduleNewStaffId !== rescheduleApt.staff_id) {
+        updateData.staff_id = rescheduleNewStaffId;
+      }
+
       const { error } = await supabase
         .from('appointments')
-        .update({ scheduled_at: rescheduleNewTime.toISOString() })
+        .update(updateData)
         .eq('id', rescheduleApt.id);
 
       if (error) {
-        toast.error('Failed to reschedule appointment');
+        toast.error('Failed to update appointment');
       } else {
-        toast.success('Appointment rescheduled successfully');
+        const actions = [];
+        if (rescheduleNewStaffId && rescheduleNewStaffId !== rescheduleApt.staff_id) actions.push('reassigned');
+        if (new Date(rescheduleApt.scheduled_at).getTime() !== rescheduleNewTime.getTime()) actions.push('rescheduled');
+        toast.success(`Appointment ${actions.join(' & ')} successfully`);
         await fetchData();
       }
     }
@@ -240,6 +247,8 @@ export function SchedulePage() {
     setIsRescheduling(false);
     setRescheduleApt(null);
     setRescheduleNewTime(null);
+    setRescheduleNewStaffId(null);
+    setRescheduleNewStaffName(null);
   };
 
   const handleStatusChange = async (id: string, status: string) => {
