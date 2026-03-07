@@ -26,9 +26,7 @@ interface UnifiedAuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
-  
-  // Legacy PIN auth (for staff)
-  loginWithPin: (pin: string) => Promise<boolean>;
+  // Legacy PIN auth removed — use email/password
   
   // Time clock
   clockIn: () => Promise<boolean>;
