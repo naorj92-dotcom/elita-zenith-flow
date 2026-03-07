@@ -11,15 +11,14 @@ import { cn } from '@/lib/utils';
 import elitaLogo from '@/assets/elita-logo.png';
 
 export function ClientPortalLayout() {
-  const { isAuthenticated, isLoading, signOut, client, isDemo } = useClientAuth();
+  const { isAuthenticated, isLoading, signOut, client } = useClientAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Fetch pending forms count for badge
   const { data: pendingFormsCount = 0 } = useQuery({
-    queryKey: ['client-pending-forms-badge', client?.id, isDemo],
+    queryKey: ['client-pending-forms-badge', client?.id],
     queryFn: async () => {
-      if (isDemo) return 2;
       if (!client?.id) return 0;
       const { count } = await supabase
         .from('client_forms')
@@ -28,7 +27,7 @@ export function ClientPortalLayout() {
         .eq('status', 'pending');
       return count || 0;
     },
-    enabled: (!!client?.id || isDemo) && isAuthenticated,
+    enabled: !!client?.id && isAuthenticated,
     refetchInterval: 30000, // Poll every 30s for new form assignments
   });
 

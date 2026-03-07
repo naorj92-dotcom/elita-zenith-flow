@@ -7,23 +7,12 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Star, Gift, TrendingUp } from 'lucide-react';
 
-// Demo loyalty data
-const DEMO_LOYALTY_POINTS = [
-  { id: '1', points: 185, transaction_type: 'earned', description: 'HydraFacial Signature', created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
-  { id: '2', points: 450, transaction_type: 'earned', description: 'Botox - Full Face', created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
-  { id: '3', points: 50, transaction_type: 'bonus', description: 'Birthday bonus', created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
-  { id: '4', points: 100, transaction_type: 'redeemed', description: 'Redeemed for product discount', created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString() },
-];
-
 export function LoyaltyPointsWidget() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
 
   const { data: loyaltyData } = useQuery({
-    queryKey: ['client-loyalty-points', client?.id, isDemo],
+    queryKey: ['client-loyalty-points', client?.id],
     queryFn: async () => {
-      if (isDemo) {
-        return DEMO_LOYALTY_POINTS;
-      }
       if (!client?.id) return [];
       const { data, error } = await supabase
         .from('loyalty_points')
@@ -34,7 +23,7 @@ export function LoyaltyPointsWidget() {
       if (error) throw error;
       return data;
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   // Calculate total balance

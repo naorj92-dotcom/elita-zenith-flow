@@ -9,43 +9,19 @@ interface ClientAuthContextType {
   client: Client | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isDemo: boolean;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
-  enterDemoMode: () => void;
 }
 
 const ClientAuthContext = createContext<ClientAuthContextType | undefined>(undefined);
 
-// Demo client data
-const DEMO_CLIENT: Client = {
-  id: 'demo-client-id',
-  first_name: 'Victoria',
-  last_name: 'Hamilton',
-  email: 'victoria@demo.com',
-  phone: '(555) 123-4567',
-  date_of_birth: '1990-05-15',
-  address: '123 Luxury Lane',
-  city: 'Beverly Hills',
-  state: 'CA',
-  zip: '90210',
-  notes: 'VIP Client - Prefers morning appointments',
-  avatar_url: null,
-  is_vip: true,
-  total_spent: 12500,
-  visit_count: 24,
-  last_visit_date: new Date().toISOString(),
-  created_at: '2023-01-15T00:00:00Z',
-  updated_at: new Date().toISOString(),
-};
 
 export function ClientAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [client, setClient] = useState<Client | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
 
   const fetchClientProfile = useCallback(async (userId: string) => {
     const { data: profile } = await supabase
@@ -172,16 +148,9 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
     setClient(null);
     setUser(null);
     setSession(null);
-    setIsDemo(false);
     await supabase.auth.signOut();
     // Force navigation to auth page
     window.location.href = '/portal/auth';
-  };
-
-  const enterDemoMode = () => {
-    setIsDemo(true);
-    setClient(DEMO_CLIENT);
-    setIsLoading(false);
   };
 
   return (
@@ -190,13 +159,11 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
         user,
         session,
         client,
-        isAuthenticated: !!user || isDemo,
+        isAuthenticated: !!user,
         isLoading,
-        isDemo,
         signUp,
         signIn,
         signOut,
-        enterDemoMode,
       }}
     >
       {children}

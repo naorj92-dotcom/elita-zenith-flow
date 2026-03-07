@@ -4,14 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Crown, Heart, FileWarning, Info, StickyNote } from 'lucide-react';
 import { format } from 'date-fns';
-import { DEMO_CLIENT_NOTES, DEMO_CLIENT_FLAGS } from '@/hooks/useDemoData';
 
 export function ClientNotesFlags() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
 
-  // In demo mode, use demo data
-  const notes = isDemo ? DEMO_CLIENT_NOTES : [];
-  const flags = isDemo ? DEMO_CLIENT_FLAGS : [];
+  const notes: any[] = [];
+  const flags: any[] = [];
 
   // Build flags from client data
   const clientFlags = [...flags];

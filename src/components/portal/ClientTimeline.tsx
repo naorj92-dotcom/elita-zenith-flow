@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, isValid } from 'date-fns';
 import { Calendar, CheckCircle2, Clock, XCircle, Star, Package, Image, DollarSign, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { DEMO_APPOINTMENTS, DEMO_PACKAGES, DEMO_PHOTOS } from '@/hooks/useDemoData';
 import { cn } from '@/lib/utils';
 
 interface TimelineEvent {
@@ -30,12 +29,11 @@ const TYPE_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 export function ClientTimeline() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
 
   const { data: appointments } = useQuery({
-    queryKey: ['client-timeline-appointments', client?.id, isDemo],
+    queryKey: ['client-timeline-appointments', client?.id],
     queryFn: async () => {
-      if (isDemo) return DEMO_APPOINTMENTS;
       if (!client?.id) return [];
       const { data } = await supabase
         .from('appointments')
@@ -45,13 +43,12 @@ export function ClientTimeline() {
         .limit(10);
       return data || [];
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   const { data: packages } = useQuery({
-    queryKey: ['client-timeline-packages', client?.id, isDemo],
+    queryKey: ['client-timeline-packages', client?.id],
     queryFn: async () => {
-      if (isDemo) return DEMO_PACKAGES;
       if (!client?.id) return [];
       const { data } = await supabase
         .from('client_packages')
@@ -61,13 +58,12 @@ export function ClientTimeline() {
         .limit(5);
       return data || [];
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   const { data: photos } = useQuery({
-    queryKey: ['client-timeline-photos', client?.id, isDemo],
+    queryKey: ['client-timeline-photos', client?.id],
     queryFn: async () => {
-      if (isDemo) return DEMO_PHOTOS;
       if (!client?.id) return [];
       const { data } = await supabase
         .from('before_after_photos')
@@ -78,7 +74,7 @@ export function ClientTimeline() {
         .limit(5);
       return data || [];
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   // Build timeline events

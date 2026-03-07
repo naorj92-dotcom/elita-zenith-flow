@@ -9,40 +9,12 @@ import { Crown, Sparkles, Calendar, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 
-// Demo membership data
-const DEMO_MEMBERSHIP = {
-  id: 'demo-membership-1',
-  status: 'active',
-  start_date: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-  next_billing_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-  remaining_credits: 1,
-  memberships: {
-    id: 'demo-tier-2',
-    name: 'Radiance VIP',
-    description: 'Enhanced benefits for the dedicated skincare enthusiast',
-    price: 299,
-    billing_period: 'monthly',
-    monthly_service_credits: 2,
-    retail_discount_percent: 15,
-    priority_booking: true,
-    benefits: [
-      '2 treatments per month',
-      '15% off all retail',
-      'Priority booking',
-      'Complimentary upgrades when available',
-    ],
-  },
-};
-
 export function MembershipStatusWidget() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
 
   const { data: membershipData } = useQuery({
-    queryKey: ['client-membership', client?.id, isDemo],
+    queryKey: ['client-membership', client?.id],
     queryFn: async () => {
-      if (isDemo) {
-        return DEMO_MEMBERSHIP;
-      }
       if (!client?.id) return null;
       const { data, error } = await supabase
         .from('client_memberships')
@@ -56,7 +28,7 @@ export function MembershipStatusWidget() {
       if (error) throw error;
       return data;
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   const { data: availableMemberships } = useQuery({

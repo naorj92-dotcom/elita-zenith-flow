@@ -102,7 +102,11 @@ Deno.serve(async (req) => {
     });
 
     if (createError) {
-      return new Response(JSON.stringify({ error: createError.message }), {
+      console.error('Auth user creation error:', createError);
+      const safeMessage = createError.message?.includes('already been registered')
+        ? 'This email is already registered'
+        : 'Failed to create user account';
+      return new Response(JSON.stringify({ error: safeMessage }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -133,9 +137,10 @@ Deno.serve(async (req) => {
       });
 
     if (roleError) {
+      console.error('Role creation error:', roleError);
       // Rollback: delete the created auth user
       await adminClient.auth.admin.deleteUser(newUser.user.id);
-      return new Response(JSON.stringify({ error: 'Failed to create role: ' + roleError.message }), {
+      return new Response(JSON.stringify({ error: 'Failed to create staff account' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

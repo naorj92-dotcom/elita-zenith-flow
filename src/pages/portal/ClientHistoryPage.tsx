@@ -33,7 +33,8 @@ const TIME_SLOTS = [
 ];
 
 export function ClientHistoryPage() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
+  const isDemo = false; // Demo mode removed for security
   const queryClient = useQueryClient();
 
   // Cancel dialog

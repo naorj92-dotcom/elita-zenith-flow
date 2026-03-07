@@ -29,7 +29,7 @@ const signupSchema = z.object({
 });
 
 export function ClientAuthPage() {
-  const { signIn, signUp, isAuthenticated, isLoading: authLoading, enterDemoMode } = useClientAuth();
+  const { signIn, signUp, isAuthenticated, isLoading: authLoading } = useClientAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('signin');
