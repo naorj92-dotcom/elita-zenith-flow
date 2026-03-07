@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
+import { AIInsightsPanel } from './AIInsightsPanel';
 
 interface ExpertInsightsProps {
   dateRange: DateRange;
@@ -245,6 +246,9 @@ export function ExpertInsights({ dateRange }: ExpertInsightsProps) {
 
   return (
     <div className="space-y-6">
+      {/* AI Business Recommendations */}
+      <AIInsightsPanel dateRange={dateRange} />
+
       {/* Breakeven Indicator */}
       <Card className="border-border/50">
         <CardHeader>
