@@ -7,15 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Crown, Plus, Minus, Calendar, TrendingUp, Wallet } from 'lucide-react';
-import { DEMO_MEMBERSHIP, DEMO_MEMBERSHIP_LEDGER } from '@/hooks/useDemoData';
 
 export function MembershipUsageHistory() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
 
   const { data: membership } = useQuery({
-    queryKey: ['client-membership-detail', client?.id, isDemo],
+    queryKey: ['client-membership-detail', client?.id],
     queryFn: async () => {
-      if (isDemo) return DEMO_MEMBERSHIP;
       if (!client?.id) return null;
       const { data } = await supabase
         .from('client_memberships')
@@ -25,13 +23,12 @@ export function MembershipUsageHistory() {
         .maybeSingle();
       return data;
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   const { data: ledger } = useQuery({
-    queryKey: ['client-membership-ledger', membership?.id, isDemo],
+    queryKey: ['client-membership-ledger', membership?.id],
     queryFn: async () => {
-      if (isDemo) return DEMO_MEMBERSHIP_LEDGER;
       if (!membership?.id) return [];
       const { data } = await supabase
         .from('membership_benefits_ledger')
@@ -41,7 +38,7 @@ export function MembershipUsageHistory() {
         .limit(20);
       return data || [];
     },
-    enabled: !!membership?.id || isDemo,
+    enabled: !!membership?.id,
   });
 
   if (!membership) {
