@@ -485,21 +485,6 @@ export function StaffManagementPage() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      PIN: {showPin === staff.id ? (
-                        <span className="font-mono">{staff.pin}</span>
-                      ) : (
-                        <span className="font-mono">••••</span>
-                      )}
-                    </p>
-                    <button
-                      onClick={() => setShowPin(showPin === staff.id ? null : staff.id)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      {showPin === staff.id ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    </button>
-                  </div>
                   <p className="text-xs text-muted-foreground">
                     Commission: {staff.service_commission_tier1}% / {staff.service_commission_tier2}% / {staff.service_commission_tier3}%
                   </p>
