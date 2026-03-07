@@ -238,6 +238,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
         isDragging = true;
         dragRef.current = { apt, startY, startTop: top, colDate };
         setDraggingApt(apt.id);
+        setDragOriginStaffId(apt.staff_id || null);
       }
       const newTop = top + dy;
       const snapped = Math.round(newTop / (SLOT_HEIGHT / 4)) * (SLOT_HEIGHT / 4);
