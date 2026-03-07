@@ -9,6 +9,7 @@ import {
   CreditCard,
   UserPlus,
 } from 'lucide-react';
+import { StaffNotificationBell } from '@/components/layout/StaffNotificationBell';
 import { cn } from '@/lib/utils';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { 
