@@ -260,14 +260,17 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
         const hours = Math.floor(totalMinutes / 60);
         const mins = Math.round(totalMinutes % 60);
 
-        // Use the date column the cursor is over, or fall back to the original column
-        const targetDate = findDateAtX(ev.clientX) || dragRef.current.colDate;
+        // Use the column the cursor is over, or fall back to the original column
+        const targetCol = findColumnAtX(ev.clientX);
+        const targetDate = targetCol?.date || dragRef.current.colDate;
+        const targetStaffId = targetCol?.staffId || null;
         const newDate = new Date(targetDate);
         newDate.setHours(hours, mins, 0, 0);
 
         const oldStart = new Date(dragRef.current.apt.scheduled_at);
-        if (oldStart.getTime() !== newDate.getTime()) {
-          onAppointmentDrop?.(dragRef.current.apt.id, newDate);
+        const hasChange = oldStart.getTime() !== newDate.getTime() || (targetStaffId && targetStaffId !== dragRef.current.apt.staff_id);
+        if (hasChange) {
+          onAppointmentDrop?.(dragRef.current.apt.id, newDate, targetStaffId);
         }
       }
       setDraggingApt(null);
