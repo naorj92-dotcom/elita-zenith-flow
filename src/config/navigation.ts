@@ -34,7 +34,8 @@ import {
   Wallet,
   Star,
   BookOpen,
-  MessageCircle
+  MessageCircle,
+  ClipboardList as ClipboardListIcon,
 } from 'lucide-react';
 import { AppRole, EmployeeType } from '@/types/roles';
 
