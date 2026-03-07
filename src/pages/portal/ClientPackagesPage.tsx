@@ -121,8 +121,41 @@ export function ClientPackagesPage() {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
-  const handleInquire = (pkgName: string, tier: PricingTier) => {
-    toast.success(`Interested in ${pkgName} — ${tier.sessions} session program! We'll reach out to finalize your purchase.`);
+  const handleInquire = async (pkg: any, tier: PricingTier) => {
+    if (!client?.id) return;
+    try {
+      const { error } = await supabase.from('purchase_requests' as any).insert({
+        client_id: client.id,
+        request_type: 'package',
+        package_id: pkg.id,
+        tier_sessions: tier.sessions,
+        tier_total_price: tier.total_price,
+        notes: `${pkg.name} — ${tier.sessions} sessions at $${tier.price_per_session}/session`,
+      });
+      if (error) throw error;
+      toast.success(`Interest submitted for ${pkg.name} — ${tier.sessions} session program! Our team will reach out shortly.`);
+    } catch {
+      toast.error('Could not submit your interest. Please try again.');
+    }
+  };
+
+  const handlePurchase = async (pkg: any, tier: PricingTier) => {
+    if (!client?.id) return;
+    try {
+      const { error } = await supabase.from('purchase_requests' as any).insert({
+        client_id: client.id,
+        request_type: 'package',
+        package_id: pkg.id,
+        tier_sessions: tier.sessions,
+        tier_total_price: tier.total_price,
+        status: 'interested',
+        notes: `PURCHASE REQUEST: ${pkg.name} — ${tier.sessions} sessions, $${tier.total_price} total`,
+      });
+      if (error) throw error;
+      toast.success(`Purchase request submitted for ${pkg.name}! We'll contact you to complete the purchase.`);
+    } catch {
+      toast.error('Could not submit purchase request. Please try again.');
+    }
   };
 
   const getTiers = (pkg: any): PricingTier[] => {
