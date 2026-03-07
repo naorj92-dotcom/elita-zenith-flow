@@ -49,7 +49,7 @@ export function StaffAnnouncementsWidget() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('staff_announcements')
         .insert({
           author_id: staff?.id,
