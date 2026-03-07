@@ -524,9 +524,10 @@ interface ProviderColumnProps {
   draggingApt?: string | null;
   dragGhostTop?: number | null;
   isDropTarget?: boolean;
+  dropShadow?: { top: number; height: number; timeLabel: string } | null;
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow }: ProviderColumnProps) {
   return (
     <div
       data-staff-col={staffId}
