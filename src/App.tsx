@@ -145,6 +145,8 @@ function AppRoutes() {
       <Route path="/products" element={<OwnerRoute><ProductsManagementPage /></OwnerRoute>} />
       <Route path="/forms" element={<OwnerRoute><FormsManagementPage /></OwnerRoute>} />
       <Route path="/notifications" element={<OwnerRoute><NotificationsManagementPage /></OwnerRoute>} />
+      <Route path="/deals" element={<OwnerRoute><DealsManagementPage /></OwnerRoute>} />
+      <Route path="/aftercare-tips" element={<OwnerRoute><AftercareTipsManagementPage /></OwnerRoute>} />
       
       {/* ========== TEAM ========== */}
       <Route path="/staff" element={<OwnerRoute><StaffManagementPage /></OwnerRoute>} />
