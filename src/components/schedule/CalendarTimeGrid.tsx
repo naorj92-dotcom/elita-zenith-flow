@@ -393,6 +393,32 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
           {dates.map((date, dateIdx) => {
             const dayGoogle = getGoogleForDate(date);
 
+            // Compute drop shadow for the target column
+            const computeDropShadow = (staffId?: string): { top: number; height: number; timeLabel: string } | null => {
+              if (!draggingApt || dragGhostTop === null || !dragRef.current) return null;
+              const apt = dragRef.current.apt;
+              // Show shadow in target column: either same staff with different date, or different staff
+              const isTargetStaff = staffId ? dragTargetStaffId === staffId : true;
+              const isTargetDate = dragTargetDate ? isSameDay(dragTargetDate, date) : isSameDay(dragRef.current.colDate, date);
+              if (!isTargetStaff || !isTargetDate) return null;
+              // Don't show if still in exact original position
+              const origStart = new Date(apt.scheduled_at);
+              const origTop = ((origStart.getHours() * 60 + origStart.getMinutes() - 7 * 60) / 60) * SLOT_HEIGHT;
+              const isOrigCol = staffId ? apt.staff_id === staffId : true;
+              const isOrigDate = isSameDay(origStart, date);
+              if (isOrigCol && isOrigDate && Math.abs(dragGhostTop - origTop) < 2) return null;
+
+              const minutesFromStart = (dragGhostTop / SLOT_HEIGHT) * 60;
+              const totalMin = 7 * 60 + minutesFromStart;
+              const h = Math.floor(totalMin / 60);
+              const m = Math.round(totalMin % 60);
+              const isPM = h >= 12;
+              const dh = h === 0 ? 12 : h > 12 ? h - 12 : h;
+              const timeLabel = `${dh}:${m.toString().padStart(2, '0')}${isPM ? 'pm' : 'am'}`;
+              const height = Math.max((apt.duration_minutes / 60) * SLOT_HEIGHT, 24);
+              return { top: dragGhostTop, height, timeLabel };
+            };
+
             if (showProviderColumns) {
               return (
                 <div
@@ -418,6 +444,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       draggingApt={draggingApt}
                       dragGhostTop={dragGhostTop}
                       isDropTarget={!!draggingApt && dragTargetStaffId === s.id && dragOriginStaffId !== s.id}
+                      dropShadow={computeDropShadow(s.id)}
                     />
                   ))}
                 </div>
@@ -439,6 +466,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                   onDragStart={handleDragStart}
                   draggingApt={draggingApt}
                   dragGhostTop={dragGhostTop}
+                  dropShadow={computeDropShadow()}
                 />
               </div>
             );
@@ -524,9 +552,10 @@ interface ProviderColumnProps {
   draggingApt?: string | null;
   dragGhostTop?: number | null;
   isDropTarget?: boolean;
+  dropShadow?: { top: number; height: number; timeLabel: string } | null;
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow }: ProviderColumnProps) {
   return (
     <div
       data-staff-col={staffId}
@@ -547,6 +576,16 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
         <div className="absolute left-0 right-0 z-10 flex items-center pointer-events-none" style={{ top: nowTop }}>
           <div className="w-2 h-2 rounded-full bg-destructive -ml-1" />
           <div className="flex-1 h-px bg-destructive" />
+        </div>
+      )}
+
+      {/* Drop shadow indicator */}
+      {dropShadow && (
+        <div
+          className="absolute left-0.5 right-0.5 rounded-md border-2 border-dashed border-primary/50 bg-primary/10 pointer-events-none z-10 flex flex-col items-center justify-center"
+          style={{ top: dropShadow.top, height: dropShadow.height }}
+        >
+          <p className="text-[10px] font-semibold text-primary">{dropShadow.timeLabel}</p>
         </div>
       )}
 
