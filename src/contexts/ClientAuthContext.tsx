@@ -16,27 +16,6 @@ interface ClientAuthContextType {
 
 const ClientAuthContext = createContext<ClientAuthContextType | undefined>(undefined);
 
-// Demo client data
-const DEMO_CLIENT: Client = {
-  id: 'demo-client-id',
-  first_name: 'Victoria',
-  last_name: 'Hamilton',
-  email: 'victoria@demo.com',
-  phone: '(555) 123-4567',
-  date_of_birth: '1990-05-15',
-  address: '123 Luxury Lane',
-  city: 'Beverly Hills',
-  state: 'CA',
-  zip: '90210',
-  notes: 'VIP Client - Prefers morning appointments',
-  avatar_url: null,
-  is_vip: true,
-  total_spent: 12500,
-  visit_count: 24,
-  last_visit_date: new Date().toISOString(),
-  created_at: '2023-01-15T00:00:00Z',
-  updated_at: new Date().toISOString(),
-};
 
 export function ClientAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
