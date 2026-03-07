@@ -411,6 +411,13 @@ export function PayrollPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Dialog - Owner Only */}
+      <EditTeamHoursDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        staffList={payrollData?.map(p => p.staff) || []}
+      />
     </div>
   );
 }
