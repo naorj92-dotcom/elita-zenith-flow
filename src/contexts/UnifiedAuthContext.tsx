@@ -344,7 +344,6 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signUp,
         signOut,
-        loginWithPin,
         clockIn,
         clockOut,
         refreshClockStatus,

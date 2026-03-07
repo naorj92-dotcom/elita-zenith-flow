@@ -27,7 +27,7 @@ export const staffSchema = z.object({
   last_name: nameSchema,
   email: emailSchema.optional().nullable(),
   phone: phoneSchema,
-  pin: z.string().length(4, 'PIN must be 4 digits').regex(/^\d+$/, 'PIN must be numeric'),
+  
   role: z.enum(['admin', 'provider', 'front_desk']),
   hourly_rate: priceSchema.optional().nullable(),
   service_commission_tier1: percentageSchema.optional().nullable(),
