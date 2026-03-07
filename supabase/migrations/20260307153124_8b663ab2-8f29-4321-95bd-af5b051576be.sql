@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.validate_staff_pin(text) FROM anon;
