@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Package, Calendar, CheckCircle2, Eye, ShoppingBag, TrendingDown, CalendarPlus } from 'lucide-react';
+import { Package, Calendar, CheckCircle2, Eye, ShoppingBag, TrendingDown, CalendarPlus, Sparkles, Star, ArrowRight } from 'lucide-react';
 import { DEMO_PACKAGES } from '@/hooks/useDemoData';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
