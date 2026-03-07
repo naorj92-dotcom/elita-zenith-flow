@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import elitaLogo from '@/assets/elita-logo.png';
 
 export function LoginPage() {
-  const { signIn, loginWithPin, isAuthenticated, isLoading, role } = useUnifiedAuth();
+  const { signIn, isAuthenticated, isLoading, role } = useUnifiedAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
