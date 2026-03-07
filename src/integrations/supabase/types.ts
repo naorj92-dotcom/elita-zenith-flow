@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      aftercare_tips: {
+        Row: {
+          created_at: string
+          day_number: number
+          description: string
+          icon: string | null
+          id: string
+          service_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          day_number?: number
+          description: string
+          icon?: string | null
+          id?: string
+          service_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          day_number?: number
+          description?: string
+          icon?: string | null
+          id?: string
+          service_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aftercare_tips_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_soap_notes: {
         Row: {
           appointment_id: string
@@ -637,6 +675,68 @@ export type Database = {
           zip?: string | null
         }
         Relationships: []
+      }
+      exclusive_deals: {
+        Row: {
+          claims_count: number
+          created_at: string
+          deal_price: number | null
+          description: string | null
+          discount_amount: number | null
+          discount_percent: number | null
+          expires_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          max_claims: number | null
+          original_price: number | null
+          service_id: string | null
+          starts_at: string
+          title: string
+        }
+        Insert: {
+          claims_count?: number
+          created_at?: string
+          deal_price?: number | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          expires_at: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          max_claims?: number | null
+          original_price?: number | null
+          service_id?: string | null
+          starts_at?: string
+          title: string
+        }
+        Update: {
+          claims_count?: number
+          created_at?: string
+          deal_price?: number | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          expires_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          max_claims?: number | null
+          original_price?: number | null
+          service_id?: string | null
+          starts_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exclusive_deals_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       forms: {
         Row: {
@@ -1379,6 +1479,57 @@ export type Database = {
           },
         ]
       }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_client_id: string | null
+          referrer_client_id: string
+          reward_amount: number
+          reward_credited: boolean
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_client_id?: string | null
+          referrer_client_id: string
+          reward_amount?: number
+          reward_credited?: boolean
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_client_id?: string | null
+          referrer_client_id?: string
+          reward_amount?: number
+          reward_credited?: boolean
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_client_id_fkey"
+            columns: ["referred_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_client_id_fkey"
+            columns: ["referrer_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rooms: {
         Row: {
           created_at: string
@@ -1783,6 +1934,44 @@ export type Database = {
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visit_streaks: {
+        Row: {
+          bonus_points_awarded: number
+          client_id: string
+          current_streak: number
+          id: string
+          last_visit_month: string | null
+          longest_streak: number
+          updated_at: string
+        }
+        Insert: {
+          bonus_points_awarded?: number
+          client_id: string
+          current_streak?: number
+          id?: string
+          last_visit_month?: string | null
+          longest_streak?: number
+          updated_at?: string
+        }
+        Update: {
+          bonus_points_awarded?: number
+          client_id?: string
+          current_streak?: number
+          id?: string
+          last_visit_month?: string | null
+          longest_streak?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_streaks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
