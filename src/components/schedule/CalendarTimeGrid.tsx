@@ -551,6 +551,16 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
         </div>
       )}
 
+      {/* Drop shadow indicator */}
+      {dropShadow && (
+        <div
+          className="absolute left-0.5 right-0.5 rounded-md border-2 border-dashed border-primary/50 bg-primary/10 pointer-events-none z-10 flex flex-col items-center justify-center"
+          style={{ top: dropShadow.top, height: dropShadow.height }}
+        >
+          <p className="text-[10px] font-semibold text-primary">{dropShadow.timeLabel}</p>
+        </div>
+      )}
+
       {dayAppts.map((apt) => {
         const start = new Date(apt.scheduled_at);
         const startMin = start.getHours() * 60 + start.getMinutes();
