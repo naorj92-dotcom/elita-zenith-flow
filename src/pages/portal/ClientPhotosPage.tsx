@@ -12,7 +12,7 @@ import { DEMO_PHOTOS } from '@/hooks/useDemoData';
 import { SignedImage } from '@/components/photos/SignedImage';
 
 export function ClientPhotosPage() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
 
   const { data: photos, isLoading } = useQuery({

@@ -127,7 +127,7 @@ const DEMO_CLIENT_FORMS: ClientForm[] = [
 ];
 
 export function ClientFormsPage() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
   const queryClient = useQueryClient();
   const [selectedForm, setSelectedForm] = useState<ClientForm | null>(null);
   const [responses, setResponses] = useState<Record<string, any>>({});

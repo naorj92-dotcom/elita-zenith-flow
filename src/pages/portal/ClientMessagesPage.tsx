@@ -73,7 +73,7 @@ function formatDateLabel(dateStr: string) {
 }
 
 export function ClientMessagesPage() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();

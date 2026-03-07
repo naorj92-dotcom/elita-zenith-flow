@@ -72,7 +72,7 @@ const DEMO_AVAILABLE_MEMBERSHIPS = [
 ];
 
 export function ClientMembershipsPage() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
 
   const { data: currentMembership } = useQuery({
     queryKey: ['client-membership', client?.id, isDemo],
