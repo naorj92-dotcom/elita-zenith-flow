@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Crown, Check, Sparkles, Gift, Calendar, History, Eye } from 'lucide-react';
+import { Crown, Check, Sparkles, Gift, Calendar, History, Eye, ShoppingCart } from 'lucide-react';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { MembershipUsageHistory } from '@/components/portal/MembershipUsageHistory';
 
