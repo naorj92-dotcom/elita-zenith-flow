@@ -291,7 +291,7 @@ export default function ClientProfilePage() {
 
               {/* PACKAGES */}
               <TabsContent value="packages" className="mt-0">
-                <PackagesTab packages={packages} />
+                <PackagesTab packages={packages} clientId={id} />
               </TabsContent>
 
               {/* FORMS */}
