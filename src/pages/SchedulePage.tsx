@@ -157,9 +157,8 @@ export function SchedulePage() {
     setIsSyncing(false);
   };
 
-  const handleAppointmentDrop = (appointmentId: string, newScheduledAt: Date) => {
+  const handleAppointmentDrop = (appointmentId: string, newScheduledAt: Date, newStaffId?: string | null) => {
     if (appointmentId.startsWith('gcal-')) {
-      // Build a local-only ScheduleAppointment from the Google event
       const gcalId = appointmentId.replace('gcal-', '');
       const gEvent = googleEvents.find((e) => e.id === gcalId);
       if (!gEvent) return;
@@ -188,12 +187,20 @@ export function SchedulePage() {
 
       setRescheduleApt(fakeApt);
       setRescheduleNewTime(newScheduledAt);
+      setRescheduleNewStaffId(null);
+      setRescheduleNewStaffName(null);
       return;
     }
     const apt = appointments.find((a) => a.id === appointmentId);
     if (!apt) return;
+    
+    // Resolve new staff info
+    const targetStaff = newStaffId ? staffList.find(s => s.id === newStaffId) : null;
+    
     setRescheduleApt(apt);
     setRescheduleNewTime(newScheduledAt);
+    setRescheduleNewStaffId(newStaffId || null);
+    setRescheduleNewStaffName(targetStaff ? `${targetStaff.first_name} ${targetStaff.last_name}` : null);
   };
 
   const handleRescheduleConfirm = async () => {
