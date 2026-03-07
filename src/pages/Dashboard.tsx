@@ -388,8 +388,6 @@ export function Dashboard() {
         ))}
       </motion.section>
 
-      {/* Purchase Requests from Clients */}
-      <PurchaseRequestsWidget />
     </div>
   );
 }
