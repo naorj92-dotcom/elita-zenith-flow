@@ -34,7 +34,8 @@ import {
   Wallet,
   Star,
   BookOpen,
-  MessageCircle
+  MessageCircle,
+  ClipboardList as ClipboardListIcon,
 } from 'lucide-react';
 import { AppRole, EmployeeType } from '@/types/roles';
 
@@ -217,6 +218,7 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
     icon: CalendarPlus,
     items: [
       { label: 'Book Appointment', href: '/portal/book', icon: CalendarPlus },
+      { label: 'Join Waitlist', href: '/portal/waitlist', icon: ClipboardListIcon },
     ],
   },
   {
@@ -279,6 +281,9 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
       { label: 'Recommendations', href: '/portal/recommendations', icon: Heart },
       { label: 'AI Skin Analysis', href: '/portal/skin-analysis', icon: Sparkles },
       { label: 'Refer a Friend', href: '/portal', icon: Gift },
+      { label: 'Reviews', href: '/portal/reviews', icon: Star },
+      { label: 'Family', href: '/portal/family', icon: Users },
+      { label: 'Rewards Store', href: '/portal/rewards', icon: Gift },
     ],
   },
 ];

@@ -51,6 +51,10 @@ import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
 import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
 import { ClientMessagesPage } from "@/pages/portal/ClientMessagesPage";
 import { ClientSkinAnalysisPage } from "@/pages/portal/ClientSkinAnalysisPage";
+import { ClientWaitlistPage } from "@/pages/portal/ClientWaitlistPage";
+import { ClientRewardsStorePage } from "@/pages/portal/ClientRewardsStorePage";
+import { ClientReviewsPage } from "@/pages/portal/ClientReviewsPage";
+import { ClientFamilyPage } from "@/pages/portal/ClientFamilyPage";
 import NotFound from "./pages/NotFound";
 import IntakeFormPage from "./pages/IntakeFormPage";
 import { SetupPage } from "./pages/SetupPage";
@@ -185,6 +189,10 @@ function AppRoutes() {
         <Route path="profile" element={<ClientDashboard />} />
         <Route path="messages" element={<ClientMessagesPage />} />
         <Route path="skin-analysis" element={<ClientSkinAnalysisPage />} />
+        <Route path="waitlist" element={<ClientWaitlistPage />} />
+        <Route path="rewards" element={<ClientRewardsStorePage />} />
+        <Route path="reviews" element={<ClientReviewsPage />} />
+        <Route path="family" element={<ClientFamilyPage />} />
       </Route>
       
       {/* ========== 404 ========== */}
