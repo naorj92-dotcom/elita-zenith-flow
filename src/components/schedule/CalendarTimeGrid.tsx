@@ -450,6 +450,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
               clientDetails={selectedGoogleDetails || clientDetailsMap?.[selectedApt.id] || null}
               onClose={() => { setSelectedApt(null); setSelectedGoogleDetails(null); }}
               onStatusChange={selectedApt.id.startsWith('gcal-') ? undefined : onStatusChange}
+              onClientChanged={onClientChanged}
             />
           </div>
         )}
