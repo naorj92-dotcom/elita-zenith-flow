@@ -80,7 +80,7 @@ function googleEventToAppointment(event: GoogleCalendarEvent): ScheduleAppointme
   };
 }
 
-export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onStatusChange, clientDetailsMap }: CalendarTimeGridProps) {
+export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onClientChanged, onStatusChange, clientDetailsMap }: CalendarTimeGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const [selectedApt, setSelectedApt] = useState<ScheduleAppointment | null>(null);
