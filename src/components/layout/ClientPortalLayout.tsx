@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import elitaLogo from '@/assets/elita-logo.png';
 
 export function ClientPortalLayout() {
-  const { isAuthenticated, isLoading, signOut, client, isDemo } = useClientAuth();
+  const { isAuthenticated, isLoading, signOut, client } = useClientAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
