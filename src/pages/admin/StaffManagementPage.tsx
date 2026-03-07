@@ -21,7 +21,6 @@ interface StaffFormData {
   last_name: string;
   email: string;
   phone: string;
-  pin: string;
   role: StaffRole;
   hourly_rate: number;
   is_active: boolean;
