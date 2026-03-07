@@ -24,6 +24,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 
 export function ClientDashboard() {
   const { client } = useClientAuth();
+  const isDemo = false; // Demo mode removed for security
 
   // Fetch next appointment
   const { data: nextAppointment } = useQuery({

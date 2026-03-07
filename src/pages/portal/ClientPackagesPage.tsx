@@ -84,6 +84,7 @@ const DEMO_AVAILABLE_PACKAGES = [
 
 export function ClientPackagesPage() {
   const { client } = useClientAuth();
+  const isDemo = false; // Demo mode removed for security
 
   const { data: packages, isLoading } = useQuery({
     queryKey: ['client-packages', client?.id, isDemo],

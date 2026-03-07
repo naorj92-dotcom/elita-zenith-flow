@@ -73,6 +73,7 @@ const DEMO_AVAILABLE_MEMBERSHIPS = [
 
 export function ClientMembershipsPage() {
   const { client } = useClientAuth();
+  const isDemo = false; // Demo mode removed for security
 
   const { data: currentMembership } = useQuery({
     queryKey: ['client-membership', client?.id, isDemo],

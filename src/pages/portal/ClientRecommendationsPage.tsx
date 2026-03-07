@@ -12,6 +12,7 @@ import { DEMO_PRODUCT_RECOMMENDATIONS, DEMO_SERVICE_RECOMMENDATIONS } from '@/ho
 
 export function ClientRecommendationsPage() {
   const { client } = useClientAuth();
+  const isDemo = false; // Demo mode removed for security
 
   const { data: productRecs, isLoading: loadingProducts } = useQuery({
     queryKey: ['client-product-recommendations', client?.id, isDemo],
