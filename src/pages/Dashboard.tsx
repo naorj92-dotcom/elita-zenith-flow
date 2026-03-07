@@ -168,8 +168,6 @@ export function Dashboard() {
         </p>
       </motion.header>
 
-      {/* Purchase Requests from Clients — top of page */}
-      <PurchaseRequestsWidget />
 
       {/* KPI Cards - Top row, role-based */}
       <motion.section
