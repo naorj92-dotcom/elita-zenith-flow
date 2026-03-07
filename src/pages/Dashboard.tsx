@@ -384,6 +384,9 @@ export function Dashboard() {
           </Link>
         ))}
       </motion.section>
+
+      {/* Purchase Requests from Clients */}
+      <PurchaseRequestsWidget />
     </div>
   );
 }
