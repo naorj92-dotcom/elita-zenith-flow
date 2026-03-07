@@ -52,6 +52,8 @@ export function SchedulePage() {
   // Reschedule dialog state
   const [rescheduleApt, setRescheduleApt] = useState<ScheduleAppointment | null>(null);
   const [rescheduleNewTime, setRescheduleNewTime] = useState<Date | null>(null);
+  const [rescheduleNewStaffId, setRescheduleNewStaffId] = useState<string | null>(null);
+  const [rescheduleNewStaffName, setRescheduleNewStaffName] = useState<string | null>(null);
   const [isRescheduling, setIsRescheduling] = useState(false);
 
   useEffect(() => {
