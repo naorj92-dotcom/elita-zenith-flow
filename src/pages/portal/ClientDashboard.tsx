@@ -20,6 +20,7 @@ import { ExclusiveDealsWidget } from '@/components/portal/ExclusiveDealsWidget';
 import { AftercareTipsWidget } from '@/components/portal/AftercareTipsWidget';
 import { ReferralWidget } from '@/components/portal/ReferralWidget';
 import { ProgressTimelineWidget } from '@/components/portal/ProgressTimelineWidget';
+import { DealsNotificationBanner } from '@/components/portal/DealsNotificationBanner';
 
 export function ClientDashboard() {
   const { client } = useClientAuth();
