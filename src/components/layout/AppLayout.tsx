@@ -9,6 +9,7 @@ import {
   CreditCard,
   UserPlus,
 } from 'lucide-react';
+import { StaffNotificationBell } from '@/components/layout/StaffNotificationBell';
 import { cn } from '@/lib/utils';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { 
@@ -275,6 +276,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
+            {role !== 'client' && <StaffNotificationBell />}
             <Button variant="outline" size="sm" asChild>
               <Link to="/clients" className="gap-2">
                 <UserPlus className="w-4 h-4" />
@@ -306,10 +308,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                 className="h-7 w-auto object-contain"
               />
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {clockStatus?.is_clocked_in && (
                 <div className="w-2 h-2 rounded-full bg-success" />
               )}
+              {role !== 'client' && <StaffNotificationBell />}
               <button
                 onClick={handleLogout}
                 className="p-2 rounded-lg text-muted-foreground hover:text-destructive"
