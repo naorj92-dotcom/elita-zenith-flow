@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/contexts/AuthContext';
 import { Staff } from '@/types';
-import { DollarSign, Clock, TrendingUp, Users, Calendar, Loader2, Plus } from 'lucide-react';
+import { DollarSign, Clock, TrendingUp, Users, Calendar, Loader2, Plus, Pencil } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { EditTeamHoursDialog } from '@/components/admin/EditTeamHoursDialog';
 
 interface PayrollData {
   staff: Staff;
@@ -30,6 +31,7 @@ type PeriodType = 'current-week' | 'last-week' | 'current-month' | 'last-month';
 export function PayrollPage() {
   const { staff: currentStaff } = useAuth();
   const [period, setPeriod] = useState<PeriodType>('current-month');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Only admins can access this page
   if (currentStaff?.role !== 'admin') {
@@ -201,6 +203,10 @@ export function PayrollPage() {
               <SelectItem value="last-month">Last Month</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit Hours & Salary
+          </Button>
           <Button asChild>
             <Link to="/admin/staff">
               <Plus className="h-4 w-4 mr-2" />
@@ -405,6 +411,13 @@ export function PayrollPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Dialog - Owner Only */}
+      <EditTeamHoursDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        staffList={payrollData?.map(p => p.staff) || []}
+      />
     </div>
   );
 }
