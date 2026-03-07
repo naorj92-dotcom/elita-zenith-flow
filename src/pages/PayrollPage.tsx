@@ -203,6 +203,10 @@ export function PayrollPage() {
               <SelectItem value="last-month">Last Month</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit Hours & Salary
+          </Button>
           <Button asChild>
             <Link to="/admin/staff">
               <Plus className="h-4 w-4 mr-2" />
