@@ -245,9 +245,10 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       setDragGhostTop(Math.max(0, snapped));
       setDragCursorPos({ x: ev.clientX, y: ev.clientY });
 
-      // Detect horizontal date column change
-      const hoveredDate = findDateAtX(ev.clientX);
-      setDragTargetDate(hoveredDate);
+      // Detect horizontal date/staff column change
+      const hoveredCol = findColumnAtX(ev.clientX);
+      setDragTargetDate(hoveredCol?.date || null);
+      setDragTargetStaffId(hoveredCol?.staffId || null);
     };
 
     const onUp = (ev: MouseEvent) => {
