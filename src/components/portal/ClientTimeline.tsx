@@ -30,7 +30,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 export function ClientTimeline() {
-  const { client, isDemo } = useClientAuth();
+  const { client } = useClientAuth();
 
   const { data: appointments } = useQuery({
     queryKey: ['client-timeline-appointments', client?.id, isDemo],
