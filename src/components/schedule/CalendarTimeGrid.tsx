@@ -285,12 +285,22 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                   flex: showProviderColumns ? 'none' : 1,
                 }}
               >
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                <p className={cn(
+                  'text-xs uppercase tracking-wide',
+                  isToday(date) ? 'text-primary font-semibold' : 'text-muted-foreground'
+                )}>
                   {date.toLocaleDateString('en-US', { weekday: 'short' })}
                 </p>
-                <p className={cn('text-lg font-semibold', isToday(date) ? 'text-primary' : 'text-foreground')}>
-                  {date.getDate()}
-                </p>
+                <div className="flex items-center justify-center">
+                  <span className={cn(
+                    'text-lg font-semibold w-9 h-9 flex items-center justify-center rounded-full',
+                    isToday(date) 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'text-foreground'
+                  )}>
+                    {date.getDate()}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
