@@ -99,14 +99,23 @@ export function PayrollPage() {
 
       // Calculate payroll for each staff member
       const payroll: PayrollData[] = (staffList || []).map((staff) => {
-        // Calculate hours worked
+        // Calculate hours worked (include live in-progress shifts)
         const staffTimeEntries = (timeEntries || []).filter(e => e.staff_id === staff.id);
         let totalMinutes = 0;
+        let isClockedIn = false;
+        let clockInTime: string | null = null;
+
         staffTimeEntries.forEach(entry => {
+          const clockIn = new Date(entry.clock_in);
           if (entry.clock_out) {
-            const clockIn = new Date(entry.clock_in);
             const clockOut = new Date(entry.clock_out);
             const minutes = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60) - (entry.break_minutes || 0);
+            totalMinutes += Math.max(0, minutes);
+          } else {
+            // Currently clocked in — count live hours
+            isClockedIn = true;
+            clockInTime = entry.clock_in;
+            const minutes = (Date.now() - clockIn.getTime()) / (1000 * 60) - (entry.break_minutes || 0);
             totalMinutes += Math.max(0, minutes);
           }
         });
