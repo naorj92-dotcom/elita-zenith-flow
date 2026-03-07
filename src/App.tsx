@@ -60,6 +60,7 @@ import IntakeFormPage from "./pages/IntakeFormPage";
 import { SetupPage } from "./pages/SetupPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CheckInKioskPage from "./pages/CheckInKioskPage";
+import { ClientPackagesManagementPage } from "./pages/ClientPackagesManagementPage";
 
 const queryClient = new QueryClient();
 
