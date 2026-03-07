@@ -165,16 +165,18 @@ export function ClientsPage() {
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
                           {client.email && (
-                            <span className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {client.email}
-                            </span>
+                            <MaskedField
+                              value={client.email}
+                              type="email"
+                              icon={<Mail className="w-3 h-3" />}
+                            />
                           )}
                           {client.phone && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3 h-3" />
-                              {client.phone}
-                            </span>
+                            <MaskedField
+                              value={client.phone}
+                              type="phone"
+                              icon={<Phone className="w-3 h-3" />}
+                            />
                           )}
                         </div>
                       </div>
