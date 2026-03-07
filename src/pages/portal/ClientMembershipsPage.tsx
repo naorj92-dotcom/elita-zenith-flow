@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Crown, Check, Sparkles, Gift, Calendar, History, Eye } from 'lucide-react';
+import { Crown, Check, Sparkles, Gift, Calendar, History, Eye, ShoppingCart } from 'lucide-react';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { MembershipUsageHistory } from '@/components/portal/MembershipUsageHistory';
 
@@ -74,6 +75,27 @@ const DEMO_AVAILABLE_MEMBERSHIPS = [
 export function ClientMembershipsPage() {
   const { client } = useClientAuth();
   const isDemo = false; // Demo mode removed for security
+
+  const handleMembershipInterest = async (tier: any, isPurchase: boolean) => {
+    if (!client?.id) return;
+    try {
+      const { error } = await supabase.from('purchase_requests' as any).insert({
+        client_id: client.id,
+        request_type: 'membership',
+        membership_id: tier.id,
+        tier_total_price: tier.price,
+        notes: `${isPurchase ? 'PURCHASE REQUEST' : 'INTEREST'}: ${tier.name} — $${tier.price}/${tier.billing_period}`,
+      });
+      if (error) throw error;
+      toast.success(
+        isPurchase
+          ? `Purchase request for ${tier.name} submitted! We'll contact you to finalize.`
+          : `Interest in ${tier.name} noted! Our team will reach out shortly.`
+      );
+    } catch {
+      toast.error('Could not submit your request. Please try again.');
+    }
+  };
 
   const { data: currentMembership } = useQuery({
     queryKey: ['client-membership', client?.id, isDemo],
@@ -308,13 +330,26 @@ export function ClientMembershipsPage() {
                       ))}
                     </ul>
 
-                    <Button 
-                      className="w-full mt-4" 
-                      variant={isCurrentTier ? 'outline' : isTopTier ? 'default' : 'secondary'}
-                      disabled={isCurrentTier}
-                    >
-                      {isCurrentTier ? 'Current Plan' : 'Get Started'}
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                      <Button 
+                        className="flex-1" 
+                        variant="outline"
+                        disabled={isCurrentTier}
+                        onClick={() => handleMembershipInterest(tier, false)}
+                      >
+                        {isCurrentTier ? 'Current Plan' : 'Inquire'}
+                      </Button>
+                      {!isCurrentTier && (
+                        <Button 
+                          className="flex-1" 
+                          variant={isTopTier ? 'default' : 'secondary'}
+                          onClick={() => handleMembershipInterest(tier, true)}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-1" />
+                          Purchase
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               );
