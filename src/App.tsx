@@ -189,6 +189,10 @@ function AppRoutes() {
         <Route path="profile" element={<ClientDashboard />} />
         <Route path="messages" element={<ClientMessagesPage />} />
         <Route path="skin-analysis" element={<ClientSkinAnalysisPage />} />
+        <Route path="waitlist" element={<ClientWaitlistPage />} />
+        <Route path="rewards" element={<ClientRewardsStorePage />} />
+        <Route path="reviews" element={<ClientReviewsPage />} />
+        <Route path="family" element={<ClientFamilyPage />} />
       </Route>
       
       {/* ========== 404 ========== */}
