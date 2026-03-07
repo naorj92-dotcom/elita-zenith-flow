@@ -17,9 +17,8 @@ export function ClientPortalLayout() {
 
   // Fetch pending forms count for badge
   const { data: pendingFormsCount = 0 } = useQuery({
-    queryKey: ['client-pending-forms-badge', client?.id, isDemo],
+    queryKey: ['client-pending-forms-badge', client?.id],
     queryFn: async () => {
-      if (isDemo) return 2;
       if (!client?.id) return 0;
       const { count } = await supabase
         .from('client_forms')
