@@ -495,6 +495,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
 
 interface ProviderColumnProps {
   date: Date;
+  staffId?: string;
   appointments: ScheduleAppointment[];
   googleEvents: GoogleCalendarEvent[];
   isLast: boolean;
@@ -509,9 +510,10 @@ interface ProviderColumnProps {
   dragGhostTop?: number | null;
 }
 
-function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
   return (
     <div
+      data-staff-col={staffId}
       className={cn(
         'relative',
         !isLast && !className && 'border-r border-border/50',
