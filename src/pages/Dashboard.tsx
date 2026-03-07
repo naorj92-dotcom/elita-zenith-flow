@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AppointmentStatus } from '@/types';
 import { LiveGoalsWidget } from '@/components/dashboard/LiveGoalsWidget';
 import { TodayOpsWidget } from '@/components/dashboard/TodayOpsWidget';
+import { PurchaseRequestsWidget } from '@/components/dashboard/PurchaseRequestsWidget';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 
