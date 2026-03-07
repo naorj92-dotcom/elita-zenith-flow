@@ -75,6 +75,27 @@ export function ClientMembershipsPage() {
   const { client } = useClientAuth();
   const isDemo = false; // Demo mode removed for security
 
+  const handleMembershipInterest = async (tier: any, isPurchase: boolean) => {
+    if (!client?.id) return;
+    try {
+      const { error } = await supabase.from('purchase_requests' as any).insert({
+        client_id: client.id,
+        request_type: 'membership',
+        membership_id: tier.id,
+        tier_total_price: tier.price,
+        notes: `${isPurchase ? 'PURCHASE REQUEST' : 'INTEREST'}: ${tier.name} — $${tier.price}/${tier.billing_period}`,
+      });
+      if (error) throw error;
+      toast.success(
+        isPurchase
+          ? `Purchase request for ${tier.name} submitted! We'll contact you to finalize.`
+          : `Interest in ${tier.name} noted! Our team will reach out shortly.`
+      );
+    } catch {
+      toast.error('Could not submit your request. Please try again.');
+    }
+  };
+
   const { data: currentMembership } = useQuery({
     queryKey: ['client-membership', client?.id, isDemo],
     queryFn: async () => {
