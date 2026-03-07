@@ -314,13 +314,16 @@ export function SchedulePage() {
         staffList={filteredStaff}
         onAppointmentDrop={handleAppointmentDrop}
         onStatusChange={handleStatusChange}
+        onClientChanged={fetchData}
         clientDetailsMap={clientDetailsMap}
       />
       <RescheduleDialog
         open={!!rescheduleApt}
-        onOpenChange={(open) => { if (!open) { setRescheduleApt(null); setRescheduleNewTime(null); } }}
+        onOpenChange={(open) => { if (!open) { setRescheduleApt(null); setRescheduleNewTime(null); setRescheduleNewStaffId(null); setRescheduleNewStaffName(null); } }}
         appointment={rescheduleApt}
         newScheduledAt={rescheduleNewTime}
+        newStaffId={rescheduleNewStaffId}
+        newStaffName={rescheduleNewStaffName}
         onConfirm={handleRescheduleConfirm}
         isLoading={isRescheduling}
       />
