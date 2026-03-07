@@ -31,6 +31,22 @@ export function ClientPortalLayout() {
     refetchInterval: 30000, // Poll every 30s for new form assignments
   });
 
+  // Fetch unread messages count for notification bell
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['client-unread-messages', client?.id],
+    queryFn: async () => {
+      if (!client?.id) return 0;
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('client_id', client.id)
+        .eq('is_read', false);
+      return count || 0;
+    },
+    enabled: !!client?.id && isAuthenticated,
+    refetchInterval: 15000,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
