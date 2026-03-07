@@ -6,58 +6,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isValid } from 'date-fns';
-import { Calendar, Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, Eye, History, Crown, Flag, Gift, TrendingUp, FileText, AlertTriangle } from 'lucide-react';
+import { Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, History, Crown, Flag, Gift, FileText, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { 
-  DEMO_PACKAGES, 
-  DEMO_APPOINTMENTS, 
-  DEMO_PHOTOS, 
-  DEMO_PRODUCT_RECOMMENDATIONS, 
-  DEMO_SERVICE_RECOMMENDATIONS 
-} from '@/hooks/useDemoData';
 import { LoyaltyPointsWidget } from '@/components/portal/LoyaltyPointsWidget';
 import { MembershipStatusWidget } from '@/components/portal/MembershipStatusWidget';
 import { ClientTimeline } from '@/components/portal/ClientTimeline';
 import { ClientNotesFlags } from '@/components/portal/ClientNotesFlags';
 import { MembershipBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { VisitStreakWidget } from '@/components/portal/VisitStreakWidget';
+import { AppointmentCountdownWidget } from '@/components/portal/AppointmentCountdownWidget';
+import { ExclusiveDealsWidget } from '@/components/portal/ExclusiveDealsWidget';
+import { AftercareTipsWidget } from '@/components/portal/AftercareTipsWidget';
+import { ReferralWidget } from '@/components/portal/ReferralWidget';
+import { ProgressTimelineWidget } from '@/components/portal/ProgressTimelineWidget';
 
 export function ClientDashboard() {
   const { client } = useClientAuth();
-  const isDemo = false; // Demo mode removed for security
-
-  // Fetch next appointment
-  const { data: nextAppointment } = useQuery({
-    queryKey: ['client-next-appointment', client?.id, isDemo],
-    queryFn: async () => {
-      if (isDemo) {
-        const upcoming = DEMO_APPOINTMENTS.filter(
-          a => new Date(a.scheduled_at) > new Date() && ['scheduled', 'confirmed'].includes(a.status)
-        );
-        return upcoming[0] || null;
-      }
-      if (!client?.id) return null;
-      const { data } = await supabase
-        .from('appointments')
-        .select('*, services(*), staff(*)')
-        .eq('client_id', client.id)
-        .gte('scheduled_at', new Date().toISOString())
-        .in('status', ['scheduled', 'confirmed'])
-        .order('scheduled_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!client?.id || isDemo,
-  });
 
   // Fetch active packages count
   const { data: packagesCount } = useQuery({
-    queryKey: ['client-packages-count', client?.id, isDemo],
+    queryKey: ['client-packages-count', client?.id],
     queryFn: async () => {
-      if (isDemo) {
-        return DEMO_PACKAGES.filter(p => p.status === 'active').length;
-      }
       if (!client?.id) return 0;
       const { count } = await supabase
         .from('client_packages')
@@ -66,16 +36,13 @@ export function ClientDashboard() {
         .eq('status', 'active');
       return count || 0;
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   // Fetch photos count
   const { data: photosCount } = useQuery({
-    queryKey: ['client-photos-count', client?.id, isDemo],
+    queryKey: ['client-photos-count', client?.id],
     queryFn: async () => {
-      if (isDemo) {
-        return DEMO_PHOTOS.length;
-      }
       if (!client?.id) return 0;
       const { count } = await supabase
         .from('before_after_photos')
@@ -84,18 +51,13 @@ export function ClientDashboard() {
         .eq('is_visible_to_client', true);
       return count || 0;
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   // Fetch recommendations count
   const { data: recommendationsCount } = useQuery({
-    queryKey: ['client-recommendations-count', client?.id, isDemo],
+    queryKey: ['client-recommendations-count', client?.id],
     queryFn: async () => {
-      if (isDemo) {
-        const productRecs = DEMO_PRODUCT_RECOMMENDATIONS.filter(r => !r.is_purchased).length;
-        const serviceRecs = DEMO_SERVICE_RECOMMENDATIONS.filter(r => !r.is_booked).length;
-        return productRecs + serviceRecs;
-      }
       if (!client?.id) return 0;
       const { count: productCount } = await supabase
         .from('product_recommendations')
@@ -109,14 +71,13 @@ export function ClientDashboard() {
         .eq('is_booked', false);
       return (productCount || 0) + (serviceCount || 0);
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   // Fetch pending forms count
   const { data: pendingFormsCount = 0 } = useQuery({
-    queryKey: ['client-pending-forms-count', client?.id, isDemo],
+    queryKey: ['client-pending-forms-count', client?.id],
     queryFn: async () => {
-      if (isDemo) return 2;
       if (!client?.id) return 0;
       const { count } = await supabase
         .from('client_forms')
@@ -125,23 +86,12 @@ export function ClientDashboard() {
         .eq('status', 'pending');
       return count || 0;
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   return (
     <div className="space-y-6">
-      {/* Demo Mode Banner */}
-      {isDemo && (
-        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
-          <Eye className="h-5 w-5 text-primary" />
-          <div>
-            <p className="font-medium text-sm">Demo Mode</p>
-            <p className="text-xs text-muted-foreground">You're viewing sample data. Sign up to access your real account.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Welcome Header */}
+      {/* Welcome Header with Personalized Greeting */}
       <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-8">
         <div className="flex items-center gap-3 mb-2">
           <Sparkles className="h-6 w-6 text-primary" />
@@ -154,6 +104,9 @@ export function ClientDashboard() {
           <MembershipBadge isVip className="mt-3" />
         )}
       </div>
+
+      {/* Visit Streak */}
+      <VisitStreakWidget />
 
       {/* Pending Forms Alert */}
       {pendingFormsCount > 0 && (
@@ -176,57 +129,18 @@ export function ClientDashboard() {
         </Link>
       )}
 
-      {/* Next Appointment */}
-      <Card className="card-luxury">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle className="text-lg font-heading">Next Appointment</CardTitle>
-            <CardDescription>Your upcoming treatment</CardDescription>
-          </div>
-          <Link to="/portal/book">
-            <Button size="sm">Book New</Button>
-          </Link>
-        </CardHeader>
-        <CardContent>
-          {nextAppointment ? (
-            <div className="flex items-center gap-4 p-4 bg-secondary/50 rounded-lg">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold">{nextAppointment.services?.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {(() => {
-                    try {
-                      const date = new Date(nextAppointment.scheduled_at);
-                      return isValid(date) 
-                        ? `${format(date, 'EEEE, MMMM d, yyyy')} at ${format(date, 'h:mm a')}`
-                        : 'Date pending';
-                    } catch {
-                      return 'Date pending';
-                    }
-                  })()}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  with {nextAppointment.staff?.first_name} {nextAppointment.staff?.last_name}
-                </p>
-              </div>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-info/10 text-info border border-info/20 capitalize">
-                {nextAppointment.status}
-              </span>
-            </div>
-          ) : (
-            <EmptyState
-              icon={Calendar}
-              title="No upcoming appointments"
-              description="Book your next treatment to continue your journey with us."
-              actionLabel="Schedule Your Next Visit"
-              actionHref="/portal/book"
-              compact
-            />
-          )}
-        </CardContent>
-      </Card>
+      {/* Appointment Countdown + Aftercare Tips Row */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <AppointmentCountdownWidget />
+        <div className="space-y-4">
+          <AftercareTipsWidget />
+          {/* Loyalty Balance Mini */}
+          <LoyaltyPointsWidget />
+        </div>
+      </div>
+
+      {/* Exclusive Deals */}
+      <ExclusiveDealsWidget />
 
       {/* Tabs: Overview, Timeline, Notes */}
       <Tabs defaultValue="overview" className="w-full">
@@ -246,6 +160,9 @@ export function ClientDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-6">
+          {/* Progress Timeline */}
+          <ProgressTimelineWidget />
+
           {/* Quick Links Grid */}
           <div className="grid gap-4 sm:grid-cols-2">
             <Link to="/portal/packages">
@@ -293,15 +210,15 @@ export function ClientDashboard() {
               </Card>
             </Link>
 
-            <Link to="/portal/history">
-              <Card className="card-luxury group cursor-pointer h-full">
+            <Link to="/portal/skin-analysis">
+              <Card className="card-luxury group cursor-pointer h-full border-primary/20">
                 <CardContent className="flex items-center gap-4 p-6">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Clock className="h-6 w-6 text-primary" />
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/20 transition-colors">
+                    <Sparkles className="h-6 w-6 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold">Treatment History</h3>
-                    <p className="text-sm text-muted-foreground">{client?.visit_count || 0} visit{(client?.visit_count || 0) !== 1 ? 's' : ''}</p>
+                    <h3 className="font-semibold">AI Skin Analysis</h3>
+                    <p className="text-sm text-muted-foreground">Get personalized recommendations</p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </CardContent>
@@ -309,10 +226,10 @@ export function ClientDashboard() {
             </Link>
           </div>
 
-          {/* Membership & Loyalty Row */}
+          {/* Membership & Referral Row */}
           <div className="grid gap-4 md:grid-cols-2">
             <MembershipStatusWidget />
-            <LoyaltyPointsWidget />
+            <ReferralWidget />
           </div>
 
           {/* Stats */}
