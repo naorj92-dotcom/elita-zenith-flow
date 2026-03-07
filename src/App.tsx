@@ -113,6 +113,7 @@ function AppRoutes() {
       <Route path="/intake" element={<IntakeFormPage />} />
       <Route path="/setup" element={<SetupPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/kiosk" element={<CheckInKioskPage />} />
       
       {/* ========== STAFF LOGIN ========== */}
       <Route path="/login" element={<LoginPage />} />
