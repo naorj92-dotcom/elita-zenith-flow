@@ -33,7 +33,7 @@ export function StaffAnnouncementsWidget() {
   const { data: announcements = [] } = useQuery({
     queryKey: ['staff-announcements'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('staff_announcements')
         .select('*, staff:author_id(first_name, last_name)')
         .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
