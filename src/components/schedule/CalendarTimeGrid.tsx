@@ -174,6 +174,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
   const [draggingApt, setDraggingApt] = useState<string | null>(null);
   const [dragTargetDate, setDragTargetDate] = useState<Date | null>(null);
   const [dragCursorPos, setDragCursorPos] = useState<{ x: number; y: number } | null>(null);
+  const [dragTargetStaffId, setDragTargetStaffId] = useState<string | null>(null);
+  const [dragOriginStaffId, setDragOriginStaffId] = useState<string | null>(null);
 
   // Build a ref of column rects so we can detect which date column the cursor is over
   const columnRectsRef = useRef<{ date: Date; left: number; right: number; staffId?: string }[]>([]);
