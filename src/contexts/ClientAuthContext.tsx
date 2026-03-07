@@ -22,7 +22,6 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [client, setClient] = useState<Client | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
 
   const fetchClientProfile = useCallback(async (userId: string) => {
     const { data: profile } = await supabase
