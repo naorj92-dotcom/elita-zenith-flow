@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -82,94 +81,68 @@ export function LoginPage() {
             <p className="text-sm text-muted-foreground mt-1">Sign in to access the dashboard</p>
           </div>
 
-          <Tabs defaultValue="email" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="email" className="gap-2">
-                <Mail className="h-4 w-4" />
-                Email
-              </TabsTrigger>
-              <TabsTrigger value="pin" className="gap-2">
-                <KeyRound className="h-4 w-4" />
-                Quick PIN
-              </TabsTrigger>
-            </TabsList>
+          <Card className="border-border">
+            <CardContent className="pt-6">
+              <form onSubmit={handleEmailLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@elitamedspa.com"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setError(null); }}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
 
-            {/* Email/Password Tab */}
-            <TabsContent value="email">
-              <Card className="border-border">
-                <CardContent className="pt-6">
-                  <form onSubmit={handleEmailLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="you@elitamedspa.com"
-                        value={email}
-                        onChange={(e) => { setEmail(e.target.value); setError(null); }}
-                        required
-                        autoComplete="email"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? 'text' : 'password'}
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => { setPassword(e.target.value); setError(null); }}
-                          required
-                          autoComplete="current-password"
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {error && (
-                      <p className="text-sm text-destructive">{error}</p>
-                    )}
-
-                    <Button type="submit" className="w-full" disabled={submitting || isLoading}>
-                      {submitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Signing in...
-                        </>
-                      ) : 'Sign In'}
-                    </Button>
-
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                      required
+                      autoComplete="current-password"
+                      className="pr-10"
+                    />
                     <button
                       type="button"
-                      onClick={() => { setShowForgotPassword(true); setForgotEmail(email); }}
-                      className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Forgot password?
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                  </div>
+                </div>
 
-            {/* PIN Tab */}
-            <TabsContent value="pin">
-              <PinPad 
-                onSubmit={loginWithPin}
-                isLoading={isLoading}
-                title="Quick Access"
-                subtitle="Enter your 4-digit PIN"
-              />
-            </TabsContent>
-          </Tabs>
+                {error && (
+                  <p className="text-sm text-destructive">{error}</p>
+                )}
+
+                <Button type="submit" className="w-full" disabled={submitting || isLoading}>
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : 'Sign In'}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => { setShowForgotPassword(true); setForgotEmail(email); }}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </form>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
 
