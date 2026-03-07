@@ -23,6 +23,9 @@ import { AppointmentStatus } from '@/types';
 import { LiveGoalsWidget } from '@/components/dashboard/LiveGoalsWidget';
 import { TodayOpsWidget } from '@/components/dashboard/TodayOpsWidget';
 import { PurchaseRequestsWidget } from '@/components/dashboard/PurchaseRequestsWidget';
+import { CommissionWidget } from '@/components/dashboard/CommissionWidget';
+import { InventoryAlertsWidget } from '@/components/dashboard/InventoryAlertsWidget';
+import { StaffAnnouncementsWidget } from '@/components/dashboard/StaffAnnouncementsWidget';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 
