@@ -1,0 +1,1 @@
+ALTER TABLE public.staff DROP COLUMN pin;

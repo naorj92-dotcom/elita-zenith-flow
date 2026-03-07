@@ -1475,7 +1475,6 @@ export type Database = {
           is_active: boolean
           last_name: string
           phone: string | null
-          pin: string
           retail_commission_rate: number | null
           role: Database["public"]["Enums"]["staff_role"]
           service_commission_tier1: number | null
@@ -1496,7 +1495,6 @@ export type Database = {
           is_active?: boolean
           last_name: string
           phone?: string | null
-          pin: string
           retail_commission_rate?: number | null
           role?: Database["public"]["Enums"]["staff_role"]
           service_commission_tier1?: number | null
@@ -1517,7 +1515,6 @@ export type Database = {
           is_active?: boolean
           last_name?: string
           phone?: string | null
-          pin?: string
           retail_commission_rate?: number | null
           role?: Database["public"]["Enums"]["staff_role"]
           service_commission_tier1?: number | null
