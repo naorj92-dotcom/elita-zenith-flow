@@ -382,24 +382,51 @@ export function POSPage() {
 
       if (receiptError) throw receiptError;
 
-      // Create transaction for service
+      // Create transaction for service with commission calculation
       if (serviceItem) {
+        const serviceAmount = serviceItem.price * serviceItem.quantity;
+        
+        // Calculate commission using DB function
+        const { data: commissionResult } = await supabase
+          .rpc('calculate_commission', {
+            p_staff_id: selectedStaff,
+            p_amount: serviceAmount,
+            p_transaction_type: 'service' as any,
+          });
+        
+        const commissionAmount = Number(commissionResult) || 0;
+        const commissionRate = serviceAmount > 0 ? (commissionAmount / serviceAmount) * 100 : 0;
+
         await supabase.from('transactions').insert({
           client_id: selectedClient,
           staff_id: selectedStaff,
           transaction_type: 'service',
-          amount: serviceItem.price * serviceItem.quantity,
+          amount: serviceAmount,
+          commission_amount: commissionAmount,
+          commission_rate: commissionRate,
           description: serviceItem.name,
         });
       }
 
-      // Create transactions for retail items
+      // Create transactions for retail items with commission
       for (const item of retailItems) {
+        const { data: retailCommResult } = await supabase
+          .rpc('calculate_commission', {
+            p_staff_id: selectedStaff,
+            p_amount: item.total,
+            p_transaction_type: 'retail' as any,
+          });
+        
+        const retailCommission = Number(retailCommResult) || 0;
+        const retailCommRate = item.total > 0 ? (retailCommission / item.total) * 100 : 0;
+
         await supabase.from('transactions').insert({
           client_id: selectedClient,
           staff_id: selectedStaff,
           transaction_type: 'retail',
           amount: item.total,
+          commission_amount: retailCommission,
+          commission_rate: retailCommRate,
           description: item.name,
         });
       }
