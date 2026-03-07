@@ -234,22 +234,19 @@ Deno.serve(async (req) => {
     const saKey: ServiceAccountKey = JSON.parse(saKeyJson);
     const accessToken = await getAccessToken(saKey);
 
-    // For actions that modify data, verify authenticated user
-    const requiresAuth = action === "sync" || action === "sync_all";
+    // Verify authenticated user for all actions
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    if (requiresAuth) {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        return new Response(JSON.stringify({ error: "Unauthorized - login required for this action" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     if (action === "sync" && appointment_id) {
