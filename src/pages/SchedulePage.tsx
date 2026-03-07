@@ -52,6 +52,8 @@ export function SchedulePage() {
   // Reschedule dialog state
   const [rescheduleApt, setRescheduleApt] = useState<ScheduleAppointment | null>(null);
   const [rescheduleNewTime, setRescheduleNewTime] = useState<Date | null>(null);
+  const [rescheduleNewStaffId, setRescheduleNewStaffId] = useState<string | null>(null);
+  const [rescheduleNewStaffName, setRescheduleNewStaffName] = useState<string | null>(null);
   const [isRescheduling, setIsRescheduling] = useState(false);
 
   useEffect(() => {
@@ -155,9 +157,8 @@ export function SchedulePage() {
     setIsSyncing(false);
   };
 
-  const handleAppointmentDrop = (appointmentId: string, newScheduledAt: Date) => {
+  const handleAppointmentDrop = (appointmentId: string, newScheduledAt: Date, newStaffId?: string | null) => {
     if (appointmentId.startsWith('gcal-')) {
-      // Build a local-only ScheduleAppointment from the Google event
       const gcalId = appointmentId.replace('gcal-', '');
       const gEvent = googleEvents.find((e) => e.id === gcalId);
       if (!gEvent) return;
@@ -186,12 +187,20 @@ export function SchedulePage() {
 
       setRescheduleApt(fakeApt);
       setRescheduleNewTime(newScheduledAt);
+      setRescheduleNewStaffId(null);
+      setRescheduleNewStaffName(null);
       return;
     }
     const apt = appointments.find((a) => a.id === appointmentId);
     if (!apt) return;
+    
+    // Resolve new staff info
+    const targetStaff = newStaffId ? staffList.find(s => s.id === newStaffId) : null;
+    
     setRescheduleApt(apt);
     setRescheduleNewTime(newScheduledAt);
+    setRescheduleNewStaffId(newStaffId || null);
+    setRescheduleNewStaffName(targetStaff ? `${targetStaff.first_name} ${targetStaff.last_name}` : null);
   };
 
   const handleRescheduleConfirm = async () => {
@@ -199,7 +208,6 @@ export function SchedulePage() {
     setIsRescheduling(true);
 
     if (rescheduleApt.id.startsWith('gcal-')) {
-      // Local-only move: update the google event position in state without syncing to Google
       const gcalId = rescheduleApt.id.replace('gcal-', '');
       setGoogleEvents((prev) =>
         prev.map((ev) => {
@@ -215,15 +223,23 @@ export function SchedulePage() {
       );
       toast.success('Appointment moved locally (not synced to Google)');
     } else {
+      const updateData: Record<string, any> = { scheduled_at: rescheduleNewTime.toISOString() };
+      if (rescheduleNewStaffId && rescheduleNewStaffId !== rescheduleApt.staff_id) {
+        updateData.staff_id = rescheduleNewStaffId;
+      }
+
       const { error } = await supabase
         .from('appointments')
-        .update({ scheduled_at: rescheduleNewTime.toISOString() })
+        .update(updateData)
         .eq('id', rescheduleApt.id);
 
       if (error) {
-        toast.error('Failed to reschedule appointment');
+        toast.error('Failed to update appointment');
       } else {
-        toast.success('Appointment rescheduled successfully');
+        const actions = [];
+        if (rescheduleNewStaffId && rescheduleNewStaffId !== rescheduleApt.staff_id) actions.push('reassigned');
+        if (new Date(rescheduleApt.scheduled_at).getTime() !== rescheduleNewTime.getTime()) actions.push('rescheduled');
+        toast.success(`Appointment ${actions.join(' & ')} successfully`);
         await fetchData();
       }
     }
@@ -231,6 +247,8 @@ export function SchedulePage() {
     setIsRescheduling(false);
     setRescheduleApt(null);
     setRescheduleNewTime(null);
+    setRescheduleNewStaffId(null);
+    setRescheduleNewStaffName(null);
   };
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -296,13 +314,16 @@ export function SchedulePage() {
         staffList={filteredStaff}
         onAppointmentDrop={handleAppointmentDrop}
         onStatusChange={handleStatusChange}
+        onClientChanged={fetchData}
         clientDetailsMap={clientDetailsMap}
       />
       <RescheduleDialog
         open={!!rescheduleApt}
-        onOpenChange={(open) => { if (!open) { setRescheduleApt(null); setRescheduleNewTime(null); } }}
+        onOpenChange={(open) => { if (!open) { setRescheduleApt(null); setRescheduleNewTime(null); setRescheduleNewStaffId(null); setRescheduleNewStaffName(null); } }}
         appointment={rescheduleApt}
         newScheduledAt={rescheduleNewTime}
+        newStaffId={rescheduleNewStaffId}
+        newStaffName={rescheduleNewStaffName}
         onConfirm={handleRescheduleConfirm}
         isLoading={isRescheduling}
       />

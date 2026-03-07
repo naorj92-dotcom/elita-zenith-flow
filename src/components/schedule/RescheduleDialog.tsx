@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, User } from 'lucide-react';
 import type { ScheduleAppointment } from '@/pages/SchedulePage';
 
 interface RescheduleDialogProps {
@@ -11,6 +13,8 @@ interface RescheduleDialogProps {
   onOpenChange: (open: boolean) => void;
   appointment: ScheduleAppointment | null;
   newScheduledAt: Date | null;
+  newStaffName?: string | null;
+  newStaffId?: string | null;
   onConfirm: () => void;
   isLoading?: boolean;
 }
@@ -32,22 +36,45 @@ function formatDuration(min: number) {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-export function RescheduleDialog({ open, onOpenChange, appointment, newScheduledAt, onConfirm, isLoading }: RescheduleDialogProps) {
+export function RescheduleDialog({ open, onOpenChange, appointment, newScheduledAt, newStaffName, newStaffId, onConfirm, isLoading }: RescheduleDialogProps) {
   const [sendConfirmation, setSendConfirmation] = React.useState(true);
 
   if (!appointment || !newScheduledAt) return null;
 
   const oldStart = new Date(appointment.scheduled_at);
+  const isProviderChange = newStaffId && newStaffId !== appointment.staff_id;
+  const isTimeChange = oldStart.getTime() !== newScheduledAt.getTime();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl">Reschedule Appointment</DialogTitle>
+          <DialogTitle className="text-xl">
+            {isProviderChange && isTimeChange
+              ? 'Reschedule & Reassign'
+              : isProviderChange
+                ? 'Reassign Provider'
+                : 'Reschedule Appointment'}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <p className="font-semibold text-lg">{appointment.client_name}</p>
+
+          {/* Provider Change */}
+          {isProviderChange && (
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="flex items-center gap-2 mb-2">
+                <User className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Provider Change</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-muted-foreground">{appointment.staff_name || 'Unassigned'}</span>
+                <ArrowRight className="w-4 h-4 text-primary shrink-0" />
+                <span className="font-semibold text-primary">{newStaffName}</span>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 items-start text-sm">
             {/* Service name spanning both columns */}
@@ -58,7 +85,7 @@ export function RescheduleDialog({ open, onOpenChange, appointment, newScheduled
               <p>{formatDate(oldStart)}</p>
               <p className="font-semibold text-destructive">{formatTime(oldStart, appointment.duration_minutes)}</p>
               <p className="text-muted-foreground">({formatDuration(appointment.duration_minutes)})</p>
-              {appointment.staff_name && <p className="text-muted-foreground">{appointment.staff_name}</p>}
+              {!isProviderChange && appointment.staff_name && <p className="text-muted-foreground">{appointment.staff_name}</p>}
               <p className="text-muted-foreground">(${Number(appointment.total_amount).toFixed(0)})</p>
             </div>
 
@@ -72,7 +99,7 @@ export function RescheduleDialog({ open, onOpenChange, appointment, newScheduled
               <p>{formatDate(newScheduledAt)}</p>
               <p className="font-semibold text-primary">{formatTime(newScheduledAt, appointment.duration_minutes)}</p>
               <p className="text-muted-foreground">({formatDuration(appointment.duration_minutes)})</p>
-              {appointment.staff_name && <p className="text-muted-foreground">{appointment.staff_name}</p>}
+              {!isProviderChange && appointment.staff_name && <p className="text-muted-foreground">{appointment.staff_name}</p>}
               <p className="text-muted-foreground">(${Number(appointment.total_amount).toFixed(0)})</p>
             </div>
           </div>
@@ -99,7 +126,7 @@ export function RescheduleDialog({ open, onOpenChange, appointment, newScheduled
             Cancel
           </Button>
           <Button onClick={onConfirm} disabled={isLoading}>
-            {isLoading ? 'Rescheduling...' : 'Reschedule'}
+            {isLoading ? 'Updating...' : isProviderChange ? 'Confirm Reassignment' : 'Reschedule'}
           </Button>
         </DialogFooter>
       </DialogContent>

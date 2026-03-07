@@ -12,7 +12,8 @@ interface CalendarTimeGridProps {
   googleEvents: GoogleCalendarEvent[];
   isLoading: boolean;
   staffList: ScheduleStaff[];
-  onAppointmentDrop?: (appointmentId: string, newScheduledAt: Date) => void;
+  onAppointmentDrop?: (appointmentId: string, newScheduledAt: Date, newStaffId?: string | null) => void;
+  onClientChanged?: () => void;
   onStatusChange?: (id: string, status: string) => void;
   clientDetailsMap?: Record<string, { phone?: string | null; email?: string | null; visit_count?: number; total_spent?: number; date_of_birth?: string | null }>;
 }
@@ -79,7 +80,7 @@ function googleEventToAppointment(event: GoogleCalendarEvent): ScheduleAppointme
   };
 }
 
-export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onStatusChange, clientDetailsMap }: CalendarTimeGridProps) {
+export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onClientChanged, onStatusChange, clientDetailsMap }: CalendarTimeGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const [selectedApt, setSelectedApt] = useState<ScheduleAppointment | null>(null);
@@ -175,28 +176,43 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
   const [dragCursorPos, setDragCursorPos] = useState<{ x: number; y: number } | null>(null);
 
   // Build a ref of column rects so we can detect which date column the cursor is over
-  const columnRectsRef = useRef<{ date: Date; left: number; right: number }[]>([]);
+  const columnRectsRef = useRef<{ date: Date; left: number; right: number; staffId?: string }[]>([]);
 
   const updateColumnRects = useCallback(() => {
     const grid = scrollRef.current;
     if (!grid) return;
     const cols = grid.querySelectorAll<HTMLElement>('[data-date-col]');
-    const rects: { date: Date; left: number; right: number }[] = [];
+    const rects: { date: Date; left: number; right: number; staffId?: string }[] = [];
     cols.forEach((col) => {
       const dateStr = col.getAttribute('data-date-col');
       if (!dateStr) return;
-      const rect = col.getBoundingClientRect();
-      rects.push({ date: new Date(dateStr), left: rect.left, right: rect.right });
+      // Check for staff sub-columns
+      const staffCols = col.querySelectorAll<HTMLElement>('[data-staff-col]');
+      if (staffCols.length > 0) {
+        staffCols.forEach((sc) => {
+          const staffId = sc.getAttribute('data-staff-col') || undefined;
+          const rect = sc.getBoundingClientRect();
+          rects.push({ date: new Date(dateStr), left: rect.left, right: rect.right, staffId });
+        });
+      } else {
+        const rect = col.getBoundingClientRect();
+        rects.push({ date: new Date(dateStr), left: rect.left, right: rect.right });
+      }
     });
     columnRectsRef.current = rects;
   }, []);
 
-  const findDateAtX = useCallback((clientX: number): Date | null => {
+  const findColumnAtX = useCallback((clientX: number): { date: Date; staffId?: string } | null => {
     for (const col of columnRectsRef.current) {
-      if (clientX >= col.left && clientX < col.right) return col.date;
+      if (clientX >= col.left && clientX < col.right) return { date: col.date, staffId: col.staffId };
     }
     return null;
   }, []);
+
+  const findDateAtX = useCallback((clientX: number): Date | null => {
+    const col = findColumnAtX(clientX);
+    return col?.date || null;
+  }, [findColumnAtX]);
 
   const handleDragStart = (apt: ScheduleAppointment, colDate: Date, e: React.MouseEvent) => {
     e.preventDefault();
@@ -244,14 +260,17 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
         const hours = Math.floor(totalMinutes / 60);
         const mins = Math.round(totalMinutes % 60);
 
-        // Use the date column the cursor is over, or fall back to the original column
-        const targetDate = findDateAtX(ev.clientX) || dragRef.current.colDate;
+        // Use the column the cursor is over, or fall back to the original column
+        const targetCol = findColumnAtX(ev.clientX);
+        const targetDate = targetCol?.date || dragRef.current.colDate;
+        const targetStaffId = targetCol?.staffId || null;
         const newDate = new Date(targetDate);
         newDate.setHours(hours, mins, 0, 0);
 
         const oldStart = new Date(dragRef.current.apt.scheduled_at);
-        if (oldStart.getTime() !== newDate.getTime()) {
-          onAppointmentDrop?.(dragRef.current.apt.id, newDate);
+        const hasChange = oldStart.getTime() !== newDate.getTime() || (targetStaffId && targetStaffId !== dragRef.current.apt.staff_id);
+        if (hasChange) {
+          onAppointmentDrop?.(dragRef.current.apt.id, newDate, targetStaffId);
         }
       }
       setDraggingApt(null);
@@ -380,6 +399,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                     <ProviderColumn
                       key={s.id}
                       date={date}
+                      staffId={s.id}
                       appointments={getApptsForDateAndStaff(date, s.id)}
                       googleEvents={sIdx === 0 ? dayGoogle : []}
                       isLast={sIdx === visibleStaff.length - 1}
@@ -430,6 +450,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
               clientDetails={selectedGoogleDetails || clientDetailsMap?.[selectedApt.id] || null}
               onClose={() => { setSelectedApt(null); setSelectedGoogleDetails(null); }}
               onStatusChange={selectedApt.id.startsWith('gcal-') ? undefined : onStatusChange}
+              onClientChanged={onClientChanged}
             />
           </div>
         )}
@@ -475,6 +496,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
 
 interface ProviderColumnProps {
   date: Date;
+  staffId?: string;
   appointments: ScheduleAppointment[];
   googleEvents: GoogleCalendarEvent[];
   isLast: boolean;
@@ -489,9 +511,10 @@ interface ProviderColumnProps {
   dragGhostTop?: number | null;
 }
 
-function ProviderColumn({ date, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
   return (
     <div
+      data-staff-col={staffId}
       className={cn(
         'relative',
         !isLast && !className && 'border-r border-border/50',
