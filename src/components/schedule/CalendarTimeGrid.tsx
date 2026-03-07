@@ -12,7 +12,8 @@ interface CalendarTimeGridProps {
   googleEvents: GoogleCalendarEvent[];
   isLoading: boolean;
   staffList: ScheduleStaff[];
-  onAppointmentDrop?: (appointmentId: string, newScheduledAt: Date) => void;
+  onAppointmentDrop?: (appointmentId: string, newScheduledAt: Date, newStaffId?: string | null) => void;
+  onClientChanged?: () => void;
   onStatusChange?: (id: string, status: string) => void;
   clientDetailsMap?: Record<string, { phone?: string | null; email?: string | null; visit_count?: number; total_spent?: number; date_of_birth?: string | null }>;
 }
