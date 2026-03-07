@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, isValid } from 'date-fns';
 import { Calendar, CheckCircle2, Clock, XCircle, Star, Package, Image, DollarSign, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { DEMO_APPOINTMENTS, DEMO_PACKAGES, DEMO_PHOTOS } from '@/hooks/useDemoData';
+import { cn } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 interface TimelineEvent {
