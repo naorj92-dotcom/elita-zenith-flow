@@ -304,8 +304,7 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("Calendar sync error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: "An internal error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
