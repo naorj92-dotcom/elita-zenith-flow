@@ -34,11 +34,31 @@ export function LoginPage() {
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Check lockout
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      const secondsLeft = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      setError(`Too many failed attempts. Try again in ${secondsLeft}s.`);
+      return;
+    }
+
     setSubmitting(true);
     
     const result = await signIn(email, password);
     if (result.error) {
-      setError(result.error);
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+      
+      if (newAttempts >= 5) {
+        const lockDuration = Math.min(30, 5 * Math.pow(2, Math.floor(newAttempts / 5) - 1));
+        setLockoutUntil(Date.now() + lockDuration * 1000);
+        setError(`Account locked for ${lockDuration}s after ${newAttempts} failed attempts.`);
+      } else {
+        setError(`${result.error} (${5 - newAttempts} attempts remaining)`);
+      }
+    } else {
+      setFailedAttempts(0);
+      setLockoutUntil(null);
     }
     setSubmitting(false);
   };
