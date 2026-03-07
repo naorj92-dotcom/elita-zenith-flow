@@ -17,6 +17,8 @@ import { EditTeamHoursDialog } from '@/components/admin/EditTeamHoursDialog';
 interface PayrollData {
   staff: Staff;
   hoursWorked: number;
+  isClockedIn: boolean;
+  clockInTime: string | null;
   basePay: number;
   serviceSales: number;
   serviceCommission: number;
