@@ -184,7 +184,6 @@ export function StaffManagementPage() {
       last_name: staff.last_name,
       email: staff.email || '',
       phone: staff.phone || '',
-      pin: staff.pin,
       role: staff.role,
       hourly_rate: staff.hourly_rate,
       is_active: staff.is_active,
