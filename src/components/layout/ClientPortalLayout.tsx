@@ -31,6 +31,22 @@ export function ClientPortalLayout() {
     refetchInterval: 30000, // Poll every 30s for new form assignments
   });
 
+  // Fetch unread messages count for notification bell
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['client-unread-messages', client?.id],
+    queryFn: async () => {
+      if (!client?.id) return 0;
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('client_id', client.id)
+        .eq('is_read', false);
+      return count || 0;
+    },
+    enabled: !!client?.id && isAuthenticated,
+    refetchInterval: 15000,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -86,6 +102,17 @@ export function ClientPortalLayout() {
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* Unread messages indicator */}
+            <Link to="/portal/messages" className="relative">
+              <Button variant="ghost" size="icon" title="Messages">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-foreground">{client?.first_name} {client?.last_name}</p>
               <p className="text-xs text-muted-foreground">{client?.email}</p>
