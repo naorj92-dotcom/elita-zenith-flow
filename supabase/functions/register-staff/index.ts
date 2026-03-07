@@ -137,9 +137,10 @@ Deno.serve(async (req) => {
       });
 
     if (roleError) {
+      console.error('Role creation error:', roleError);
       // Rollback: delete the created auth user
       await adminClient.auth.admin.deleteUser(newUser.user.id);
-      return new Response(JSON.stringify({ error: 'Failed to create role: ' + roleError.message }), {
+      return new Response(JSON.stringify({ error: 'Failed to create staff account' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
