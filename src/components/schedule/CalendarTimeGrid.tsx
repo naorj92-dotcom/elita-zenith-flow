@@ -516,16 +516,18 @@ interface ProviderColumnProps {
   onDragStart?: (apt: ScheduleAppointment, colDate: Date, e: React.MouseEvent) => void;
   draggingApt?: string | null;
   dragGhostTop?: number | null;
+  isDropTarget?: boolean;
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget }: ProviderColumnProps) {
   return (
     <div
       data-staff-col={staffId}
       className={cn(
-        'relative',
+        'relative transition-colors duration-150',
         !isLast && !className && 'border-r border-border/50',
         isToday(date) && 'bg-primary/[0.02]',
+        isDropTarget && 'bg-primary/10 ring-2 ring-inset ring-primary/30',
         className
       )}
       style={colWidth ? { width: colWidth, minWidth: colWidth } : undefined}
