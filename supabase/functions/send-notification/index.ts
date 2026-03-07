@@ -174,8 +174,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (type === 'email') {
       try {
-        // Convert plain text to HTML
-        const htmlBody = body.replace(/\n/g, '<br>');
+        // Sanitize and convert plain text to HTML to prevent XSS
+        const sanitizeHtml = (str: string): string =>
+          str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+        const htmlBody = sanitizeHtml(body).replace(/\n/g, '<br>');
+        const sanitizedSubject = sanitizeHtml(subject);
         
         const emailResponse = await resend.emails.send({
           from: "Elita MedSpa <onboarding@resend.dev>",
