@@ -601,25 +601,59 @@ function MembershipsTab({ memberships }: { memberships: any[] }) {
 }
 
 // ─── Packages Tab ────────────────────────────────────────
-function PackagesTab({ packages }: { packages: any[] }) {
-  if (packages.length === 0) {
-    return <EmptyState icon={Package} title="No packages" description="This client has no packages." compact />;
-  }
+function PackagesTab({ packages, clientId }: { packages: any[]; clientId?: string }) {
+  const [assignOpen, setAssignOpen] = React.useState(false);
+  const [editingPkg, setEditingPkg] = React.useState<any>(null);
+
+  const handleEdit = (pkg: any) => {
+    setEditingPkg(pkg);
+    setAssignOpen(true);
+  };
+
+  const handleAssign = () => {
+    setEditingPkg(null);
+    setAssignOpen(true);
+  };
+
+  // Dynamically import to avoid circular deps
+  const AssignDialog = React.useMemo(() => {
+    return React.lazy(() => import('@/components/admin/AssignClientPackageDialog').then(m => ({ default: m.AssignClientPackageDialog })));
+  }, []);
+
   return (
     <div className="space-y-3">
-      {packages.map((p) => (
-        <div key={p.id} className="p-4 rounded-lg border border-border bg-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold">{p.packages?.name || 'Package'}</p>
-              <p className="text-xs text-muted-foreground">
-                {p.sessions_used}/{p.sessions_total} sessions used
-              </p>
+      <div className="flex justify-end">
+        <Button size="sm" onClick={handleAssign}>
+          <Plus className="w-4 h-4 mr-1" /> Assign Package
+        </Button>
+      </div>
+      {packages.length === 0 ? (
+        <EmptyState icon={Package} title="No packages" description="This client has no packages yet. Assign one to get started." compact />
+      ) : (
+        packages.map((p) => (
+          <div key={p.id} className="p-4 rounded-lg border border-border bg-card cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleEdit(p)}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold">{p.packages?.name || 'Package'}</p>
+                <p className="text-xs text-muted-foreground">
+                  {p.sessions_used}/{p.sessions_total} sessions used
+                </p>
+              </div>
+              <Badge variant={p.status === 'active' ? 'default' : 'secondary'}>{p.status}</Badge>
             </div>
-            <Badge variant={p.status === 'active' ? 'default' : 'secondary'}>{p.status}</Badge>
           </div>
-        </div>
-      ))}
+        ))
+      )}
+      {assignOpen && (
+        <React.Suspense fallback={null}>
+          <AssignDialog
+            open={assignOpen}
+            onOpenChange={setAssignOpen}
+            editingClientPackage={editingPkg ? editingPkg : undefined}
+            defaultClientId={clientId}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 }
