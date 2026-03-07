@@ -63,9 +63,8 @@ export function ClientTimeline() {
   });
 
   const { data: photos } = useQuery({
-    queryKey: ['client-timeline-photos', client?.id, isDemo],
+    queryKey: ['client-timeline-photos', client?.id],
     queryFn: async () => {
-      if (isDemo) return DEMO_PHOTOS;
       if (!client?.id) return [];
       const { data } = await supabase
         .from('before_after_photos')
@@ -76,7 +75,7 @@ export function ClientTimeline() {
         .limit(5);
       return data || [];
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   // Build timeline events
