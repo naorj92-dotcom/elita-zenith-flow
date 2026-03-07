@@ -12,6 +12,8 @@ import {
 import { StaffNotificationBell } from '@/components/layout/StaffNotificationBell';
 import { cn } from '@/lib/utils';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { toast } from 'sonner';
 import { 
   getNavigationForRole, 
   getMobileNavForRole,
@@ -35,6 +37,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     signOut,
   } = useUnifiedAuth();
   
+  // Auto-logout after 15 minutes of inactivity
+  useSessionTimeout({
+    timeoutMs: 15 * 60 * 1000,
+    onTimeout: () => {
+      toast.warning('Session expired due to inactivity');
+      signOut();
+    },
+    enabled: true,
+  });
+
   const navigation = useMemo(() => 
     getNavigationForRole(role, employeeType), 
     [role, employeeType]

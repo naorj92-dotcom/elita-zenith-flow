@@ -139,6 +139,7 @@ export const OWNER_NAVIGATION: NavCategory[] = [
       { label: 'General', href: '/settings?tab=general', icon: Settings },
       { label: 'Payments', href: '/settings?tab=payments', icon: CreditCard },
       { label: 'Policies', href: '/settings?tab=policies', icon: Shield },
+      { label: 'Audit Trail', href: '/audit-log', icon: Shield },
     ],
   },
 ];

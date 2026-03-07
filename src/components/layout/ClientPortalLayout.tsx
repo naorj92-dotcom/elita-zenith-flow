@@ -8,12 +8,24 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, LogOut, Menu, X } from 'lucide-react';
 import { CLIENT_NAVIGATION, CLIENT_MOBILE_NAV } from '@/config/navigation';
 import { cn } from '@/lib/utils';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { toast } from 'sonner';
 import elitaLogo from '@/assets/elita-logo.png';
 
 export function ClientPortalLayout() {
   const { isAuthenticated, isLoading, signOut, client } = useClientAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Auto-logout after 30 minutes of inactivity
+  useSessionTimeout({
+    timeoutMs: 30 * 60 * 1000,
+    onTimeout: () => {
+      toast.warning('Session expired due to inactivity');
+      signOut();
+    },
+    enabled: isAuthenticated,
+  });
 
   // Fetch pending forms count for badge
   const { data: pendingFormsCount = 0 } = useQuery({
