@@ -39,7 +39,7 @@ export function ExclusiveDealsWidget() {
       toast.error('Could not claim deal. Please try again.');
       return;
     }
-    toast.success('Deal claimed! We'll contact you to finalize.');
+    toast.success("Deal claimed! We'll contact you to finalize.");
   };
 
   if (!deals || deals.length === 0) return null;
