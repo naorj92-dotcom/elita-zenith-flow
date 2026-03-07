@@ -101,6 +101,8 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client-packages-admin'] });
       queryClient.invalidateQueries({ queryKey: ['client-packages'] });
+      queryClient.invalidateQueries({ queryKey: ['client-packages-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['client-packages-count'] });
       toast.success(editingClientPackage ? 'Package updated' : 'Package assigned to client');
       onOpenChange(false);
     },
