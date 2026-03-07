@@ -12,6 +12,8 @@ import {
 import { StaffNotificationBell } from '@/components/layout/StaffNotificationBell';
 import { cn } from '@/lib/utils';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { toast } from 'sonner';
 import { 
   getNavigationForRole, 
   getMobileNavForRole,
