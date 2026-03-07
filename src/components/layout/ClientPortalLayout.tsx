@@ -17,6 +17,16 @@ export function ClientPortalLayout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Auto-logout after 30 minutes of inactivity
+  useSessionTimeout({
+    timeoutMs: 30 * 60 * 1000,
+    onTimeout: () => {
+      toast.warning('Session expired due to inactivity');
+      signOut();
+    },
+    enabled: isAuthenticated,
+  });
+
   // Fetch pending forms count for badge
   const { data: pendingFormsCount = 0 } = useQuery({
     queryKey: ['client-pending-forms-badge', client?.id],

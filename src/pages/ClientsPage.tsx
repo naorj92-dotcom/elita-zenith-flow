@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Client } from '@/types';
 import { toast } from 'sonner';
+import { MaskedField } from '@/components/shared/MaskedField';
 
 export function ClientsPage() {
   const navigate = useNavigate();

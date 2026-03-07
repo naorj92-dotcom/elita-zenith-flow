@@ -37,6 +37,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     signOut,
   } = useUnifiedAuth();
   
+  // Auto-logout after 15 minutes of inactivity
+  useSessionTimeout({
+    timeoutMs: 15 * 60 * 1000,
+    onTimeout: () => {
+      toast.warning('Session expired due to inactivity');
+      signOut();
+    },
+    enabled: true,
+  });
+
   const navigation = useMemo(() => 
     getNavigationForRole(role, employeeType), 
     [role, employeeType]
