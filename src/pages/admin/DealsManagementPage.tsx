@@ -84,9 +84,34 @@ export function DealsManagementPage() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-deals'] });
-      toast.success(editId ? 'Deal updated' : 'Deal created');
+      
+      // Send notification to all clients when a NEW deal is created
+      if (!variables.id) {
+        try {
+          const { data: clients } = await supabase
+            .from('clients')
+            .select('id')
+            .limit(500);
+          
+          if (clients && clients.length > 0) {
+            const messages = clients.map((c) => ({
+              client_id: c.id,
+              sender_type: 'staff',
+              subject: '🔥 New Exclusive Deal!',
+              body: `${variables.title}${variables.description ? ' — ' + variables.description : ''}. Check your dashboard to claim it before it expires!`,
+              is_read: false,
+            }));
+            
+            await supabase.from('messages').insert(messages);
+          }
+        } catch (err) {
+          console.error('Failed to send deal notifications:', err);
+        }
+      }
+      
+      toast.success(editId ? 'Deal updated' : 'Deal created & clients notified!');
       setOpen(false);
       resetForm();
     },
