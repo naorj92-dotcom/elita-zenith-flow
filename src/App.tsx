@@ -46,6 +46,7 @@ import { ClientHistoryPage } from "@/pages/portal/ClientHistoryPage";
 import { ClientBookingPage } from "@/pages/portal/ClientBookingPage";
 import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
 import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
+import { ClientMessagesPage } from "@/pages/portal/ClientMessagesPage";
 import NotFound from "./pages/NotFound";
 import IntakeFormPage from "./pages/IntakeFormPage";
 import { SetupPage } from "./pages/SetupPage";
