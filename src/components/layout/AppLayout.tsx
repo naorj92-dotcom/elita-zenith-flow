@@ -308,10 +308,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                 className="h-7 w-auto object-contain"
               />
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {clockStatus?.is_clocked_in && (
                 <div className="w-2 h-2 rounded-full bg-success" />
               )}
+              {role !== 'client' && <StaffNotificationBell />}
               <button
                 onClick={handleLogout}
                 className="p-2 rounded-lg text-muted-foreground hover:text-destructive"
