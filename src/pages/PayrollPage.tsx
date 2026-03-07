@@ -347,19 +347,32 @@ export function PayrollPage() {
                 </TableHeader>
                 <TableBody>
                   {payrollData?.map((row) => (
-                    <TableRow key={row.staff.id}>
+                    <TableRow key={row.staff.id} className={row.isClockedIn ? 'bg-success/5' : ''}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                            {row.staff.first_name[0]}{row.staff.last_name[0]}
+                          <div className="relative">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                              {row.staff.first_name[0]}{row.staff.last_name[0]}
+                            </div>
+                            {row.isClockedIn && (
+                              <div className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-success border-2 border-background animate-pulse" />
+                            )}
                           </div>
                           <div>
                             <p className="font-medium">{row.staff.first_name} {row.staff.last_name}</p>
-                            <p className="text-xs text-muted-foreground capitalize">{row.staff.role.replace('_', ' ')}</p>
+                            <p className="text-xs text-muted-foreground capitalize">
+                              {row.isClockedIn && row.clockInTime
+                                ? `Clocked in at ${format(new Date(row.clockInTime), 'h:mm a')}`
+                                : row.staff.role.replace('_', ' ')
+                              }
+                            </p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">{row.hoursWorked.toFixed(1)}</TableCell>
+                      <TableCell className="text-right">
+                        {row.hoursWorked.toFixed(1)}
+                        {row.isClockedIn && <span className="text-xs text-success ml-1">(live)</span>}
+                      </TableCell>
                       <TableCell className="text-right">${row.basePay.toFixed(2)}</TableCell>
                       <TableCell className="text-right">${row.serviceSales.toFixed(2)}</TableCell>
                       <TableCell className="text-center">{getTierBadge(row.currentTier)}</TableCell>
