@@ -192,6 +192,18 @@ export function ClientAuthPage() {
                     >
                       Forgot password?
                     </button>
+                    <div className="pt-2 border-t border-border mt-2 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        Don't have an account?{' '}
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('signup')}
+                          className="text-primary font-medium hover:underline transition-colors"
+                        >
+                          Sign Up
+                        </button>
+                      </p>
+                    </div>
                   </form>
               </TabsContent>
 
