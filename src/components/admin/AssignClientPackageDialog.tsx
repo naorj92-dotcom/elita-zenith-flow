@@ -21,11 +21,12 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editingClientPackage?: any;
+  defaultClientId?: string;
 }
 
-export function AssignClientPackageDialog({ open, onOpenChange, editingClientPackage }: Props) {
+export function AssignClientPackageDialog({ open, onOpenChange, editingClientPackage, defaultClientId }: Props) {
   const queryClient = useQueryClient();
-  const [clientId, setClientId] = useState(editingClientPackage?.client_id || '');
+  const [clientId, setClientId] = useState(editingClientPackage?.client_id || defaultClientId || '');
   const [packageId, setPackageId] = useState(editingClientPackage?.package_id || '');
   const [selectedTierIdx, setSelectedTierIdx] = useState('0');
   const [sessionsUsed, setSessionsUsed] = useState(editingClientPackage?.sessions_used || 0);
@@ -100,6 +101,8 @@ export function AssignClientPackageDialog({ open, onOpenChange, editingClientPac
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client-packages-admin'] });
       queryClient.invalidateQueries({ queryKey: ['client-packages'] });
+      queryClient.invalidateQueries({ queryKey: ['client-packages-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['client-packages-count'] });
       toast.success(editingClientPackage ? 'Package updated' : 'Package assigned to client');
       onOpenChange(false);
     },
