@@ -29,8 +29,8 @@ interface PayrollData {
 type PeriodType = 'current-week' | 'last-week' | 'current-month' | 'last-month';
 
 export function PayrollPage() {
-  const { staff: currentStaff } = useAuth();
   const [period, setPeriod] = useState<PeriodType>('current-month');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Only admins can access this page
   if (currentStaff?.role !== 'admin') {
