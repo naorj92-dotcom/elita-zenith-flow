@@ -289,20 +289,7 @@ export function StaffManagementPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-2">
-                  <Label htmlFor="pin">PIN Code</Label>
-                  <Input
-                    id="pin"
-                    type="text"
-                    maxLength={4}
-                    pattern="[0-9]{4}"
-                    value={formData.pin}
-                    onChange={(e) => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-                    required
-                    placeholder="4 digits"
-                  />
-                </div>
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
                   <Select
