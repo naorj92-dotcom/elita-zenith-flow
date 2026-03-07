@@ -237,13 +237,23 @@ export function ClientPackagesPage() {
                             {remaining} session{remaining !== 1 ? 's' : ''} remaining
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-4 w-4" />
-                            <span>Purchased {format(new Date(pkg.purchase_date), 'MMM d, yyyy')}</span>
+                        <div className="flex items-center justify-between pt-2 border-t">
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-4 w-4" />
+                              <span>Purchased {format(new Date(pkg.purchase_date), 'MMM d, yyyy')}</span>
+                            </div>
+                            {pkg.expiry_date && (
+                              <span>Expires {format(new Date(pkg.expiry_date), 'MMM d, yyyy')}</span>
+                            )}
                           </div>
-                          {pkg.expiry_date && (
-                            <span>Expires {format(new Date(pkg.expiry_date), 'MMM d, yyyy')}</span>
+                          {remaining > 0 && (
+                            <Link to="/portal/book">
+                              <Button size="sm" className="gap-1.5">
+                                <CalendarPlus className="h-4 w-4" />
+                                Book Session
+                              </Button>
+                            </Link>
                           )}
                         </div>
                       </CardContent>
