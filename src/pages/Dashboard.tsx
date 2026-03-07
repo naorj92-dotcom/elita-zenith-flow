@@ -153,7 +153,7 @@ export function Dashboard() {
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
-      {/* Header - Page title, confident not loud */}
+      {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -171,8 +171,64 @@ export function Dashboard() {
         </p>
       </motion.header>
 
+      {/* Today's Schedule - Moved to top */}
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-lg font-semibold">Today's Schedule</CardTitle>
+            <Link 
+              to="/schedule"
+              className="text-sm text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
+            >
+              View All
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {appointments.length === 0 ? (
+              <EmptyState
+                icon={Calendar}
+                title="No appointments today"
+                description="Your schedule is clear. Book your first appointment to get started."
+                actionLabel="Schedule Appointment"
+                actionHref="/schedule/new"
+                compact
+              />
+            ) : (
+              appointments.map((apt, index) => (
+                <motion.div
+                  key={apt.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + index * 0.03 }}
+                >
+                  <Link
+                    to={`/schedule/${apt.id}`}
+                    className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
+                  >
+                    <div className="text-center min-w-[56px]">
+                      <p className="text-sm font-medium text-foreground">{apt.time}</p>
+                      <p className="text-xs text-muted-foreground">{apt.duration}m</p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
+                    </div>
+                    <StatusBadge status={apt.status} />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+                </motion.div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </motion.section>
 
-      {/* KPI Cards - Top row, role-based */}
+      {/* KPI Cards */}
       <motion.section
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -180,30 +236,10 @@ export function Dashboard() {
         className="grid grid-cols-2 lg:grid-cols-4 gap-4"
       >
         {[
-          { 
-            label: 'Appointments', 
-            value: metrics.today_appointments, 
-            icon: Calendar,
-            subtext: 'Today'
-          },
-          { 
-            label: 'Sales', 
-            value: `$${metrics.today_sales.toLocaleString()}`, 
-            icon: DollarSign,
-            subtext: 'Today'
-          },
-          { 
-            label: 'Week Sales', 
-            value: `$${metrics.week_sales.toLocaleString()}`, 
-            icon: TrendingUp,
-            subtext: 'This week'
-          },
-          { 
-            label: 'Commission', 
-            value: `$${metrics.month_commission.toLocaleString()}`, 
-            icon: Target,
-            subtext: 'This month'
-          },
+          { label: 'Appointments', value: metrics.today_appointments, icon: Calendar, subtext: 'Today' },
+          { label: 'Sales', value: `$${metrics.today_sales.toLocaleString()}`, icon: DollarSign, subtext: 'Today' },
+          { label: 'Week Sales', value: `$${metrics.week_sales.toLocaleString()}`, icon: TrendingUp, subtext: 'This week' },
+          { label: 'Commission', value: `$${metrics.month_commission.toLocaleString()}`, icon: Target, subtext: 'This month' },
         ].map((stat, index) => (
           <motion.div
             key={stat.label}
@@ -226,10 +262,8 @@ export function Dashboard() {
         ))}
       </motion.section>
 
-      {/* Middle section - Schedule and Goals */}
       {/* Main Grid - Ops + Clock */}
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Today Ops Widget - Command Center */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -239,9 +273,7 @@ export function Dashboard() {
           <TodayOpsWidget />
         </motion.div>
 
-        {/* Right Column - Clock + Goals */}
         <div className="space-y-6">
-          {/* Clock In/Out Card */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -295,7 +327,6 @@ export function Dashboard() {
             </Card>
           </motion.div>
 
-          {/* Live Goals Widget */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -339,63 +370,6 @@ export function Dashboard() {
           <InventoryAlertsWidget />
         </motion.div>
       </div>
-
-      {/* Today's Schedule */}
-      <motion.section
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="text-lg font-semibold">Today's Schedule</CardTitle>
-            <Link 
-              to="/schedule"
-              className="text-sm text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
-            >
-              View All
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {appointments.length === 0 ? (
-              <EmptyState
-                icon={Calendar}
-                title="No appointments today"
-                description="Your schedule is clear. Book your first appointment to get started."
-                actionLabel="Schedule Appointment"
-                actionHref="/schedule/new"
-                compact
-              />
-            ) : (
-              appointments.map((apt, index) => (
-                <motion.div
-                  key={apt.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + index * 0.03 }}
-                >
-                  <Link
-                    to={`/schedule/${apt.id}`}
-                    className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
-                  >
-                    <div className="text-center min-w-[56px]">
-                      <p className="text-sm font-medium text-foreground">{apt.time}</p>
-                      <p className="text-xs text-muted-foreground">{apt.duration}m</p>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
-                    </div>
-                    <StatusBadge status={apt.status} />
-                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </Link>
-                </motion.div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.section>
 
       {/* Quick Actions */}
       <motion.section
