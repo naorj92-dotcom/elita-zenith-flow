@@ -176,6 +176,7 @@ function AppRoutes() {
         <Route path="gift-cards" element={<ClientPackagesPage />} />
         <Route path="profile" element={<ClientDashboard />} />
         <Route path="messages" element={<ClientMessagesPage />} />
+        <Route path="skin-analysis" element={<ClientSkinAnalysisPage />} />
       </Route>
       
       {/* ========== 404 ========== */}
