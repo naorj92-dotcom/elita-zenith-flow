@@ -1833,19 +1833,6 @@ export type Database = {
         Args: { p_staff_id: string; p_user_id: string }
         Returns: undefined
       }
-      validate_staff_pin: {
-        Args: { p_pin: string }
-        Returns: {
-          avatar_url: string
-          email: string
-          first_name: string
-          id: string
-          is_active: boolean
-          last_name: string
-          phone: string
-          role: Database["public"]["Enums"]["staff_role"]
-        }[]
-      }
     }
     Enums: {
       app_role: "owner" | "employee" | "client"
