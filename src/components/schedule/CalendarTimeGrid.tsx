@@ -176,28 +176,43 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
   const [dragCursorPos, setDragCursorPos] = useState<{ x: number; y: number } | null>(null);
 
   // Build a ref of column rects so we can detect which date column the cursor is over
-  const columnRectsRef = useRef<{ date: Date; left: number; right: number }[]>([]);
+  const columnRectsRef = useRef<{ date: Date; left: number; right: number; staffId?: string }[]>([]);
 
   const updateColumnRects = useCallback(() => {
     const grid = scrollRef.current;
     if (!grid) return;
     const cols = grid.querySelectorAll<HTMLElement>('[data-date-col]');
-    const rects: { date: Date; left: number; right: number }[] = [];
+    const rects: { date: Date; left: number; right: number; staffId?: string }[] = [];
     cols.forEach((col) => {
       const dateStr = col.getAttribute('data-date-col');
       if (!dateStr) return;
-      const rect = col.getBoundingClientRect();
-      rects.push({ date: new Date(dateStr), left: rect.left, right: rect.right });
+      // Check for staff sub-columns
+      const staffCols = col.querySelectorAll<HTMLElement>('[data-staff-col]');
+      if (staffCols.length > 0) {
+        staffCols.forEach((sc) => {
+          const staffId = sc.getAttribute('data-staff-col') || undefined;
+          const rect = sc.getBoundingClientRect();
+          rects.push({ date: new Date(dateStr), left: rect.left, right: rect.right, staffId });
+        });
+      } else {
+        const rect = col.getBoundingClientRect();
+        rects.push({ date: new Date(dateStr), left: rect.left, right: rect.right });
+      }
     });
     columnRectsRef.current = rects;
   }, []);
 
-  const findDateAtX = useCallback((clientX: number): Date | null => {
+  const findColumnAtX = useCallback((clientX: number): { date: Date; staffId?: string } | null => {
     for (const col of columnRectsRef.current) {
-      if (clientX >= col.left && clientX < col.right) return col.date;
+      if (clientX >= col.left && clientX < col.right) return { date: col.date, staffId: col.staffId };
     }
     return null;
   }, []);
+
+  const findDateAtX = useCallback((clientX: number): Date | null => {
+    const col = findColumnAtX(clientX);
+    return col?.date || null;
+  }, [findColumnAtX]);
 
   const handleDragStart = (apt: ScheduleAppointment, colDate: Date, e: React.MouseEvent) => {
     e.preventDefault();
