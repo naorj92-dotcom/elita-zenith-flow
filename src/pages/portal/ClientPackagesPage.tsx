@@ -8,9 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Package, Calendar, CheckCircle2, Eye, ShoppingBag, TrendingDown } from 'lucide-react';
+import { Package, Calendar, CheckCircle2, Eye, ShoppingBag, TrendingDown, CalendarPlus } from 'lucide-react';
 import { DEMO_PACKAGES } from '@/hooks/useDemoData';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface PricingTier {
   sessions: number;
@@ -236,13 +237,23 @@ export function ClientPackagesPage() {
                             {remaining} session{remaining !== 1 ? 's' : ''} remaining
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-4 w-4" />
-                            <span>Purchased {format(new Date(pkg.purchase_date), 'MMM d, yyyy')}</span>
+                        <div className="flex items-center justify-between pt-2 border-t">
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-4 w-4" />
+                              <span>Purchased {format(new Date(pkg.purchase_date), 'MMM d, yyyy')}</span>
+                            </div>
+                            {pkg.expiry_date && (
+                              <span>Expires {format(new Date(pkg.expiry_date), 'MMM d, yyyy')}</span>
+                            )}
                           </div>
-                          {pkg.expiry_date && (
-                            <span>Expires {format(new Date(pkg.expiry_date), 'MMM d, yyyy')}</span>
+                          {remaining > 0 && (
+                            <Link to="/portal/book">
+                              <Button size="sm" className="gap-1.5">
+                                <CalendarPlus className="h-4 w-4" />
+                                Book Session
+                              </Button>
+                            </Link>
                           )}
                         </div>
                       </CardContent>
