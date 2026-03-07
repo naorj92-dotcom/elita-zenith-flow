@@ -55,6 +55,7 @@ import NotFound from "./pages/NotFound";
 import IntakeFormPage from "./pages/IntakeFormPage";
 import { SetupPage } from "./pages/SetupPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import CheckInKioskPage from "./pages/CheckInKioskPage";
 
 const queryClient = new QueryClient();
 
