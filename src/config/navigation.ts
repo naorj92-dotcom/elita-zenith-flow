@@ -218,6 +218,7 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
     icon: CalendarPlus,
     items: [
       { label: 'Book Appointment', href: '/portal/book', icon: CalendarPlus },
+      { label: 'Join Waitlist', href: '/portal/waitlist', icon: ClipboardListIcon },
     ],
   },
   {
