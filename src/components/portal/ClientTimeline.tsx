@@ -48,9 +48,8 @@ export function ClientTimeline() {
   });
 
   const { data: packages } = useQuery({
-    queryKey: ['client-timeline-packages', client?.id, isDemo],
+    queryKey: ['client-timeline-packages', client?.id],
     queryFn: async () => {
-      if (isDemo) return DEMO_PACKAGES;
       if (!client?.id) return [];
       const { data } = await supabase
         .from('client_packages')
@@ -60,7 +59,7 @@ export function ClientTimeline() {
         .limit(5);
       return data || [];
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   const { data: photos } = useQuery({
