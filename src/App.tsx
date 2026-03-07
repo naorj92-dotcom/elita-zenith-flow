@@ -35,6 +35,7 @@ import MessagesManagementPage from "@/pages/admin/MessagesManagementPage";
 import ManagerAnalyticsPage from "@/pages/ManagerAnalyticsPage";
 import MyReportsPage from "@/pages/MyReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
+import AuditLogPage from "@/pages/AuditLogPage";
 import { DealsManagementPage } from "@/pages/admin/DealsManagementPage";
 import { AftercareTipsManagementPage } from "@/pages/admin/AftercareTipsManagementPage";
 
