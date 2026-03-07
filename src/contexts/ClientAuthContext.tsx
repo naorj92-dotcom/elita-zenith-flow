@@ -148,16 +148,9 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
     setClient(null);
     setUser(null);
     setSession(null);
-    setIsDemo(false);
     await supabase.auth.signOut();
     // Force navigation to auth page
     window.location.href = '/portal/auth';
-  };
-
-  const enterDemoMode = () => {
-    setIsDemo(true);
-    setClient(DEMO_CLIENT);
-    setIsLoading(false);
   };
 
   return (
@@ -166,13 +159,11 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
         user,
         session,
         client,
-        isAuthenticated: !!user || isDemo,
+        isAuthenticated: !!user,
         isLoading,
-        isDemo,
         signUp,
         signIn,
         signOut,
-        enterDemoMode,
       }}
     >
       {children}
