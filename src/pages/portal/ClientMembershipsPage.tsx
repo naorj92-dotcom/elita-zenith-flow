@@ -330,13 +330,26 @@ export function ClientMembershipsPage() {
                       ))}
                     </ul>
 
-                    <Button 
-                      className="w-full mt-4" 
-                      variant={isCurrentTier ? 'outline' : isTopTier ? 'default' : 'secondary'}
-                      disabled={isCurrentTier}
-                    >
-                      {isCurrentTier ? 'Current Plan' : 'Get Started'}
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                      <Button 
+                        className="flex-1" 
+                        variant="outline"
+                        disabled={isCurrentTier}
+                        onClick={() => handleMembershipInterest(tier, false)}
+                      >
+                        {isCurrentTier ? 'Current Plan' : 'Inquire'}
+                      </Button>
+                      {!isCurrentTier && (
+                        <Button 
+                          className="flex-1" 
+                          variant={isTopTier ? 'default' : 'secondary'}
+                          onClick={() => handleMembershipInterest(tier, true)}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-1" />
+                          Purchase
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               );
