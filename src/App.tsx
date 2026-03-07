@@ -47,6 +47,7 @@ import { ClientBookingPage } from "@/pages/portal/ClientBookingPage";
 import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
 import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
 import { ClientMessagesPage } from "@/pages/portal/ClientMessagesPage";
+import { ClientSkinAnalysisPage } from "@/pages/portal/ClientSkinAnalysisPage";
 import NotFound from "./pages/NotFound";
 import IntakeFormPage from "./pages/IntakeFormPage";
 import { SetupPage } from "./pages/SetupPage";
@@ -175,6 +176,7 @@ function AppRoutes() {
         <Route path="gift-cards" element={<ClientPackagesPage />} />
         <Route path="profile" element={<ClientDashboard />} />
         <Route path="messages" element={<ClientMessagesPage />} />
+        <Route path="skin-analysis" element={<ClientSkinAnalysisPage />} />
       </Route>
       
       {/* ========== 404 ========== */}
