@@ -1741,6 +1741,47 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_announcements: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_pinned: boolean
+          priority: string
+          title: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_pinned?: boolean
+          priority?: string
+          title: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_pinned?: boolean
+          priority?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_announcements_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_goals: {
         Row: {
           achieved_at: string | null
