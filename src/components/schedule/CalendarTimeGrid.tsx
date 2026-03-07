@@ -399,6 +399,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                     <ProviderColumn
                       key={s.id}
                       date={date}
+                      staffId={s.id}
                       appointments={getApptsForDateAndStaff(date, s.id)}
                       googleEvents={sIdx === 0 ? dayGoogle : []}
                       isLast={sIdx === visibleStaff.length - 1}
