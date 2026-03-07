@@ -380,13 +380,22 @@ export function ClientPackagesPage() {
                                       )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                      <Button
-                                        size="sm"
-                                        variant={idx === tiers.length - 1 ? 'default' : 'outline'}
-                                        onClick={() => handleInquire(pkg.name, tier)}
-                                      >
-                                        Inquire
-                                      </Button>
+                                      <div className="flex gap-2 justify-end">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleInquire(pkg, tier)}
+                                        >
+                                          Inquire
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant={idx === tiers.length - 1 ? 'default' : 'secondary'}
+                                          onClick={() => handlePurchase(pkg, tier)}
+                                        >
+                                          Purchase
+                                        </Button>
+                                      </div>
                                     </TableCell>
                                   </TableRow>
                                 ))}
