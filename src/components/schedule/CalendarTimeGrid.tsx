@@ -174,6 +174,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
   const [draggingApt, setDraggingApt] = useState<string | null>(null);
   const [dragTargetDate, setDragTargetDate] = useState<Date | null>(null);
   const [dragCursorPos, setDragCursorPos] = useState<{ x: number; y: number } | null>(null);
+  const [dragTargetStaffId, setDragTargetStaffId] = useState<string | null>(null);
+  const [dragOriginStaffId, setDragOriginStaffId] = useState<string | null>(null);
 
   // Build a ref of column rects so we can detect which date column the cursor is over
   const columnRectsRef = useRef<{ date: Date; left: number; right: number; staffId?: string }[]>([]);
@@ -236,15 +238,17 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
         isDragging = true;
         dragRef.current = { apt, startY, startTop: top, colDate };
         setDraggingApt(apt.id);
+        setDragOriginStaffId(apt.staff_id || null);
       }
       const newTop = top + dy;
       const snapped = Math.round(newTop / (SLOT_HEIGHT / 4)) * (SLOT_HEIGHT / 4);
       setDragGhostTop(Math.max(0, snapped));
       setDragCursorPos({ x: ev.clientX, y: ev.clientY });
 
-      // Detect horizontal date column change
-      const hoveredDate = findDateAtX(ev.clientX);
-      setDragTargetDate(hoveredDate);
+      // Detect horizontal date/staff column change
+      const hoveredCol = findColumnAtX(ev.clientX);
+      setDragTargetDate(hoveredCol?.date || null);
+      setDragTargetStaffId(hoveredCol?.staffId || null);
     };
 
     const onUp = (ev: MouseEvent) => {
@@ -277,6 +281,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       setDragGhostTop(null);
       setDragTargetDate(null);
       setDragCursorPos(null);
+      setDragTargetStaffId(null);
+      setDragOriginStaffId(null);
       dragRef.current = null;
     };
 
@@ -411,6 +417,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       onDragStart={handleDragStart}
                       draggingApt={draggingApt}
                       dragGhostTop={dragGhostTop}
+                      isDropTarget={!!draggingApt && dragTargetStaffId === s.id && dragOriginStaffId !== s.id}
                     />
                   ))}
                 </div>
@@ -467,6 +474,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
         const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
         const timeLabel = `${displayHour}:${mins.toString().padStart(2, '0')}${isPM ? 'pm' : 'am'}`;
         const height = Math.max((apt.duration_minutes / 60) * SLOT_HEIGHT, 36);
+        const isMovingProvider = dragTargetStaffId && dragOriginStaffId && dragTargetStaffId !== dragOriginStaffId;
+        const targetStaff = isMovingProvider ? visibleStaff.find(s => s.id === dragTargetStaffId) : null;
 
         return (
           <div
@@ -484,9 +493,14 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
               <p className="text-[10px] font-semibold truncate">{apt.client_name}</p>
               {height > 36 && <p className="text-[9px] opacity-70 truncate">{apt.service_name}</p>}
             </div>
-            <svg width="16" height="16" viewBox="0 0 16 16" className="text-primary -mt-[calc(50%)] ml-[calc(100%+2px)] absolute top-1/2 right-[-20px]">
-              <path d="M3 8h10M10 4l4 4-4 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            {isMovingProvider && targetStaff && (
+              <div className="flex items-center gap-1 mt-1 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-lg w-fit">
+                <svg width="14" height="14" viewBox="0 0 16 16" className="shrink-0">
+                  <path d="M3 8h10M10 4l4 4-4 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>{targetStaff.first_name} {targetStaff.last_name}</span>
+              </div>
+            )}
           </div>
         );
       })()}
@@ -509,16 +523,18 @@ interface ProviderColumnProps {
   onDragStart?: (apt: ScheduleAppointment, colDate: Date, e: React.MouseEvent) => void;
   draggingApt?: string | null;
   dragGhostTop?: number | null;
+  isDropTarget?: boolean;
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget }: ProviderColumnProps) {
   return (
     <div
       data-staff-col={staffId}
       className={cn(
-        'relative',
+        'relative transition-colors duration-150',
         !isLast && !className && 'border-r border-border/50',
         isToday(date) && 'bg-primary/[0.02]',
+        isDropTarget && 'bg-primary/10 ring-2 ring-inset ring-primary/30',
         className
       )}
       style={colWidth ? { width: colWidth, minWidth: colWidth } : undefined}
