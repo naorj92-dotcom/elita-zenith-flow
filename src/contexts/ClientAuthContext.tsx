@@ -9,11 +9,9 @@ interface ClientAuthContextType {
   client: Client | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isDemo: boolean;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
-  enterDemoMode: () => void;
 }
 
 const ClientAuthContext = createContext<ClientAuthContextType | undefined>(undefined);
