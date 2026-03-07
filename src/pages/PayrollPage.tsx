@@ -67,6 +67,7 @@ export function PayrollPage() {
 
   const { data: payrollData, isLoading } = useQuery({
     queryKey: ['payroll', period],
+    refetchInterval: 60000, // Refresh every 60s for live clocked-in hours
     queryFn: async () => {
       const { start, end } = getDateRange();
 
