@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/contexts/AuthContext';
 import { Staff } from '@/types';
-import { DollarSign, Clock, TrendingUp, Users, Calendar, Loader2, Plus } from 'lucide-react';
+import { DollarSign, Clock, TrendingUp, Users, Calendar, Loader2, Plus, Pencil } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { EditTeamHoursDialog } from '@/components/admin/EditTeamHoursDialog';
 
 interface PayrollData {
   staff: Staff;
