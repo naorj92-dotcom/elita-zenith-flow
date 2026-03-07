@@ -59,7 +59,7 @@ export function StaffManagementPage() {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [showAuthPassword, setShowAuthPassword] = useState(false);
-  const [showPin, setShowPin] = useState<string | null>(null);
+  
 
   // Fetch which staff already have auth accounts
   const { data: staffWithAuth } = useQuery({
