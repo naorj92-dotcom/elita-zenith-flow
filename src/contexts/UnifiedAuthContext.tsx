@@ -26,9 +26,7 @@ interface UnifiedAuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
-  
-  // Legacy PIN auth (for staff)
-  loginWithPin: (pin: string) => Promise<boolean>;
+  // Legacy PIN auth removed — use email/password
   
   // Time clock
   clockIn: () => Promise<boolean>;
@@ -253,84 +251,6 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Legacy PIN login for staff (maintains backward compatibility)
-  const loginWithPin = useCallback(async (pin: string): Promise<boolean> => {
-    setIsLoading(true);
-    try {
-      // Use secure RPC function to validate PIN (bypasses RLS securely)
-      const { data, error } = await supabase
-        .rpc('validate_staff_pin', { p_pin: pin });
-
-      if (error || !data || data.length === 0) {
-        return false;
-      }
-
-      const staffData = data[0];
-
-      // Build a complete Staff object from the RPC response
-      const completeStaff: Staff = {
-        id: staffData.id,
-        first_name: staffData.first_name,
-        last_name: staffData.last_name,
-        email: staffData.email,
-        phone: staffData.phone,
-        role: staffData.role,
-        is_active: staffData.is_active,
-        avatar_url: staffData.avatar_url,
-        // Default values for fields not returned by RPC (sensitive data)
-        pin: '',
-        hire_date: new Date().toISOString().split('T')[0],
-        hourly_rate: null,
-        service_commission_tier1: null,
-        service_commission_tier2: null,
-        service_commission_tier3: null,
-        service_tier1_threshold: null,
-        service_tier2_threshold: null,
-        retail_commission_rate: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      // Set staff data directly (legacy mode)
-      setStaff(completeStaff);
-      await fetchClockStatus(completeStaff.id);
-      
-      // Create mock permissions based on staff role
-      const staffRole = staffData.role as 'admin' | 'provider' | 'front_desk';
-      if (staffRole === 'admin') {
-        setUserRole({
-          id: 'legacy',
-          user_id: 'legacy',
-          role: 'owner',
-          employee_type: null,
-          staff_id: completeStaff.id,
-          client_id: null,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-        setPermissions(ROLE_PERMISSIONS.owner);
-      } else {
-        const empType: EmployeeType = staffRole === 'front_desk' ? 'front_desk' : 'provider';
-        setUserRole({
-          id: 'legacy',
-          user_id: 'legacy',
-          role: 'employee',
-          employee_type: empType,
-          staff_id: completeStaff.id,
-          client_id: null,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-        setPermissions({ ...ROLE_PERMISSIONS.employee, ...EMPLOYEE_TYPE_PERMISSIONS[empType] });
-      }
-      
-      return true;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchClockStatus]);
 
   // Clock in
   const clockIn = useCallback(async (): Promise<boolean> => {
@@ -424,7 +344,6 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signUp,
         signOut,
-        loginWithPin,
         clockIn,
         clockOut,
         refreshClockStatus,

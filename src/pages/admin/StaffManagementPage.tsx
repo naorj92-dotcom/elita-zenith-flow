@@ -21,7 +21,6 @@ interface StaffFormData {
   last_name: string;
   email: string;
   phone: string;
-  pin: string;
   role: StaffRole;
   hourly_rate: number;
   is_active: boolean;
@@ -38,7 +37,6 @@ const initialFormData: StaffFormData = {
   last_name: '',
   email: '',
   phone: '',
-  pin: '',
   role: 'provider',
   hourly_rate: 0,
   is_active: true,
@@ -61,7 +59,7 @@ export function StaffManagementPage() {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [showAuthPassword, setShowAuthPassword] = useState(false);
-  const [showPin, setShowPin] = useState<string | null>(null);
+  
 
   // Fetch which staff already have auth accounts
   const { data: staffWithAuth } = useQuery({
@@ -186,7 +184,6 @@ export function StaffManagementPage() {
       last_name: staff.last_name,
       email: staff.email || '',
       phone: staff.phone || '',
-      pin: staff.pin,
       role: staff.role,
       hourly_rate: staff.hourly_rate,
       is_active: staff.is_active,
@@ -292,20 +289,7 @@ export function StaffManagementPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-2">
-                  <Label htmlFor="pin">PIN Code</Label>
-                  <Input
-                    id="pin"
-                    type="text"
-                    maxLength={4}
-                    pattern="[0-9]{4}"
-                    value={formData.pin}
-                    onChange={(e) => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-                    required
-                    placeholder="4 digits"
-                  />
-                </div>
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
                   <Select
@@ -501,21 +485,6 @@ export function StaffManagementPage() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      PIN: {showPin === staff.id ? (
-                        <span className="font-mono">{staff.pin}</span>
-                      ) : (
-                        <span className="font-mono">••••</span>
-                      )}
-                    </p>
-                    <button
-                      onClick={() => setShowPin(showPin === staff.id ? null : staff.id)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      {showPin === staff.id ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    </button>
-                  </div>
                   <p className="text-xs text-muted-foreground">
                     Commission: {staff.service_commission_tier1}% / {staff.service_commission_tier2}% / {staff.service_commission_tier3}%
                   </p>

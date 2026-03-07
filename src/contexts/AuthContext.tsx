@@ -17,7 +17,7 @@ export function useAuth() {
     clockStatus: unified.clockStatus,
     isAuthenticated: unified.isAuthenticated,
     isLoading: unified.isLoading,
-    login: unified.loginWithPin,
+    login: async () => false, // PIN auth removed
     logout: unified.signOut,
     clockIn: unified.clockIn,
     clockOut: unified.clockOut,

@@ -8,7 +8,6 @@ export * from './roles';
 // Staff & Authentication
 export interface Staff {
   id: string;
-  pin: string;
   first_name: string;
   last_name: string;
   email: string | null;
