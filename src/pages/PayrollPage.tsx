@@ -152,6 +152,8 @@ export function PayrollPage() {
         return {
           staff: staff as Staff,
           hoursWorked,
+          isClockedIn,
+          clockInTime,
           basePay,
           serviceSales,
           serviceCommission,
