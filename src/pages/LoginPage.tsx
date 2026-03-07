@@ -211,21 +211,14 @@ export function LoginPage() {
         </div>
       )}
 
-      {/* Sign Up / Portal Links */}
-      <div className="pb-8 px-4 w-full flex flex-col items-center gap-3">
-        <div className="w-full max-w-sm space-y-2">
-          <Link to="/portal/auth" className="block">
-            <Button variant="outline" className="w-full gap-2">
-              <UserPlus className="h-4 w-4" />
-              Client Sign Up / Portal
-            </Button>
+      {/* Client Portal Link */}
+      <div className="text-center pb-8">
+        <p className="text-sm text-muted-foreground">
+          Client?{' '}
+          <Link to="/portal/auth" className="text-primary hover:text-primary-hover transition-colors">
+            Access Client Portal
           </Link>
-          <p className="text-center text-xs text-muted-foreground">
-            New provider?{' '}
-            <span className="text-foreground font-medium">Contact your admin</span>{' '}
-            to get your staff account created.
-          </p>
-        </div>
+        </p>
       </div>
     </div>
   );
