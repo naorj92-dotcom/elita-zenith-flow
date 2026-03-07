@@ -23,6 +23,9 @@ import { AppointmentStatus } from '@/types';
 import { LiveGoalsWidget } from '@/components/dashboard/LiveGoalsWidget';
 import { TodayOpsWidget } from '@/components/dashboard/TodayOpsWidget';
 import { PurchaseRequestsWidget } from '@/components/dashboard/PurchaseRequestsWidget';
+import { CommissionWidget } from '@/components/dashboard/CommissionWidget';
+import { InventoryAlertsWidget } from '@/components/dashboard/InventoryAlertsWidget';
+import { StaffAnnouncementsWidget } from '@/components/dashboard/StaffAnnouncementsWidget';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 
@@ -301,6 +304,31 @@ export function Dashboard() {
             <LiveGoalsWidget />
           </motion.div>
         </div>
+      </div>
+
+      {/* Commission + Announcements + Inventory Row */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <CommissionWidget />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <StaffAnnouncementsWidget />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <InventoryAlertsWidget />
+        </motion.div>
       </div>
 
       {/* Today's Schedule */}
