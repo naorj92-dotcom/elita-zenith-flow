@@ -60,6 +60,7 @@ import IntakeFormPage from "./pages/IntakeFormPage";
 import { SetupPage } from "./pages/SetupPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CheckInKioskPage from "./pages/CheckInKioskPage";
+import { ClientPackagesManagementPage } from "./pages/ClientPackagesManagementPage";
 
 const queryClient = new QueryClient();
 
@@ -135,6 +136,7 @@ function AppRoutes() {
       {/* ========== CLIENTS (All Staff) ========== */}
       <Route path="/clients" element={<StaffRoute><ClientsPage /></StaffRoute>} />
       <Route path="/clients/:id" element={<StaffRoute><ClientProfilePage /></StaffRoute>} />
+      <Route path="/client-packages" element={<StaffRoute><ClientPackagesManagementPage /></StaffRoute>} />
       <Route path="/photos" element={<StaffRoute><ClientPhotosManagementPage /></StaffRoute>} />
       <Route path="/messages" element={<OwnerRoute><MessagesManagementPage /></OwnerRoute>} />
       

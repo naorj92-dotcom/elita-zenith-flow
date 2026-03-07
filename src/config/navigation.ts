@@ -166,6 +166,7 @@ export const EMPLOYEE_NAVIGATION: NavCategory[] = [
     icon: Users,
     items: [
       { label: 'Client List', href: '/clients', icon: Users },
+      { label: 'Client Packages', href: '/client-packages', icon: Package },
       { label: 'Photos', href: '/photos', icon: Camera },
     ],
   },
