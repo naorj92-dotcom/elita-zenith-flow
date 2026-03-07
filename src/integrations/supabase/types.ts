@@ -1205,6 +1205,70 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_requests: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          membership_id: string | null
+          notes: string | null
+          package_id: string | null
+          request_type: string
+          status: string
+          tier_sessions: number | null
+          tier_total_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          membership_id?: string | null
+          notes?: string | null
+          package_id?: string | null
+          request_type: string
+          status?: string
+          tier_sessions?: number | null
+          tier_total_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          membership_id?: string | null
+          notes?: string | null
+          package_id?: string | null
+          request_type?: string
+          status?: string
+          tier_sessions?: number | null
+          tier_total_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_requests_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_requests_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receipts: {
         Row: {
           appointment_id: string | null
