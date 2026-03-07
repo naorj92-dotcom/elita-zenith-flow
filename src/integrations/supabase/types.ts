@@ -577,6 +577,64 @@ export type Database = {
           },
         ]
       }
+      client_reviews: {
+        Row: {
+          appointment_id: string | null
+          client_id: string
+          created_at: string
+          id: string
+          is_approved: boolean
+          is_public: boolean
+          rating: number
+          review_text: string | null
+          service_id: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          is_public?: boolean
+          rating?: number
+          review_text?: string | null
+          service_id?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          is_public?: boolean
+          rating?: number
+          review_text?: string | null
+          service_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_reviews_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -738,6 +796,45 @@ export type Database = {
           },
         ]
       }
+      family_members: {
+        Row: {
+          created_at: string
+          id: string
+          linked_client_id: string
+          primary_client_id: string
+          relationship: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linked_client_id: string
+          primary_client_id: string
+          relationship?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linked_client_id?: string
+          primary_client_id?: string
+          relationship?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_linked_client_id_fkey"
+            columns: ["linked_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_members_primary_client_id_fkey"
+            columns: ["primary_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forms: {
         Row: {
           created_at: string
@@ -874,6 +971,98 @@ export type Database = {
             columns: ["related_appointment_id"]
             isOneToOne: false
             referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_redemptions: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          points_spent: number
+          reward_id: string
+          status: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          points_spent: number
+          reward_id: string
+          status?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          points_spent?: number
+          reward_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_redemptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_rewards: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          max_redemptions: number | null
+          name: string
+          points_cost: number
+          redemption_count: number
+          reward_type: string
+          reward_value: number | null
+          service_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number | null
+          name: string
+          points_cost: number
+          redemption_count?: number
+          reward_type?: string
+          reward_value?: number | null
+          service_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number | null
+          name?: string
+          points_cost?: number
+          redemption_count?: number
+          reward_type?: string
+          reward_value?: number | null
+          service_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_rewards_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
