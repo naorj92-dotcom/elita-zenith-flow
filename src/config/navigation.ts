@@ -119,6 +119,8 @@ export const OWNER_NAVIGATION: NavCategory[] = [
       { label: 'Inventory', href: '/products', icon: Package },
       { label: 'Forms & Consents', href: '/forms', icon: FileText },
       { label: 'Notifications', href: '/notifications', icon: Bell },
+      { label: 'Exclusive Deals', href: '/deals', icon: Gift },
+      { label: 'Aftercare Tips', href: '/aftercare-tips', icon: Heart },
     ],
   },
   {

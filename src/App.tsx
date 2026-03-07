@@ -35,6 +35,8 @@ import MessagesManagementPage from "@/pages/admin/MessagesManagementPage";
 import ManagerAnalyticsPage from "@/pages/ManagerAnalyticsPage";
 import MyReportsPage from "@/pages/MyReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
+import { DealsManagementPage } from "@/pages/admin/DealsManagementPage";
+import { AftercareTipsManagementPage } from "@/pages/admin/AftercareTipsManagementPage";
 
 // Client Portal Pages
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
@@ -145,6 +147,8 @@ function AppRoutes() {
       <Route path="/products" element={<OwnerRoute><ProductsManagementPage /></OwnerRoute>} />
       <Route path="/forms" element={<OwnerRoute><FormsManagementPage /></OwnerRoute>} />
       <Route path="/notifications" element={<OwnerRoute><NotificationsManagementPage /></OwnerRoute>} />
+      <Route path="/deals" element={<OwnerRoute><DealsManagementPage /></OwnerRoute>} />
+      <Route path="/aftercare-tips" element={<OwnerRoute><AftercareTipsManagementPage /></OwnerRoute>} />
       
       {/* ========== TEAM ========== */}
       <Route path="/staff" element={<OwnerRoute><StaffManagementPage /></OwnerRoute>} />
