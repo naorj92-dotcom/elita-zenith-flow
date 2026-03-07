@@ -136,6 +136,7 @@ function AppRoutes() {
       {/* ========== CLIENTS (All Staff) ========== */}
       <Route path="/clients" element={<StaffRoute><ClientsPage /></StaffRoute>} />
       <Route path="/clients/:id" element={<StaffRoute><ClientProfilePage /></StaffRoute>} />
+      <Route path="/client-packages" element={<StaffRoute><ClientPackagesManagementPage /></StaffRoute>} />
       <Route path="/photos" element={<StaffRoute><ClientPhotosManagementPage /></StaffRoute>} />
       <Route path="/messages" element={<OwnerRoute><MessagesManagementPage /></OwnerRoute>} />
       
