@@ -163,6 +163,7 @@ function AppRoutes() {
       
       {/* ========== SETTINGS (Owner Only) ========== */}
       <Route path="/settings" element={<OwnerRoute><SettingsPage /></OwnerRoute>} />
+      <Route path="/audit-log" element={<OwnerRoute><AuditLogPage /></OwnerRoute>} />
       
       {/* ========== CLIENT PORTAL (Separate Auth) ========== */}
       <Route path="/portal/auth" element={<ClientAuthPage />} />
