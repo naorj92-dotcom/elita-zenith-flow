@@ -174,7 +174,7 @@ function AppRoutes() {
         <Route path="payments" element={<ClientHistoryPage />} />
         <Route path="gift-cards" element={<ClientPackagesPage />} />
         <Route path="profile" element={<ClientDashboard />} />
-        <Route path="messages" element={<ClientDashboard />} />
+        <Route path="messages" element={<ClientMessagesPage />} />
       </Route>
       
       {/* ========== 404 ========== */}

@@ -262,6 +262,13 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
     ],
   },
   {
+    label: 'Messages',
+    icon: MessageCircle,
+    items: [
+      { label: 'Chat', href: '/portal/messages', icon: MessageCircle },
+    ],
+  },
+  {
     label: 'Profile',
     icon: User,
     items: [
