@@ -33,9 +33,8 @@ export function ClientTimeline() {
   const { client } = useClientAuth();
 
   const { data: appointments } = useQuery({
-    queryKey: ['client-timeline-appointments', client?.id, isDemo],
+    queryKey: ['client-timeline-appointments', client?.id],
     queryFn: async () => {
-      if (isDemo) return DEMO_APPOINTMENTS;
       if (!client?.id) return [];
       const { data } = await supabase
         .from('appointments')
@@ -45,7 +44,7 @@ export function ClientTimeline() {
         .limit(10);
       return data || [];
     },
-    enabled: !!client?.id || isDemo,
+    enabled: !!client?.id,
   });
 
   const { data: packages } = useQuery({
