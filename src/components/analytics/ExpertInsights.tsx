@@ -246,6 +246,9 @@ export function ExpertInsights({ dateRange }: ExpertInsightsProps) {
 
   return (
     <div className="space-y-6">
+      {/* AI Business Recommendations */}
+      <AIInsightsPanel dateRange={dateRange} />
+
       {/* Breakeven Indicator */}
       <Card className="border-border/50">
         <CardHeader>
