@@ -281,6 +281,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
       setDragGhostTop(null);
       setDragTargetDate(null);
       setDragCursorPos(null);
+      setDragTargetStaffId(null);
+      setDragOriginStaffId(null);
       dragRef.current = null;
     };
 
