@@ -27,7 +27,7 @@ export function ClientPortalLayout() {
         .eq('status', 'pending');
       return count || 0;
     },
-    enabled: (!!client?.id || isDemo) && isAuthenticated,
+    enabled: !!client?.id && isAuthenticated,
     refetchInterval: 30000, // Poll every 30s for new form assignments
   });
 
