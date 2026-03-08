@@ -88,29 +88,37 @@ export function ClientPortalLayout() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {flatNavItems.map((item) => {
-              const isActive = location.pathname === item.href;
-              const Icon = item.icon;
-              const showBadge = isFormsLink(item.href) && pendingFormsCount > 0;
-              return (
-                <Link key={item.href} to={item.href}>
-                  <Button 
-                    variant={isActive ? 'default' : 'ghost'} 
-                    size="sm"
-                    className="gap-2 relative"
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                    {showBadge && (
-                      <Badge className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px] bg-destructive text-destructive-foreground border-0">
-                        {pendingFormsCount}
-                      </Badge>
-                    )}
-                  </Button>
-                </Link>
-              );
-            })}
+          <nav className="hidden lg:flex items-center gap-1 overflow-x-auto max-w-[60vw]">
+            {CLIENT_NAVIGATION.map((category) => 
+              category.items.map((item) => {
+                const isActive = location.pathname === item.href;
+                const Icon = item.icon;
+                const showFormsBadge = isFormsLink(item.href) && pendingFormsCount > 0;
+                const showMessagesBadge = isMessagesLink(item.href) && unreadCount > 0;
+                return (
+                  <Link key={item.href} to={item.href}>
+                    <Button 
+                      variant={isActive ? 'default' : 'ghost'} 
+                      size="sm"
+                      className="gap-2 relative whitespace-nowrap"
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                      {showFormsBadge && (
+                        <Badge className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px] bg-destructive text-destructive-foreground border-0">
+                          {pendingFormsCount}
+                        </Badge>
+                      )}
+                      {showMessagesBadge && (
+                        <Badge className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px] bg-destructive text-destructive-foreground border-0">
+                          {unreadCount}
+                        </Badge>
+                      )}
+                    </Button>
+                  </Link>
+                );
+              })
+            )}
           </nav>
 
           <div className="flex items-center gap-3">
