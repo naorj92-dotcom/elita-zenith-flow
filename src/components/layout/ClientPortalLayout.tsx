@@ -71,8 +71,8 @@ export function ClientPortalLayout() {
     return <Navigate to="/portal/auth" replace />;
   }
 
-  const flatNavItems = CLIENT_NAVIGATION.flatMap(cat => cat.items).slice(0, 6);
   const isFormsLink = (href: string) => href === '/portal/forms';
+  const isMessagesLink = (href: string) => href === '/portal/messages';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
