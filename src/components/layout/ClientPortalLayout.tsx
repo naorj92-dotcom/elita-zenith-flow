@@ -367,7 +367,7 @@ export function ClientPortalLayout() {
         </nav>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto lg:pt-0 pt-14 pb-20 lg:pb-0 bg-background">
+        <main className="flex-1 overflow-auto md:pt-0 pt-14 pb-20 md:pb-0 bg-background">
           <div className="container mx-auto px-4 py-6">
             <Outlet />
           </div>
