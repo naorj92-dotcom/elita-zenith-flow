@@ -66,7 +66,9 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
         .select('*')
         .eq('user_id', userId)
         .eq('is_active', true)
-        .maybeSingle();
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .single();
 
       if (error) {
         console.error('Error fetching user role:', error);
