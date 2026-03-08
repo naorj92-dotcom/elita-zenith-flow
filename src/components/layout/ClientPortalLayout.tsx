@@ -337,7 +337,7 @@ export function ClientPortalLayout() {
         </header>
 
         {/* Mobile Bottom Nav */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-2 flex justify-around">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-2 flex justify-around">
           {CLIENT_MOBILE_NAV.map((item) => {
             const isActive = location.pathname === item.href;
             const Icon = item.icon;
