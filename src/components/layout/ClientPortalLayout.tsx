@@ -111,7 +111,7 @@ export function ClientPortalLayout() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 bg-card border-r border-border">
+      <aside className="hidden md:flex flex-col w-60 bg-card border-r border-border">
         {/* Logo */}
         <div className="p-5 border-b border-border flex justify-center">
           <Link to="/portal" className="block">
@@ -259,7 +259,7 @@ export function ClientPortalLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         {/* Mobile Header */}
-        <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3">
+        <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3">
           <div className="flex items-center justify-between">
             <Link to="/portal">
               <img
@@ -337,7 +337,7 @@ export function ClientPortalLayout() {
         </header>
 
         {/* Mobile Bottom Nav */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-2 flex justify-around">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-2 flex justify-around">
           {CLIENT_MOBILE_NAV.map((item) => {
             const isActive = location.pathname === item.href;
             const Icon = item.icon;
@@ -367,7 +367,7 @@ export function ClientPortalLayout() {
         </nav>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto lg:pt-0 pt-14 pb-20 lg:pb-0 bg-background">
+        <main className="flex-1 overflow-auto md:pt-0 pt-14 pb-20 md:pb-0 bg-background">
           <div className="container mx-auto px-4 py-6">
             <Outlet />
           </div>
