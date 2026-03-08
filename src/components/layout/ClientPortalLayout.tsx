@@ -111,7 +111,7 @@ export function ClientPortalLayout() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 bg-card border-r border-border">
+      <aside className="hidden md:flex flex-col w-60 bg-card border-r border-border">
         {/* Logo */}
         <div className="p-5 border-b border-border flex justify-center">
           <Link to="/portal" className="block">
