@@ -26,6 +26,8 @@ import { PurchaseRequestsWidget } from '@/components/dashboard/PurchaseRequestsW
 import { CommissionWidget } from '@/components/dashboard/CommissionWidget';
 import { InventoryAlertsWidget } from '@/components/dashboard/InventoryAlertsWidget';
 import { StaffAnnouncementsWidget } from '@/components/dashboard/StaffAnnouncementsWidget';
+import { RevenueGoalTracker } from '@/components/dashboard/RevenueGoalTracker';
+import { LiveActivityFeed } from '@/components/dashboard/LiveActivityFeed';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 
