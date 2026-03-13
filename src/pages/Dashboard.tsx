@@ -30,6 +30,7 @@ import { RevenueGoalTracker } from '@/components/dashboard/RevenueGoalTracker';
 import { LiveActivityFeed } from '@/components/dashboard/LiveActivityFeed';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 
 interface TodayAppointment {
   id: string;
