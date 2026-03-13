@@ -233,7 +233,13 @@ export function ClientPortalLayout() {
         </nav>
 
         {/* User Section */}
-        <div className="p-3 border-t border-border">
+        <div className="p-3 border-t border-border space-y-2">
+          {/* Theme Toggle */}
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-xs text-muted-foreground">Theme</span>
+            <ThemeToggle />
+          </div>
+          
           <div className="flex items-center gap-3 px-2 py-2">
             <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-primary font-semibold text-xs">
