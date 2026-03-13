@@ -156,7 +156,15 @@ export function ClientPackagesPage() {
         notes: `PURCHASE REQUEST: ${pkg.name} — ${tier.sessions} sessions, $${tier.total_price} total`,
       });
       if (error) throw error;
-      toast.success(`Purchase request submitted for ${pkg.name}! We'll contact you to complete the purchase.`);
+      
+      // Show celebration!
+      setCelebrationMsg({
+        message: `${pkg.name} — ${tier.sessions} Sessions!`,
+        sub: "We'll contact you shortly to complete your purchase",
+      });
+      setShowCelebration(true);
+      
+      toast.success(`Purchase request submitted for ${pkg.name}!`);
     } catch {
       toast.error('Could not submit purchase request. Please try again.');
     }
