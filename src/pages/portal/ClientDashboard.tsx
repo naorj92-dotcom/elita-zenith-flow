@@ -21,6 +21,7 @@ import { AftercareTipsWidget } from '@/components/portal/AftercareTipsWidget';
 import { ReferralWidget } from '@/components/portal/ReferralWidget';
 import { ProgressTimelineWidget } from '@/components/portal/ProgressTimelineWidget';
 import { AchievementBadgesWidget } from '@/components/portal/AchievementBadgesWidget';
+import { WelcomeBackBanner } from '@/components/portal/WelcomeBackBanner';
 
 export function ClientDashboard() {
   const { client } = useClientAuth();
