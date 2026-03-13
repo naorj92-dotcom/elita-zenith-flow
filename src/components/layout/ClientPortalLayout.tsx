@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, LogOut, ChevronDown, Menu, X, Moon, Sun } from 'lucide-react';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { ClientNotificationBell } from '@/components/portal/ClientNotificationBell';
 import { CLIENT_NAVIGATION, CLIENT_MOBILE_NAV } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
