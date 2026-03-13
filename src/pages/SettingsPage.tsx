@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Settings, CreditCard, Shield, Building, Clock, Bell } from 'lucide-react';
+import { Settings, CreditCard, Shield, Building, Clock, Bell, Paintbrush } from 'lucide-react';
+import { BrandingSettings } from '@/components/settings/BrandingSettings';
 
 export function SettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
