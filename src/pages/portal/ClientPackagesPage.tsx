@@ -12,6 +12,7 @@ import { Package, Calendar, CheckCircle2, Eye, ShoppingBag, TrendingDown, Calend
 import { DEMO_PACKAGES } from '@/hooks/useDemoData';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { CelebrationOverlay } from '@/components/shared/CelebrationOverlay';
 
 interface PricingTier {
   sessions: number;
