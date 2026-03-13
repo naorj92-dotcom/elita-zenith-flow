@@ -86,7 +86,9 @@ const DEMO_AVAILABLE_PACKAGES = [
 
 export function ClientPackagesPage() {
   const { client } = useClientAuth();
-  const isDemo = false; // Demo mode removed for security
+  const isDemo = false;
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationMsg, setCelebrationMsg] = useState({ message: '', sub: '' });
 
   const { data: packages, isLoading } = useQuery({
     queryKey: ['client-packages', client?.id, isDemo],
