@@ -155,11 +155,18 @@ export function Dashboard() {
 
   const firstName = staff?.first_name || 'there';
 
+  const hasCommission = staff && (
+    Number(staff.service_commission_tier1) > 0 ||
+    Number(staff.service_commission_tier2) > 0 ||
+    Number(staff.service_commission_tier3) > 0 ||
+    Number(staff.retail_commission_rate) > 0
+  );
+
   const kpiCards = [
     { label: 'Appointments', value: metrics.today_appointments, icon: Calendar, sub: 'Today' },
     { label: 'Sales', value: `$${metrics.today_sales.toLocaleString()}`, icon: DollarSign, sub: 'Today' },
     { label: 'Week Sales', value: `$${metrics.week_sales.toLocaleString()}`, icon: TrendingUp, sub: 'This week' },
-    { label: 'Commission', value: `$${metrics.month_commission.toLocaleString()}`, icon: Target, sub: 'This month' },
+    ...(hasCommission ? [{ label: 'Commission', value: `$${metrics.month_commission.toLocaleString()}`, icon: Target, sub: 'This month' }] : []),
   ];
 
   return (
