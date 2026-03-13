@@ -30,6 +30,7 @@ import { RevenueGoalTracker } from '@/components/dashboard/RevenueGoalTracker';
 import { LiveActivityFeed } from '@/components/dashboard/LiveActivityFeed';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 
 interface TodayAppointment {
   id: string;
@@ -155,6 +156,7 @@ export function Dashboard() {
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
+      <OnboardingTour />
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -10 }}
