@@ -163,6 +163,11 @@ export function SettingsPage() {
           </Card>
         </TabsContent>
 
+        {/* Branding Settings */}
+        <TabsContent value="branding" className="space-y-6 mt-6">
+          <BrandingSettings />
+        </TabsContent>
+
         {/* Payment Settings */}
         <TabsContent value="payments" className="space-y-6 mt-6">
           <Card>
