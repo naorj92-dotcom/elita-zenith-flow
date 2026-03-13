@@ -93,19 +93,13 @@ export function ClientDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Header with Personalized Greeting */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Sparkles className="h-6 w-6 text-primary" />
-          <span className="text-sm font-medium text-muted-foreground">Welcome back</span>
-        </div>
-        <h1 className="text-3xl font-heading font-semibold">
-          {client?.first_name} {client?.last_name}
-        </h1>
-        {client?.is_vip && (
-          <MembershipBadge isVip className="mt-3" />
-        )}
-      </div>
+      {/* Animated Welcome Back Banner */}
+      <WelcomeBackBanner
+        firstName={client?.first_name || 'there'}
+        lastVisitDate={client?.last_visit_date}
+        visitCount={client?.visit_count || 0}
+        isVip={client?.is_vip || false}
+      />
 
       {/* Visit Streak */}
       <VisitStreakWidget />
