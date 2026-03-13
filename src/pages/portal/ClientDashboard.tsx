@@ -1,82 +1,37 @@
 import React from 'react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format, isValid } from 'date-fns';
-import { Package, Image, ShoppingBag, Sparkles, Clock, ChevronRight, History, Crown, Flag, Gift, FileText, AlertTriangle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { History, Flag } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion } from 'framer-motion';
+
+// Widgets
+import { WelcomeBackBanner } from '@/components/portal/WelcomeBackBanner';
+import { AppointmentCountdownWidget } from '@/components/portal/AppointmentCountdownWidget';
+import { QuickActionsGrid } from '@/components/portal/QuickActionsGrid';
+import { DashboardStatsRow } from '@/components/portal/DashboardStatsRow';
 import { LoyaltyPointsWidget } from '@/components/portal/LoyaltyPointsWidget';
 import { MembershipStatusWidget } from '@/components/portal/MembershipStatusWidget';
-import { ClientTimeline } from '@/components/portal/ClientTimeline';
-import { ClientNotesFlags } from '@/components/portal/ClientNotesFlags';
-import { MembershipBadge } from '@/components/shared/StatusBadge';
-import { EmptyState } from '@/components/shared/EmptyState';
 import { VisitStreakWidget } from '@/components/portal/VisitStreakWidget';
-import { AppointmentCountdownWidget } from '@/components/portal/AppointmentCountdownWidget';
 import { ExclusiveDealsWidget } from '@/components/portal/ExclusiveDealsWidget';
 import { AftercareTipsWidget } from '@/components/portal/AftercareTipsWidget';
 import { ReferralWidget } from '@/components/portal/ReferralWidget';
 import { ProgressTimelineWidget } from '@/components/portal/ProgressTimelineWidget';
 import { AchievementBadgesWidget } from '@/components/portal/AchievementBadgesWidget';
-import { WelcomeBackBanner } from '@/components/portal/WelcomeBackBanner';
+import { ClientTimeline } from '@/components/portal/ClientTimeline';
+import { ClientNotesFlags } from '@/components/portal/ClientNotesFlags';
+
+const fadeUp = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+};
 
 export function ClientDashboard() {
   const { client } = useClientAuth();
 
-  // Fetch active packages count
-  const { data: packagesCount } = useQuery({
-    queryKey: ['client-packages-count', client?.id],
-    queryFn: async () => {
-      if (!client?.id) return 0;
-      const { count } = await supabase
-        .from('client_packages')
-        .select('*', { count: 'exact', head: true })
-        .eq('client_id', client.id)
-        .eq('status', 'active');
-      return count || 0;
-    },
-    enabled: !!client?.id,
-  });
-
-  // Fetch photos count
-  const { data: photosCount } = useQuery({
-    queryKey: ['client-photos-count', client?.id],
-    queryFn: async () => {
-      if (!client?.id) return 0;
-      const { count } = await supabase
-        .from('before_after_photos')
-        .select('*', { count: 'exact', head: true })
-        .eq('client_id', client.id)
-        .eq('is_visible_to_client', true);
-      return count || 0;
-    },
-    enabled: !!client?.id,
-  });
-
-  // Fetch recommendations count
-  const { data: recommendationsCount } = useQuery({
-    queryKey: ['client-recommendations-count', client?.id],
-    queryFn: async () => {
-      if (!client?.id) return 0;
-      const { count: productCount } = await supabase
-        .from('product_recommendations')
-        .select('*', { count: 'exact', head: true })
-        .eq('client_id', client.id)
-        .eq('is_purchased', false);
-      const { count: serviceCount } = await supabase
-        .from('service_recommendations')
-        .select('*', { count: 'exact', head: true })
-        .eq('client_id', client.id)
-        .eq('is_booked', false);
-      return (productCount || 0) + (serviceCount || 0);
-    },
-    enabled: !!client?.id,
-  });
-
-  // Fetch pending forms count
+  // Pending forms count
   const { data: pendingFormsCount = 0 } = useQuery({
     queryKey: ['client-pending-forms-count', client?.id],
     queryFn: async () => {
@@ -91,9 +46,26 @@ export function ClientDashboard() {
     enabled: !!client?.id,
   });
 
+  // Loyalty points for stats row
+  const { data: totalPoints = 0 } = useQuery({
+    queryKey: ['client-loyalty-total', client?.id],
+    queryFn: async () => {
+      if (!client?.id) return 0;
+      const { data } = await supabase
+        .from('loyalty_points')
+        .select('points, transaction_type')
+        .eq('client_id', client.id);
+      if (!data) return 0;
+      return data.reduce((sum, entry) => {
+        return entry.transaction_type === 'redeemed' ? sum - entry.points : sum + entry.points;
+      }, 0);
+    },
+    enabled: !!client?.id,
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Animated Welcome Back Banner */}
+    <div className="space-y-6 max-w-3xl mx-auto">
+      {/* 1. Welcome Banner */}
       <WelcomeBackBanner
         firstName={client?.first_name || 'there'}
         lastVisitDate={client?.last_visit_date}
@@ -101,186 +73,92 @@ export function ClientDashboard() {
         isVip={client?.is_vip || false}
       />
 
-      {/* Visit Streak */}
-      <VisitStreakWidget />
-
-      {/* Pending Forms Alert */}
-      {pendingFormsCount > 0 && (
-        <Link to="/portal/forms">
-          <Card className="border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50 transition-colors cursor-pointer">
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
-                <FileText className="h-6 w-6 text-amber-500" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  {pendingFormsCount} Form{pendingFormsCount !== 1 ? 's' : ''} Require{pendingFormsCount === 1 ? 's' : ''} Your Attention
-                </h3>
-                <p className="text-sm text-muted-foreground">Please complete your pending forms before your appointment</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-amber-500" />
-            </CardContent>
-          </Card>
-        </Link>
-      )}
-
-      {/* Appointment Countdown + Aftercare Tips Row */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* 2. Next Appointment - Most important */}
+      <motion.div {...fadeUp} transition={{ delay: 0.05 }}>
         <AppointmentCountdownWidget />
-        <div className="space-y-4">
-          <AftercareTipsWidget />
-          {/* Loyalty Balance Mini */}
-          <LoyaltyPointsWidget />
-        </div>
-      </div>
+      </motion.div>
 
-      {/* Exclusive Deals */}
-      <ExclusiveDealsWidget />
+      {/* 3. Quick Actions Grid */}
+      <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
+        <QuickActionsGrid pendingFormsCount={pendingFormsCount} />
+      </motion.div>
 
-      {/* Tabs: Overview, Timeline, Notes */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview" className="gap-2">
-            <Package className="h-4 w-4" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="timeline" className="gap-2">
-            <History className="h-4 w-4" />
-            Timeline
-          </TabsTrigger>
-          <TabsTrigger value="notes" className="gap-2">
-            <Flag className="h-4 w-4" />
-            Notes & Flags
-          </TabsTrigger>
-        </TabsList>
+      {/* 4. Stats Summary */}
+      <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+        <DashboardStatsRow
+          visitCount={client?.visit_count || 0}
+          totalSpent={client?.total_spent || 0}
+          lastVisitDate={client?.last_visit_date}
+          loyaltyPoints={totalPoints}
+        />
+      </motion.div>
 
-        <TabsContent value="overview" className="mt-6 space-y-6">
-          {/* Progress Timeline */}
-          <ProgressTimelineWidget />
+      {/* 5. Visit Streak (conditional) */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
+        <VisitStreakWidget />
+      </motion.div>
 
-          {/* Quick Links Grid */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Link to="/portal/packages">
-              <Card className="card-luxury group cursor-pointer h-full hover-lift">
-                <CardContent className="flex items-center gap-4 p-6">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Package className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">My Packages</h3>
-                    <p className="text-sm text-muted-foreground">{packagesCount} active package{packagesCount !== 1 ? 's' : ''}</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </CardContent>
-              </Card>
-            </Link>
+      {/* 6. Aftercare Tips (conditional - shows only within 14 days of treatment) */}
+      <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
+        <AftercareTipsWidget />
+      </motion.div>
 
-            <Link to="/portal/photos">
-              <Card className="card-luxury group cursor-pointer h-full hover-lift">
-                <CardContent className="flex items-center gap-4 p-6">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Image className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">Progress Photos</h3>
-                    <p className="text-sm text-muted-foreground">{photosCount} photo{photosCount !== 1 ? 's' : ''}</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </CardContent>
-              </Card>
-            </Link>
+      {/* 7. Exclusive Deals (conditional) */}
+      <motion.div {...fadeUp} transition={{ delay: 0.22 }}>
+        <ExclusiveDealsWidget />
+      </motion.div>
 
-            <Link to="/portal/recommendations">
-              <Card className="card-luxury group cursor-pointer h-full hover-lift">
-                <CardContent className="flex items-center gap-4 p-6">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <ShoppingBag className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">Recommendations</h3>
-                    <p className="text-sm text-muted-foreground">{recommendationsCount} new recommendation{recommendationsCount !== 1 ? 's' : ''}</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </CardContent>
-              </Card>
-            </Link>
+      {/* 8. Two-column: Membership + Loyalty */}
+      <motion.div {...fadeUp} transition={{ delay: 0.25 }} className="grid gap-4 md:grid-cols-2">
+        <MembershipStatusWidget />
+        <LoyaltyPointsWidget />
+      </motion.div>
 
-            <Link to="/portal/skin-analysis">
-              <Card className="card-luxury group cursor-pointer h-full border-primary/20 hover-lift hover-glow">
-                <CardContent className="flex items-center gap-4 p-6">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/20 transition-colors">
-                    <Sparkles className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">AI Skin Analysis</h3>
-                    <p className="text-sm text-muted-foreground">Get personalized recommendations</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
+      {/* 9. Two-column: Referral + Progress */}
+      <motion.div {...fadeUp} transition={{ delay: 0.28 }} className="grid gap-4 md:grid-cols-2">
+        <ReferralWidget />
+        <ProgressTimelineWidget />
+      </motion.div>
 
-          {/* Membership & Referral Row */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <MembershipStatusWidget />
-            <ReferralWidget />
-          </div>
+      {/* 10. Achievements */}
+      <motion.div {...fadeUp} transition={{ delay: 0.3 }}>
+        <AchievementBadgesWidget />
+      </motion.div>
 
-          {/* Achievement Badges */}
-          <AchievementBadgesWidget />
+      {/* 11. Timeline & Notes Tabs */}
+      <motion.div {...fadeUp} transition={{ delay: 0.32 }}>
+        <Tabs defaultValue="timeline" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="timeline" className="gap-2">
+              <History className="h-4 w-4" />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="gap-2">
+              <Flag className="h-4 w-4" />
+              Notes
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Stats */}
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Card className="card-luxury">
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-heading font-semibold text-primary">
-                  ${(client?.total_spent || 0).toLocaleString()}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">Total Investment</p>
+          <TabsContent value="timeline" className="mt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-heading flex items-center gap-2">
+                  <History className="h-4 w-4 text-primary" />
+                  Activity Timeline
+                </CardTitle>
+                <CardDescription className="text-xs">Your recent visits, packages, and photos</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ClientTimeline />
               </CardContent>
             </Card>
-            <Card className="card-luxury">
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-heading font-semibold text-primary">
-                  {client?.visit_count || 0}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">Total Visits</p>
-              </CardContent>
-            </Card>
-            <Card className="card-luxury">
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-heading font-semibold text-primary">
-                  {client?.last_visit_date 
-                    ? format(new Date(client.last_visit_date), 'MMM d')
-                    : '—'}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">Last Visit</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value="timeline" className="mt-6">
-          <Card className="card-luxury">
-            <CardHeader>
-              <CardTitle className="text-lg font-heading flex items-center gap-2">
-                <History className="h-5 w-5 text-primary" />
-                Activity Timeline
-              </CardTitle>
-              <CardDescription>Your recent visits, packages, and photos</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ClientTimeline />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notes" className="mt-6">
-          <ClientNotesFlags />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="notes" className="mt-4">
+            <ClientNotesFlags />
+          </TabsContent>
+        </Tabs>
+      </motion.div>
     </div>
   );
 }

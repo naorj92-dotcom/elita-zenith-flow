@@ -41,6 +41,11 @@ interface TodayAppointment {
   duration: number;
 }
 
+const fadeUp = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+};
+
 export function Dashboard() {
   const { staff, clockStatus, clockIn, clockOut, isLoading } = useAuth();
   const { toast } = useToast();
@@ -148,42 +153,79 @@ export function Dashboard() {
     }
   };
 
-  const getStatusForBadge = (status: string) => {
-    return status as any;
-  };
-
   const firstName = staff?.first_name || 'there';
+
+  const kpiCards = [
+    { label: 'Appointments', value: metrics.today_appointments, icon: Calendar, sub: 'Today' },
+    { label: 'Sales', value: `$${metrics.today_sales.toLocaleString()}`, icon: DollarSign, sub: 'Today' },
+    { label: 'Week Sales', value: `$${metrics.week_sales.toLocaleString()}`, icon: TrendingUp, sub: 'This week' },
+    { label: 'Commission', value: `$${metrics.month_commission.toLocaleString()}`, icon: Target, sub: 'This month' },
+  ];
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
       <OnboardingTour />
-      {/* Header */}
-      <motion.header
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-1"
-      >
-        <h1 className="text-2xl font-semibold text-foreground">
-          Welcome back, {firstName}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </p>
-      </motion.header>
 
-      {/* Today's Schedule - Moved to top */}
-      <motion.section
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-      >
+      {/* Header + Clock-In Row */}
+      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">
+            Welcome back, {firstName}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+        <Button
+          onClick={handleClockAction}
+          disabled={isLoading}
+          variant={clockStatus?.is_clocked_in ? "destructive" : "default"}
+          size="lg"
+          className="gap-2 shrink-0"
+        >
+          {clockStatus?.is_clocked_in ? (
+            <>
+              <Square className="w-4 h-4" />
+              Clock Out
+              {clockStatus.clock_entry && (
+                <span className="text-xs opacity-80 ml-1">
+                  · Since {new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4" />
+              Clock In
+            </>
+          )}
+        </Button>
+      </motion.div>
+
+      {/* KPI Cards */}
+      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {kpiCards.map((stat, i) => (
+          <Card key={stat.label}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <stat.icon className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-xl font-semibold text-foreground leading-none">{stat.value}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{stat.sub}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </motion.div>
+
+      {/* Today's Schedule */}
+      <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="text-lg font-semibold">Today's Schedule</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base font-semibold">Today's Schedule</CardTitle>
             <Link 
               to="/schedule"
               className="text-sm text-primary hover:text-primary-hover flex items-center gap-1 transition-colors"
@@ -192,214 +234,80 @@ export function Dashboard() {
               <ChevronRight className="w-4 h-4" />
             </Link>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-1.5">
             {appointments.length === 0 ? (
               <EmptyState
                 icon={Calendar}
                 title="No appointments today"
-                description="Your schedule is clear. Book your first appointment to get started."
+                description="Your schedule is clear."
                 actionLabel="Schedule Appointment"
                 actionHref="/schedule/new"
                 compact
               />
             ) : (
               appointments.map((apt, index) => (
-                <motion.div
+                <Link
                   key={apt.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + index * 0.03 }}
+                  to={`/schedule/${apt.id}`}
+                  className="flex items-center gap-4 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors group"
                 >
-                  <Link
-                    to={`/schedule/${apt.id}`}
-                    className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
-                  >
-                    <div className="text-center min-w-[56px]">
-                      <p className="text-sm font-medium text-foreground">{apt.time}</p>
-                      <p className="text-xs text-muted-foreground">{apt.duration}m</p>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
-                    </div>
-                    <StatusBadge status={apt.status} />
-                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </Link>
-                </motion.div>
+                  <div className="text-center min-w-[52px]">
+                    <p className="text-sm font-medium text-foreground">{apt.time}</p>
+                    <p className="text-[11px] text-muted-foreground">{apt.duration}m</p>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
+                  </div>
+                  <StatusBadge status={apt.status} />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
               ))
             )}
           </CardContent>
         </Card>
-      </motion.section>
+      </motion.div>
 
-      {/* KPI Cards */}
-      <motion.section
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-      >
-        {[
-          { label: 'Appointments', value: metrics.today_appointments, icon: Calendar, subtext: 'Today' },
-          { label: 'Sales', value: `$${metrics.today_sales.toLocaleString()}`, icon: DollarSign, subtext: 'Today' },
-          { label: 'Week Sales', value: `$${metrics.week_sales.toLocaleString()}`, icon: TrendingUp, subtext: 'This week' },
-          { label: 'Commission', value: `$${metrics.month_commission.toLocaleString()}`, icon: Target, subtext: 'This month' },
-        ].map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + index * 0.05 }}
-          >
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="p-2 rounded-lg bg-muted">
-                    <stat.icon className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                </div>
-                <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.subtext}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </motion.section>
-
-      {/* Main Grid - Ops + Clock */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-2"
-        >
+      {/* Ops + Goals */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <motion.div {...fadeUp} transition={{ delay: 0.15 }} className="lg:col-span-2">
           <TodayOpsWidget />
         </motion.div>
-
-        <div className="space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-          >
-            <Card>
-              <CardContent className="p-5">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center",
-                      clockStatus?.is_clocked_in ? "bg-success/10" : "bg-muted"
-                    )}>
-                      <Clock className={cn(
-                        "w-5 h-5",
-                        clockStatus?.is_clocked_in ? "text-success" : "text-muted-foreground"
-                      )} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-foreground">
-                        {clockStatus?.is_clocked_in ? 'On Shift' : 'Ready to Start?'}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {clockStatus?.is_clocked_in && clockStatus.clock_entry
-                          ? `Since ${new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                          : 'Clock in to begin'
-                        }
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={handleClockAction}
-                    disabled={isLoading}
-                    variant={clockStatus?.is_clocked_in ? "destructive" : "default"}
-                    className="w-full gap-2"
-                  >
-                    {clockStatus?.is_clocked_in ? (
-                      <>
-                        <Square className="w-4 h-4" />
-                        Clock Out
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4" />
-                        Clock In
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <LiveGoalsWidget />
-          </motion.div>
-        </div>
+        <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
+          <LiveGoalsWidget />
+        </motion.div>
       </div>
 
       {/* Purchase Requests */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.27 }}
-      >
+      <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
         <PurchaseRequestsWidget />
       </motion.div>
 
-      {/* Revenue Tracker + Live Activity */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
+      {/* Revenue + Activity */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <motion.div {...fadeUp} transition={{ delay: 0.22 }}>
           <RevenueGoalTracker />
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+        <motion.div {...fadeUp} transition={{ delay: 0.24 }}>
           <LiveActivityFeed />
         </motion.div>
       </div>
 
-      {/* Commission + Announcements + Inventory Row */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-        >
+      {/* Commission + Announcements + Inventory */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <motion.div {...fadeUp} transition={{ delay: 0.26 }}>
           <CommissionWidget />
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
+        <motion.div {...fadeUp} transition={{ delay: 0.28 }}>
           <StaffAnnouncementsWidget />
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-        >
+        <motion.div {...fadeUp} transition={{ delay: 0.3 }}>
           <InventoryAlertsWidget />
         </motion.div>
       </div>
 
       {/* Quick Actions */}
-      <motion.section
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-3"
-      >
+      <motion.div {...fadeUp} transition={{ delay: 0.32 }} className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
           { label: 'Add Client', href: '/clients/new', icon: Users },
@@ -417,8 +325,7 @@ export function Dashboard() {
             <span className="text-sm font-medium text-foreground">{action.label}</span>
           </Link>
         ))}
-      </motion.section>
-
+      </motion.div>
     </div>
   );
 }
