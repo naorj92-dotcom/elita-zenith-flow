@@ -478,5 +478,6 @@ export function ClientPackagesPage() {
         );
       })()}
     </div>
+    </>
   );
 }
