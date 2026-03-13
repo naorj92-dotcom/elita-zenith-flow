@@ -20,6 +20,7 @@ import { ExclusiveDealsWidget } from '@/components/portal/ExclusiveDealsWidget';
 import { AftercareTipsWidget } from '@/components/portal/AftercareTipsWidget';
 import { ReferralWidget } from '@/components/portal/ReferralWidget';
 import { ProgressTimelineWidget } from '@/components/portal/ProgressTimelineWidget';
+import { AchievementBadgesWidget } from '@/components/portal/AchievementBadgesWidget';
 
 export function ClientDashboard() {
   const { client } = useClientAuth();
@@ -231,6 +232,9 @@ export function ClientDashboard() {
             <MembershipStatusWidget />
             <ReferralWidget />
           </div>
+
+          {/* Achievement Badges */}
+          <AchievementBadgesWidget />
 
           {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-3">

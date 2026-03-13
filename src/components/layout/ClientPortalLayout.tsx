@@ -4,7 +4,8 @@ import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ChevronDown, Menu, X } from 'lucide-react';
+import { Loader2, LogOut, ChevronDown, Menu, X, Moon, Sun } from 'lucide-react';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { CLIENT_NAVIGATION, CLIENT_MOBILE_NAV } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
@@ -232,7 +233,13 @@ export function ClientPortalLayout() {
         </nav>
 
         {/* User Section */}
-        <div className="p-3 border-t border-border">
+        <div className="p-3 border-t border-border space-y-2">
+          {/* Theme Toggle */}
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-xs text-muted-foreground">Theme</span>
+            <ThemeToggle />
+          </div>
+          
           <div className="flex items-center gap-3 px-2 py-2">
             <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-primary font-semibold text-xs">
@@ -268,7 +275,8 @@ export function ClientPortalLayout() {
                 className="h-7 w-auto object-contain"
               />
             </Link>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <ThemeToggle compact />
               {/* Notification bell */}
               <Link to="/portal/messages" className="relative p-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
