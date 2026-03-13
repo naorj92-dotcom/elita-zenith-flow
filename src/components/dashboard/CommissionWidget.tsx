@@ -73,7 +73,15 @@ export function CommissionWidget() {
     refetchInterval: 60000,
   });
 
-  if (!commissionData) return null;
+  // Only show if the owner has configured commission rates for this staff member
+  const hasCommission = staff && (
+    Number(staff.service_commission_tier1) > 0 ||
+    Number(staff.service_commission_tier2) > 0 ||
+    Number(staff.service_commission_tier3) > 0 ||
+    Number(staff.retail_commission_rate) > 0
+  );
+
+  if (!commissionData || !hasCommission) return null;
 
   return (
     <Card>
