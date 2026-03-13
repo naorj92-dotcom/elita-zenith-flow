@@ -233,6 +233,9 @@ export function ClientDashboard() {
             <ReferralWidget />
           </div>
 
+          {/* Achievement Badges */}
+          <AchievementBadgesWidget />
+
           {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-3">
             <Card className="card-luxury">
