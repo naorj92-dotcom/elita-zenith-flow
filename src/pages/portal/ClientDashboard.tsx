@@ -166,7 +166,7 @@ export function ClientDashboard() {
           {/* Quick Links Grid */}
           <div className="grid gap-4 sm:grid-cols-2">
             <Link to="/portal/packages">
-              <Card className="card-luxury group cursor-pointer h-full">
+              <Card className="card-luxury group cursor-pointer h-full hover-lift">
                 <CardContent className="flex items-center gap-4 p-6">
                   <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                     <Package className="h-6 w-6 text-primary" />
@@ -175,13 +175,13 @@ export function ClientDashboard() {
                     <h3 className="font-semibold">My Packages</h3>
                     <p className="text-sm text-muted-foreground">{packagesCount} active package{packagesCount !== 1 ? 's' : ''}</p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </CardContent>
               </Card>
             </Link>
 
             <Link to="/portal/photos">
-              <Card className="card-luxury group cursor-pointer h-full">
+              <Card className="card-luxury group cursor-pointer h-full hover-lift">
                 <CardContent className="flex items-center gap-4 p-6">
                   <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                     <Image className="h-6 w-6 text-primary" />
@@ -190,13 +190,13 @@ export function ClientDashboard() {
                     <h3 className="font-semibold">Progress Photos</h3>
                     <p className="text-sm text-muted-foreground">{photosCount} photo{photosCount !== 1 ? 's' : ''}</p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </CardContent>
               </Card>
             </Link>
 
             <Link to="/portal/recommendations">
-              <Card className="card-luxury group cursor-pointer h-full">
+              <Card className="card-luxury group cursor-pointer h-full hover-lift">
                 <CardContent className="flex items-center gap-4 p-6">
                   <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                     <ShoppingBag className="h-6 w-6 text-primary" />
@@ -205,13 +205,13 @@ export function ClientDashboard() {
                     <h3 className="font-semibold">Recommendations</h3>
                     <p className="text-sm text-muted-foreground">{recommendationsCount} new recommendation{recommendationsCount !== 1 ? 's' : ''}</p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </CardContent>
               </Card>
             </Link>
 
             <Link to="/portal/skin-analysis">
-              <Card className="card-luxury group cursor-pointer h-full border-primary/20">
+              <Card className="card-luxury group cursor-pointer h-full border-primary/20 hover-lift hover-glow">
                 <CardContent className="flex items-center gap-4 p-6">
                   <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/20 transition-colors">
                     <Sparkles className="h-6 w-6 text-primary" />
@@ -220,7 +220,7 @@ export function ClientDashboard() {
                     <h3 className="font-semibold">AI Skin Analysis</h3>
                     <p className="text-sm text-muted-foreground">Get personalized recommendations</p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </CardContent>
               </Card>
             </Link>
