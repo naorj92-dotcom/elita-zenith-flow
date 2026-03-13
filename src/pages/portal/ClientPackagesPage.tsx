@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { Package, Calendar, CheckCircle2, Eye, ShoppingBag, TrendingDown, Calend
 import { DEMO_PACKAGES } from '@/hooks/useDemoData';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { CelebrationOverlay } from '@/components/shared/CelebrationOverlay';
 
 interface PricingTier {
   sessions: number;
@@ -85,7 +86,9 @@ const DEMO_AVAILABLE_PACKAGES = [
 
 export function ClientPackagesPage() {
   const { client } = useClientAuth();
-  const isDemo = false; // Demo mode removed for security
+  const isDemo = false;
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationMsg, setCelebrationMsg] = useState({ message: '', sub: '' });
 
   const { data: packages, isLoading } = useQuery({
     queryKey: ['client-packages', client?.id, isDemo],
@@ -153,7 +156,15 @@ export function ClientPackagesPage() {
         notes: `PURCHASE REQUEST: ${pkg.name} — ${tier.sessions} sessions, $${tier.total_price} total`,
       });
       if (error) throw error;
-      toast.success(`Purchase request submitted for ${pkg.name}! We'll contact you to complete the purchase.`);
+      
+      // Show celebration!
+      setCelebrationMsg({
+        message: `${pkg.name} — ${tier.sessions} Sessions!`,
+        sub: "We'll contact you shortly to complete your purchase",
+      });
+      setShowCelebration(true);
+      
+      toast.success(`Purchase request submitted for ${pkg.name}!`);
     } catch {
       toast.error('Could not submit purchase request. Please try again.');
     }
@@ -167,6 +178,14 @@ export function ClientPackagesPage() {
   };
 
   return (
+    <>
+      <CelebrationOverlay
+        show={showCelebration}
+        onComplete={() => setShowCelebration(false)}
+        message={celebrationMsg.message}
+        subMessage={celebrationMsg.sub}
+        emoji="🎉"
+      />
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-heading font-semibold">My Packages</h1>
@@ -459,5 +478,6 @@ export function ClientPackagesPage() {
         );
       })()}
     </div>
+    </>
   );
 }
