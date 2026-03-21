@@ -314,7 +314,7 @@ export function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <motion.div {...fadeUp} transition={{ delay: 0.32 }} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <motion.div {...fadeUp} transition={{ delay: 0.32 }} className="grid grid-cols-2 gap-3">
         {[
           { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
           { label: 'Add Client', href: '/clients/new', icon: Users },
