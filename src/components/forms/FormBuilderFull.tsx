@@ -556,7 +556,7 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
 }
 
 /* ═══════ Build Canvas ═══════ */
-function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx, setDragOverIdx, setDragSourceIdx, onSelect, onUpdate, onRemove, onDuplicate, onDrop, onAddField, isMobile }: {
+function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx, setDragOverIdx, setDragSourceIdx, onSelect, onUpdate, onRemove, onDuplicate, onDrop, onAddField, isMobile, onMoveField }: {
   fields: ExtendedFormField[];
   formData: any;
   selectedIdx: number | null;
@@ -571,6 +571,7 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
   onDrop: (e: React.DragEvent, idx: number) => void;
   onAddField: (type: string) => void;
   isMobile: boolean;
+  onMoveField: (from: number, to: number) => void;
 }) {
   return (
     <div className="max-w-[700px] mx-auto py-4 md:py-8 px-3 md:px-6">
@@ -587,23 +588,31 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
           <>
             <DropIndicator index={0} isActive={dragOverIdx === 0} onDragOver={setDragOverIdx} onDrop={onDrop} />
 
-            {fields.map((field, i) => (
-              <React.Fragment key={field.id}>
-                <FieldCard
-                  field={field}
-                  index={i}
-                  isSelected={selectedIdx === i}
-                  isDragSource={dragSourceIdx === i}
-                  onSelect={onSelect}
-                  onUpdate={onUpdate}
-                  onRemove={onRemove}
-                  onDuplicate={onDuplicate}
-                  setDragSourceIdx={setDragSourceIdx}
-                  isMobile={isMobile}
-                />
-                <DropIndicator index={i + 1} isActive={dragOverIdx === i + 1} onDragOver={setDragOverIdx} onDrop={onDrop} />
-              </React.Fragment>
-            ))}
+            <div className="flex flex-wrap gap-y-0">
+              {fields.map((field, i) => {
+                const w = field.width || 'full';
+                const widthClass = w === 'half' ? 'w-full sm:w-1/2' : w === 'third' ? 'w-full sm:w-1/3' : 'w-full';
+                return (
+                  <div key={field.id} className={cn(widthClass, 'px-0.5')}>
+                    <FieldCard
+                      field={field}
+                      index={i}
+                      totalFields={fields.length}
+                      isSelected={selectedIdx === i}
+                      isDragSource={dragSourceIdx === i}
+                      onSelect={onSelect}
+                      onUpdate={onUpdate}
+                      onRemove={onRemove}
+                      onDuplicate={onDuplicate}
+                      setDragSourceIdx={setDragSourceIdx}
+                      isMobile={isMobile}
+                      onMoveField={onMoveField}
+                    />
+                    <DropIndicator index={i + 1} isActive={dragOverIdx === i + 1} onDragOver={setDragOverIdx} onDrop={onDrop} />
+                  </div>
+                );
+              })}
+            </div>
 
             {formData.requires_signature && (
               <>
@@ -626,7 +635,7 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
               </>
             )}
 
-            {/* Quick add — more prominent on mobile */}
+            {/* Quick add */}
             <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-dashed border-border/50">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[9px] uppercase tracking-widest text-muted-foreground/50 font-bold mr-1">+ Add:</span>
