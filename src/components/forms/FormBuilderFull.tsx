@@ -13,7 +13,7 @@ import {
   Plus, Trash2, GripVertical, Copy, X, ArrowLeft, Save, Globe,
   Type, AlignLeft, CheckSquare, CircleDot, ChevronDown, Calendar,
   Eye, Hammer, Mail, Phone, FileText,
-  Columns2, Columns3, RectangleHorizontal, PanelLeft, Settings2, Menu
+  Columns2, Columns3, RectangleHorizontal, PanelLeft, Settings2, Menu, MoveUp, MoveDown
 } from 'lucide-react';
 import { FormField } from './FormFieldRenderer';
 import { FormFieldRenderer } from './FormFieldRenderer';
@@ -531,6 +531,13 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
               onDrop={handleCanvasDrop}
               onAddField={addField}
               isMobile={isMobile}
+              onMoveField={(from, to) => {
+                const next = [...fields];
+                const [moved] = next.splice(from, 1);
+                next.splice(to, 0, moved);
+                set('fields', next);
+                setSelectedIdx(to);
+              }}
             />
           )}
         </div>
@@ -556,7 +563,7 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
 }
 
 /* ═══════ Build Canvas ═══════ */
-function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx, setDragOverIdx, setDragSourceIdx, onSelect, onUpdate, onRemove, onDuplicate, onDrop, onAddField, isMobile }: {
+function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx, setDragOverIdx, setDragSourceIdx, onSelect, onUpdate, onRemove, onDuplicate, onDrop, onAddField, isMobile, onMoveField }: {
   fields: ExtendedFormField[];
   formData: any;
   selectedIdx: number | null;
@@ -571,6 +578,7 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
   onDrop: (e: React.DragEvent, idx: number) => void;
   onAddField: (type: string) => void;
   isMobile: boolean;
+  onMoveField: (from: number, to: number) => void;
 }) {
   return (
     <div className="max-w-[700px] mx-auto py-4 md:py-8 px-3 md:px-6">
@@ -587,23 +595,31 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
           <>
             <DropIndicator index={0} isActive={dragOverIdx === 0} onDragOver={setDragOverIdx} onDrop={onDrop} />
 
-            {fields.map((field, i) => (
-              <React.Fragment key={field.id}>
-                <FieldCard
-                  field={field}
-                  index={i}
-                  isSelected={selectedIdx === i}
-                  isDragSource={dragSourceIdx === i}
-                  onSelect={onSelect}
-                  onUpdate={onUpdate}
-                  onRemove={onRemove}
-                  onDuplicate={onDuplicate}
-                  setDragSourceIdx={setDragSourceIdx}
-                  isMobile={isMobile}
-                />
-                <DropIndicator index={i + 1} isActive={dragOverIdx === i + 1} onDragOver={setDragOverIdx} onDrop={onDrop} />
-              </React.Fragment>
-            ))}
+            <div className="flex flex-wrap gap-y-0">
+              {fields.map((field, i) => {
+                const w = field.width || 'full';
+                const widthClass = w === 'half' ? 'w-full sm:w-1/2' : w === 'third' ? 'w-full sm:w-1/3' : 'w-full';
+                return (
+                  <div key={field.id} className={cn(widthClass, 'px-0.5')}>
+                    <FieldCard
+                      field={field}
+                      index={i}
+                      totalFields={fields.length}
+                      isSelected={selectedIdx === i}
+                      isDragSource={dragSourceIdx === i}
+                      onSelect={onSelect}
+                      onUpdate={onUpdate}
+                      onRemove={onRemove}
+                      onDuplicate={onDuplicate}
+                      setDragSourceIdx={setDragSourceIdx}
+                      isMobile={isMobile}
+                      onMoveField={onMoveField}
+                    />
+                    <DropIndicator index={i + 1} isActive={dragOverIdx === i + 1} onDragOver={setDragOverIdx} onDrop={onDrop} />
+                  </div>
+                );
+              })}
+            </div>
 
             {formData.requires_signature && (
               <>
@@ -626,7 +642,7 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
               </>
             )}
 
-            {/* Quick add — more prominent on mobile */}
+            {/* Quick add */}
             <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-dashed border-border/50">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[9px] uppercase tracking-widest text-muted-foreground/50 font-bold mr-1">+ Add:</span>
@@ -646,11 +662,11 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
 }
 
 /* ═══════ Field Card ═══════ */
-function FieldCard({ field, index, isSelected, isDragSource, onSelect, onUpdate, onRemove, onDuplicate, setDragSourceIdx, isMobile }: {
-  field: ExtendedFormField; index: number; isSelected: boolean; isDragSource: boolean;
+function FieldCard({ field, index, totalFields, isSelected, isDragSource, onSelect, onUpdate, onRemove, onDuplicate, setDragSourceIdx, isMobile, onMoveField }: {
+  field: ExtendedFormField; index: number; totalFields: number; isSelected: boolean; isDragSource: boolean;
   onSelect: (i: number | null) => void; onUpdate: (i: number, u: Partial<ExtendedFormField>) => void;
   onRemove: (i: number) => void; onDuplicate: (i: number) => void; setDragSourceIdx: (i: number | null) => void;
-  isMobile: boolean;
+  isMobile: boolean; onMoveField: (from: number, to: number) => void;
 }) {
   return (
     <div
@@ -665,9 +681,20 @@ function FieldCard({ field, index, isSelected, isDragSource, onSelect, onUpdate,
       )}
     >
       <div className="flex items-start gap-2">
-        {!isMobile && (
+        {!isMobile ? (
           <div className="flex flex-col items-center gap-0.5 pt-0.5">
             <GripVertical className="w-4 h-4 text-muted-foreground/30 cursor-grab active:cursor-grabbing" />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-0 pt-0.5 shrink-0">
+            <button type="button" disabled={index === 0} onClick={(e) => { e.stopPropagation(); onMoveField(index, index - 1); }}
+              className="p-0.5 text-muted-foreground/50 hover:text-foreground disabled:opacity-20 transition-colors">
+              <MoveUp className="w-3.5 h-3.5" />
+            </button>
+            <button type="button" disabled={index === totalFields - 1} onClick={(e) => { e.stopPropagation(); onMoveField(index, index + 1); }}
+              className="p-0.5 text-muted-foreground/50 hover:text-foreground disabled:opacity-20 transition-colors">
+              <MoveDown className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
         <div className="flex-1 min-w-0">
