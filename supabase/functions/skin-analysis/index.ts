@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,7 +17,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const { imageBase64, clientName, concerns } = await req.json();
+    const { imageBase64, clientName, concerns, analysisArea } = await req.json();
 
     if (!imageBase64) {
       return new Response(
@@ -25,36 +26,62 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are a professional MedSpa skin analysis consultant at Elita MedSpa. 
-Analyze the provided selfie and give personalized skincare recommendations.
+    // Fetch real services from the database
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: services } = await supabase
+      .from("services")
+      .select("id, name, description, category, price, duration_minutes")
+      .eq("is_active", true)
+      .order("name");
+
+    const serviceList = (services || [])
+      .map((s: any) => `- ${s.name} ($${s.price}, ${s.duration_minutes}min, category: ${s.category})${s.description ? `: ${s.description}` : ""}`)
+      .join("\n");
+
+    const area = analysisArea || "face";
+    const areaLabel = area === "body" ? "body skin" : "facial skin";
+
+    const systemPrompt = `You are a professional MedSpa skin analysis consultant at Elita MedSpa.
+Analyze the provided photo of the client's ${areaLabel} and give personalized skincare/treatment recommendations.
+
+IMPORTANT: You MUST only recommend treatments from our actual service menu below. Match the client's concerns to the most relevant services we offer. Use the exact service names from our menu.
+
+OUR SERVICE MENU:
+${serviceList || "No services configured yet — recommend general MedSpa treatments."}
 
 Respond in this exact JSON format:
 {
+  "analysis_area": "${area}",
   "skin_type": "oily/dry/combination/normal/sensitive",
   "concerns": ["list of observed concerns"],
   "score": 75,
   "recommendations": [
     {
-      "treatment": "Treatment Name",
-      "reason": "Why this treatment helps",
-      "priority": "high/medium/low"
+      "treatment": "Exact Service Name from our menu",
+      "reason": "Why this treatment helps this specific concern",
+      "priority": "high/medium/low",
+      "price": 150
     }
   ],
   "daily_tips": ["tip 1", "tip 2", "tip 3"],
-  "summary": "A friendly, encouraging 2-3 sentence summary"
+  "summary": "A friendly, encouraging 2-3 sentence summary about the ${areaLabel} analysis"
 }
 
-Be encouraging and professional. Focus on treatments a luxury MedSpa would offer like:
-- Hydrafacials, Chemical Peels, Microneedling
-- LED Light Therapy, RF Skin Tightening
-- Cryotherapy, Laser treatments
-- Botox/fillers (if appropriate)
-Keep recommendations to 3-4 max. Be specific but kind.`;
+Guidelines:
+- For FACE: Focus on facial concerns like wrinkles, acne, pigmentation, pores, hydration, fine lines, sagging
+- For BODY: Focus on body concerns like cellulite, stretch marks, skin texture, body contouring, scarring, uneven tone, hair removal
+- Keep recommendations to 3-5 max, prioritized by urgency
+- Use exact service names and prices from our menu
+- Be encouraging, professional, and specific about what you observe
+- The score should reflect overall skin health (100 = excellent)`;
 
     const userContent: any[] = [
       {
         type: "text",
-        text: `Please analyze this selfie for skin concerns and recommend treatments.${concerns ? ` The client mentioned these concerns: ${concerns}` : ""}${clientName ? ` Client name: ${clientName}` : ""}`,
+        text: `Please analyze this ${areaLabel} photo for skin concerns and recommend treatments from our service menu.${concerns ? ` The client mentioned these concerns: ${concerns}` : ""}${clientName ? ` Client name: ${clientName}` : ""}`,
       },
       {
         type: "image_url",
@@ -100,13 +127,12 @@ Keep recommendations to 3-4 max. Be specific but kind.`;
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
 
-    // Parse JSON from the response
     let analysis;
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
     } catch {
-      analysis = { summary: content, recommendations: [], concerns: [], daily_tips: [] };
+      analysis = { summary: content, recommendations: [], concerns: [], daily_tips: [], analysis_area: area };
     }
 
     return new Response(
