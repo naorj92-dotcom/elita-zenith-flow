@@ -662,11 +662,11 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
 }
 
 /* ═══════ Field Card ═══════ */
-function FieldCard({ field, index, isSelected, isDragSource, onSelect, onUpdate, onRemove, onDuplicate, setDragSourceIdx, isMobile }: {
-  field: ExtendedFormField; index: number; isSelected: boolean; isDragSource: boolean;
+function FieldCard({ field, index, totalFields, isSelected, isDragSource, onSelect, onUpdate, onRemove, onDuplicate, setDragSourceIdx, isMobile, onMoveField }: {
+  field: ExtendedFormField; index: number; totalFields: number; isSelected: boolean; isDragSource: boolean;
   onSelect: (i: number | null) => void; onUpdate: (i: number, u: Partial<ExtendedFormField>) => void;
   onRemove: (i: number) => void; onDuplicate: (i: number) => void; setDragSourceIdx: (i: number | null) => void;
-  isMobile: boolean;
+  isMobile: boolean; onMoveField: (from: number, to: number) => void;
 }) {
   return (
     <div
@@ -681,9 +681,20 @@ function FieldCard({ field, index, isSelected, isDragSource, onSelect, onUpdate,
       )}
     >
       <div className="flex items-start gap-2">
-        {!isMobile && (
+        {!isMobile ? (
           <div className="flex flex-col items-center gap-0.5 pt-0.5">
             <GripVertical className="w-4 h-4 text-muted-foreground/30 cursor-grab active:cursor-grabbing" />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-0 pt-0.5 shrink-0">
+            <button type="button" disabled={index === 0} onClick={(e) => { e.stopPropagation(); onMoveField(index, index - 1); }}
+              className="p-0.5 text-muted-foreground/50 hover:text-foreground disabled:opacity-20 transition-colors">
+              <MoveUp className="w-3.5 h-3.5" />
+            </button>
+            <button type="button" disabled={index === totalFields - 1} onClick={(e) => { e.stopPropagation(); onMoveField(index, index + 1); }}
+              className="p-0.5 text-muted-foreground/50 hover:text-foreground disabled:opacity-20 transition-colors">
+              <MoveDown className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
         <div className="flex-1 min-w-0">
