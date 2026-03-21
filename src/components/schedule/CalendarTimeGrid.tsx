@@ -596,6 +596,7 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
         const height = Math.max((apt.duration_minutes / 60) * SLOT_HEIGHT, 24);
         const timeLabel = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
         const isDragging = draggingApt === apt.id;
+        const isCheckedIn = apt.status === 'checked_in';
 
         return (
           <div
@@ -603,7 +604,8 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
             className={cn(
               'absolute left-0.5 right-0.5 rounded-md border-l-[3px] px-1 py-0.5 overflow-hidden cursor-grab transition-shadow select-none',
               STATUS_COLORS[apt.status] || STATUS_COLORS.scheduled,
-              isDragging && 'opacity-50 cursor-grabbing shadow-lg z-20'
+              isDragging && 'opacity-50 cursor-grabbing shadow-lg z-20',
+              isCheckedIn && 'ring-2 ring-sky-400/50'
             )}
             style={{ top: isDragging && dragGhostTop !== null ? dragGhostTop : top, height }}
             onClick={(e) => onAptClick?.(apt, e)}
@@ -611,7 +613,17 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
               if (e.button === 0) onDragStart?.(apt, date, e);
             }}
           >
-            <p className="text-[9px] text-muted-foreground">{timeLabel}</p>
+            <div className="flex items-center gap-0.5">
+              {isCheckedIn && (
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                </span>
+              )}
+              <p className="text-[9px] text-muted-foreground truncate">
+                {isCheckedIn ? 'ARRIVED' : timeLabel}
+              </p>
+            </div>
             <p className="text-[10px] font-semibold truncate">{apt.client_name}</p>
             {height > 36 && <p className="text-[9px] opacity-70 truncate">{apt.service_name}</p>}
             {showStaffName && height > 48 && apt.staff_name && (
