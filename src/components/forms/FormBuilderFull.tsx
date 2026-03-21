@@ -13,7 +13,7 @@ import {
   Plus, Trash2, GripVertical, Copy, X, ArrowLeft, Save, Globe,
   Type, AlignLeft, CheckSquare, CircleDot, ChevronDown, Calendar,
   Eye, Hammer, Mail, Phone, FileText,
-  Columns2, Columns3, RectangleHorizontal, PanelLeft, Settings2, Menu
+  Columns2, Columns3, RectangleHorizontal, PanelLeft, Settings2, Menu, MoveUp, MoveDown
 } from 'lucide-react';
 import { FormField } from './FormFieldRenderer';
 import { FormFieldRenderer } from './FormFieldRenderer';
