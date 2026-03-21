@@ -23,15 +23,14 @@ import { AchievementBadgesWidget } from '@/components/portal/AchievementBadgesWi
 import { ClientTimeline } from '@/components/portal/ClientTimeline';
 import { ClientNotesFlags } from '@/components/portal/ClientNotesFlags';
 
-const fadeUp = {
-  initial: { opacity: 0, y: 12 },
+const stagger = {
+  initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
 };
 
 export function ClientDashboard() {
   const { client } = useClientAuth();
 
-  // Pending forms count
   const { data: pendingFormsCount = 0 } = useQuery({
     queryKey: ['client-pending-forms-count', client?.id],
     queryFn: async () => {
@@ -46,7 +45,6 @@ export function ClientDashboard() {
     enabled: !!client?.id,
   });
 
-  // Loyalty points for stats row
   const { data: totalPoints = 0 } = useQuery({
     queryKey: ['client-loyalty-total', client?.id],
     queryFn: async () => {
@@ -63,8 +61,10 @@ export function ClientDashboard() {
     enabled: !!client?.id,
   });
 
+  const delays = [0, 0.06, 0.1, 0.14, 0.17, 0.2, 0.23, 0.26, 0.29, 0.32, 0.35];
+
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-5 max-w-3xl mx-auto pb-8">
       {/* 1. Welcome Banner */}
       <WelcomeBackBanner
         firstName={client?.first_name || 'there'}
@@ -73,18 +73,18 @@ export function ClientDashboard() {
         isVip={client?.is_vip || false}
       />
 
-      {/* 2. Next Appointment - Most important */}
-      <motion.div {...fadeUp} transition={{ delay: 0.05 }}>
+      {/* 2. Next Appointment */}
+      <motion.div {...stagger} transition={{ delay: delays[1] }}>
         <AppointmentCountdownWidget />
       </motion.div>
 
-      {/* 3. Quick Actions Grid */}
-      <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
+      {/* 3. Quick Actions */}
+      <motion.div {...stagger} transition={{ delay: delays[2] }}>
         <QuickActionsGrid pendingFormsCount={pendingFormsCount} />
       </motion.div>
 
-      {/* 4. Stats Summary */}
-      <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+      {/* 4. Stats */}
+      <motion.div {...stagger} transition={{ delay: delays[3] }}>
         <DashboardStatsRow
           visitCount={client?.visit_count || 0}
           totalSpent={client?.total_spent || 0}
@@ -93,40 +93,40 @@ export function ClientDashboard() {
         />
       </motion.div>
 
-      {/* 5. Visit Streak (conditional) */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
+      {/* 5. Visit Streak */}
+      <motion.div {...stagger} transition={{ delay: delays[4] }}>
         <VisitStreakWidget />
       </motion.div>
 
-      {/* 6. Aftercare Tips (conditional - shows only within 14 days of treatment) */}
-      <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
+      {/* 6. Aftercare Tips */}
+      <motion.div {...stagger} transition={{ delay: delays[5] }}>
         <AftercareTipsWidget />
       </motion.div>
 
-      {/* 7. Exclusive Deals (conditional) */}
-      <motion.div {...fadeUp} transition={{ delay: 0.22 }}>
+      {/* 7. Exclusive Deals */}
+      <motion.div {...stagger} transition={{ delay: delays[6] }}>
         <ExclusiveDealsWidget />
       </motion.div>
 
-      {/* 8. Two-column: Membership + Loyalty */}
-      <motion.div {...fadeUp} transition={{ delay: 0.25 }} className="grid gap-4 md:grid-cols-2">
+      {/* 8. Membership + Loyalty */}
+      <motion.div {...stagger} transition={{ delay: delays[7] }} className="grid gap-3 md:grid-cols-2">
         <MembershipStatusWidget />
         <LoyaltyPointsWidget />
       </motion.div>
 
-      {/* 9. Two-column: Referral + Progress */}
-      <motion.div {...fadeUp} transition={{ delay: 0.28 }} className="grid gap-4 md:grid-cols-2">
+      {/* 9. Referral + Progress */}
+      <motion.div {...stagger} transition={{ delay: delays[8] }} className="grid gap-3 md:grid-cols-2">
         <ReferralWidget />
         <ProgressTimelineWidget />
       </motion.div>
 
       {/* 10. Achievements */}
-      <motion.div {...fadeUp} transition={{ delay: 0.3 }}>
+      <motion.div {...stagger} transition={{ delay: delays[9] }}>
         <AchievementBadgesWidget />
       </motion.div>
 
-      {/* 11. Timeline & Notes Tabs */}
-      <motion.div {...fadeUp} transition={{ delay: 0.32 }}>
+      {/* 11. Timeline & Notes */}
+      <motion.div {...stagger} transition={{ delay: delays[10] }}>
         <Tabs defaultValue="timeline" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="timeline" className="gap-2">
@@ -139,7 +139,7 @@ export function ClientDashboard() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="timeline" className="mt-4">
+          <TabsContent value="timeline" className="mt-3">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-heading flex items-center gap-2">
@@ -154,7 +154,7 @@ export function ClientDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="notes" className="mt-4">
+          <TabsContent value="notes" className="mt-3">
             <ClientNotesFlags />
           </TabsContent>
         </Tabs>
