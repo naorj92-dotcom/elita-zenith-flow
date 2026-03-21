@@ -206,19 +206,23 @@ function AppRoutes() {
 
 const App = React.forwardRef<HTMLDivElement>(function App(_props, _ref) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <UnifiedAuthProvider>
-          <ClientAuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </ClientAuthProvider>
-        </UnifiedAuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <UnifiedAuthProvider>
+            <ClientAuthProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ErrorBoundary>
+                  <AppRoutes />
+                </ErrorBoundary>
+              </BrowserRouter>
+            </ClientAuthProvider>
+          </UnifiedAuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 });
 
