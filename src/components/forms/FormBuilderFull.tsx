@@ -13,7 +13,8 @@ import {
   Plus, Trash2, GripVertical, Copy, X, ArrowLeft, Save, Globe,
   Type, AlignLeft, CheckSquare, CircleDot, ChevronDown, Calendar,
   Eye, Hammer, Mail, Phone, FileText,
-  Columns2, Columns3, RectangleHorizontal, PanelLeft, Settings2, Menu, MoveUp, MoveDown
+  Columns2, Columns3, RectangleHorizontal, Menu, MoveUp, MoveDown,
+  Monitor, Tablet, Smartphone
 } from 'lucide-react';
 import { FormField } from './FormFieldRenderer';
 import { FormFieldRenderer } from './FormFieldRenderer';
@@ -137,15 +138,19 @@ const TEMPLATES: Record<string, { name: string; description: string; form_type: 
   },
 };
 
+type PreviewDevice = 'desktop' | 'tablet' | 'phone';
+
 export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving, isEditing, mode = 'form' }: FormBuilderFullProps) {
   const isMobile = useIsMobile();
   const [view, setView] = useState<'build' | 'preview'>('build');
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [showTemplates, setShowTemplates] = useState(!isEditing && formData.fields.length === 0);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [dragSide, setDragSide] = useState<'left' | 'right' | 'above' | 'below' | null>(null);
   const [dragSourceIdx, setDragSourceIdx] = useState<number | null>(null);
   const [newOption, setNewOption] = useState('');
   const [showPalette, setShowPalette] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop');
 
   const set = (key: string, value: any) => onChange({ ...formData, [key]: value });
   const fields = formData.fields as ExtendedFormField[];
@@ -192,27 +197,62 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
     setSelectedIdx(i + 1);
   };
 
-  const handleCanvasDrop = useCallback((e: React.DragEvent, toIdx: number) => {
+  const handleCanvasDrop = useCallback((e: React.DragEvent, toIdx: number, side?: 'left' | 'right' | 'above' | 'below' | null) => {
     e.preventDefault();
     const fieldType = e.dataTransfer.getData('newFieldType');
     const fromIdx = e.dataTransfer.getData('moveFieldIdx');
-    if (fieldType) {
-      const f = createField(fieldType);
+
+    // Side-by-side drop: place next to existing field and set both to half
+    if ((side === 'left' || side === 'right') && toIdx < fields.length) {
       const next = [...fields];
-      next.splice(toIdx, 0, f);
-      set('fields', next);
-      setSelectedIdx(toIdx);
-    } else if (fromIdx !== '') {
-      const from = parseInt(fromIdx);
-      if (from === toIdx || from === toIdx - 1) return;
-      const next = [...fields];
-      const [moved] = next.splice(from, 1);
-      const adjustedTo = toIdx > from ? toIdx - 1 : toIdx;
-      next.splice(adjustedTo, 0, moved);
-      set('fields', next);
-      setSelectedIdx(adjustedTo);
+      const targetField = next[toIdx];
+
+      if (fieldType) {
+        // New field from palette
+        const f = createField(fieldType);
+        f.width = 'half';
+        if ((targetField.width || 'full') === 'full') {
+          next[toIdx] = { ...targetField, width: 'half' };
+        }
+        const insertAt = side === 'right' ? toIdx + 1 : toIdx;
+        next.splice(insertAt, 0, f);
+        set('fields', next);
+        setSelectedIdx(insertAt);
+      } else if (fromIdx !== '') {
+        const from = parseInt(fromIdx);
+        if (from === toIdx) { setDragOverIdx(null); setDragSide(null); setDragSourceIdx(null); return; }
+        const [moved] = next.splice(from, 1);
+        moved.width = 'half';
+        const adjustedTarget = toIdx > from ? toIdx - 1 : toIdx;
+        if ((next[adjustedTarget]?.width || 'full') === 'full') {
+          next[adjustedTarget] = { ...next[adjustedTarget], width: 'half' };
+        }
+        const insertAt = side === 'right' ? adjustedTarget + 1 : adjustedTarget;
+        next.splice(insertAt, 0, moved);
+        set('fields', next);
+        setSelectedIdx(insertAt);
+      }
+    } else {
+      // Normal vertical drop (above/below)
+      if (fieldType) {
+        const f = createField(fieldType);
+        const next = [...fields];
+        next.splice(toIdx, 0, f);
+        set('fields', next);
+        setSelectedIdx(toIdx);
+      } else if (fromIdx !== '') {
+        const from = parseInt(fromIdx);
+        if (from === toIdx || from === toIdx - 1) { setDragOverIdx(null); setDragSide(null); setDragSourceIdx(null); return; }
+        const next = [...fields];
+        const [moved] = next.splice(from, 1);
+        const adjustedTo = toIdx > from ? toIdx - 1 : toIdx;
+        next.splice(adjustedTo, 0, moved);
+        set('fields', next);
+        setSelectedIdx(adjustedTo);
+      }
     }
     setDragOverIdx(null);
+    setDragSide(null);
     setDragSourceIdx(null);
   }, [fields]);
 
@@ -278,7 +318,7 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
     );
   }
 
-  // ── Elements palette content (shared between sidebar and sheet) ──
+  // ── Elements palette content ──
   const paletteContent = (
     <>
       <div className="p-3 border-b border-border">
@@ -309,7 +349,6 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
             </button>
           ))}
         </div>
-        {/* Settings section */}
         <div className="p-3 border-t border-border mt-2">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Settings</p>
           <div className="space-y-3">
@@ -336,7 +375,7 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
     </>
   );
 
-  // ── Properties panel content (shared between sidebar and sheet) ──
+  // ── Properties panel content ──
   const propertiesContent = selectedField && selectedIdx !== null ? (
     <>
       <div className="p-3 border-b border-border flex items-center justify-between">
@@ -443,7 +482,6 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
           <button type="button" onClick={onCancel} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0">
             <ArrowLeft className="w-4 h-4" />
           </button>
-          {/* Mobile: palette toggle */}
           {view === 'build' && isMobile && (
             <button type="button" onClick={() => setShowPalette(true)} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0">
               <Menu className="w-4 h-4" />
@@ -482,6 +520,24 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
               <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Preview</span>
             </button>
           </div>
+
+          {/* Device switcher in preview mode */}
+          {view === 'preview' && (
+            <div className="bg-muted rounded-lg p-0.5 flex">
+              {([
+                { device: 'desktop' as PreviewDevice, icon: Monitor },
+                { device: 'tablet' as PreviewDevice, icon: Tablet },
+                { device: 'phone' as PreviewDevice, icon: Smartphone },
+              ]).map(d => (
+                <button key={d.device} type="button" onClick={() => setPreviewDevice(d.device)}
+                  className={cn('p-1.5 rounded-md transition-all',
+                    previewDevice === d.device ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+                  <d.icon className="w-3.5 h-3.5" />
+                </button>
+              ))}
+            </div>
+          )}
+
           <Separator orientation="vertical" className="h-5 md:h-6 hidden sm:block" />
           <Button variant="outline" size="sm" onClick={onSave} disabled={isSaving} className="gap-1 h-8 px-2 md:px-3 text-xs">
             <Save className="w-3.5 h-3.5" /><span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save'}</span>
@@ -494,8 +550,6 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
 
       {/* ── Main Content ── */}
       <div className="flex flex-1 overflow-hidden">
-
-        {/* MOBILE: Elements palette as Sheet */}
         {isMobile && (
           <Sheet open={showPalette} onOpenChange={setShowPalette}>
             <SheetContent side="left" className="w-[280px] p-0 flex flex-col [&>button]:hidden">
@@ -504,25 +558,25 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
           </Sheet>
         )}
 
-        {/* DESKTOP: Left sidebar — Elements palette (build mode only) */}
         {view === 'build' && !isMobile && (
           <div className="w-48 lg:w-56 shrink-0 border-r border-border bg-card flex flex-col">
             {paletteContent}
           </div>
         )}
 
-        {/* Canvas area */}
         <div className="flex-1 overflow-auto bg-muted/30" onClick={() => setSelectedIdx(null)}>
           {view === 'preview' ? (
-            <PreviewMode formData={formData} />
+            <PreviewMode formData={formData} device={previewDevice} />
           ) : (
             <BuildCanvas
               fields={fields}
               formData={formData}
               selectedIdx={selectedIdx}
               dragOverIdx={dragOverIdx}
+              dragSide={dragSide}
               dragSourceIdx={dragSourceIdx}
               setDragOverIdx={setDragOverIdx}
+              setDragSide={setDragSide}
               setDragSourceIdx={setDragSourceIdx}
               onSelect={setSelectedIdx}
               onUpdate={updateField}
@@ -542,7 +596,6 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
           )}
         </div>
 
-        {/* MOBILE: Properties as bottom Sheet */}
         {isMobile && selectedField && (
           <Sheet open={selectedIdx !== null} onOpenChange={(open) => { if (!open) setSelectedIdx(null); }}>
             <SheetContent side="bottom" className="h-[70vh] p-0 flex flex-col rounded-t-2xl [&>button]:hidden">
@@ -551,7 +604,6 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
           </Sheet>
         )}
 
-        {/* DESKTOP: Right sidebar — Field properties (build mode + field selected) */}
         {view === 'build' && !isMobile && selectedField && selectedIdx !== null && (
           <div className="w-56 lg:w-64 shrink-0 border-l border-border bg-card flex flex-col">
             {propertiesContent}
@@ -563,19 +615,21 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
 }
 
 /* ═══════ Build Canvas ═══════ */
-function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx, setDragOverIdx, setDragSourceIdx, onSelect, onUpdate, onRemove, onDuplicate, onDrop, onAddField, isMobile, onMoveField }: {
+function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSide, dragSourceIdx, setDragOverIdx, setDragSide, setDragSourceIdx, onSelect, onUpdate, onRemove, onDuplicate, onDrop, onAddField, isMobile, onMoveField }: {
   fields: ExtendedFormField[];
   formData: any;
   selectedIdx: number | null;
   dragOverIdx: number | null;
+  dragSide: 'left' | 'right' | 'above' | 'below' | null;
   dragSourceIdx: number | null;
   setDragOverIdx: (i: number | null) => void;
+  setDragSide: (s: 'left' | 'right' | 'above' | 'below' | null) => void;
   setDragSourceIdx: (i: number | null) => void;
   onSelect: (i: number | null) => void;
   onUpdate: (i: number, u: Partial<ExtendedFormField>) => void;
   onRemove: (i: number) => void;
   onDuplicate: (i: number) => void;
-  onDrop: (e: React.DragEvent, idx: number) => void;
+  onDrop: (e: React.DragEvent, idx: number, side?: 'left' | 'right' | 'above' | 'below' | null) => void;
   onAddField: (type: string) => void;
   isMobile: boolean;
   onMoveField: (from: number, to: number) => void;
@@ -590,35 +644,36 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
 
       <div className="bg-card rounded-xl border border-border p-3 md:p-6 min-h-[300px] md:min-h-[420px]">
         {fields.length === 0 ? (
-          <EmptyCanvas onDrop={onDrop} onAddField={onAddField} isMobile={isMobile} />
+          <EmptyCanvas onDrop={(e, idx) => onDrop(e, idx)} onAddField={onAddField} isMobile={isMobile} />
         ) : (
           <>
-            <DropIndicator index={0} isActive={dragOverIdx === 0} onDragOver={setDragOverIdx} onDrop={onDrop} />
+            <DropIndicator index={0} isActive={dragOverIdx === 0 && (!dragSide || dragSide === 'above')} onDragOver={(i) => { setDragOverIdx(i); setDragSide('above'); }} onDrop={(e, idx) => onDrop(e, idx, 'above')} />
 
-            <div className="flex flex-wrap gap-y-0">
-              {fields.map((field, i) => {
-                const w = field.width || 'full';
-                const widthClass = w === 'half' ? 'w-full sm:w-1/2' : w === 'third' ? 'w-full sm:w-1/3' : 'w-full';
-                return (
-                  <div key={field.id} className={cn(widthClass, 'px-0.5')}>
-                    <FieldCard
-                      field={field}
-                      index={i}
-                      totalFields={fields.length}
-                      isSelected={selectedIdx === i}
-                      isDragSource={dragSourceIdx === i}
-                      onSelect={onSelect}
-                      onUpdate={onUpdate}
-                      onRemove={onRemove}
-                      onDuplicate={onDuplicate}
-                      setDragSourceIdx={setDragSourceIdx}
-                      isMobile={isMobile}
-                      onMoveField={onMoveField}
-                    />
-                    <DropIndicator index={i + 1} isActive={dragOverIdx === i + 1} onDragOver={setDragOverIdx} onDrop={onDrop} />
-                  </div>
-                );
-              })}
+            <div className="space-y-0">
+              {fields.map((field, i) => (
+                <div key={field.id}>
+                  <FieldCardWithSideDrop
+                    field={field}
+                    index={i}
+                    totalFields={fields.length}
+                    isSelected={selectedIdx === i}
+                    isDragSource={dragSourceIdx === i}
+                    isDragOverLeft={dragOverIdx === i && dragSide === 'left'}
+                    isDragOverRight={dragOverIdx === i && dragSide === 'right'}
+                    onSelect={onSelect}
+                    onUpdate={onUpdate}
+                    onRemove={onRemove}
+                    onDuplicate={onDuplicate}
+                    setDragSourceIdx={setDragSourceIdx}
+                    setDragOverIdx={setDragOverIdx}
+                    setDragSide={setDragSide}
+                    onDrop={onDrop}
+                    isMobile={isMobile}
+                    onMoveField={onMoveField}
+                  />
+                  <DropIndicator index={i + 1} isActive={dragOverIdx === i + 1 && (!dragSide || dragSide === 'above' || dragSide === 'below')} onDragOver={(idx) => { setDragOverIdx(idx); setDragSide('below'); }} onDrop={(e, idx) => onDrop(e, idx, 'below')} />
+                </div>
+              ))}
             </div>
 
             {formData.requires_signature && (
@@ -642,7 +697,6 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
               </>
             )}
 
-            {/* Quick add */}
             <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-dashed border-border/50">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[9px] uppercase tracking-widest text-muted-foreground/50 font-bold mr-1">+ Add:</span>
@@ -661,69 +715,130 @@ function BuildCanvas({ fields, formData, selectedIdx, dragOverIdx, dragSourceIdx
   );
 }
 
-/* ═══════ Field Card ═══════ */
-function FieldCard({ field, index, totalFields, isSelected, isDragSource, onSelect, onUpdate, onRemove, onDuplicate, setDragSourceIdx, isMobile, onMoveField }: {
+/* ═══════ Field Card With Side Drop Zones ═══════ */
+function FieldCardWithSideDrop({ field, index, totalFields, isSelected, isDragSource, isDragOverLeft, isDragOverRight, onSelect, onUpdate, onRemove, onDuplicate, setDragSourceIdx, setDragOverIdx, setDragSide, onDrop, isMobile, onMoveField }: {
   field: ExtendedFormField; index: number; totalFields: number; isSelected: boolean; isDragSource: boolean;
+  isDragOverLeft: boolean; isDragOverRight: boolean;
   onSelect: (i: number | null) => void; onUpdate: (i: number, u: Partial<ExtendedFormField>) => void;
-  onRemove: (i: number) => void; onDuplicate: (i: number) => void; setDragSourceIdx: (i: number | null) => void;
+  onRemove: (i: number) => void; onDuplicate: (i: number) => void;
+  setDragSourceIdx: (i: number | null) => void;
+  setDragOverIdx: (i: number | null) => void;
+  setDragSide: (s: 'left' | 'right' | 'above' | 'below' | null) => void;
+  onDrop: (e: React.DragEvent, idx: number, side?: 'left' | 'right' | 'above' | 'below' | null) => void;
   isMobile: boolean; onMoveField: (from: number, to: number) => void;
 }) {
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = x / rect.width;
+    // Left 25% = left side, Right 25% = right side, middle = no side highlight
+    if (pct < 0.25) {
+      setDragOverIdx(index);
+      setDragSide('left');
+    } else if (pct > 0.75) {
+      setDragOverIdx(index);
+      setDragSide('right');
+    } else {
+      setDragOverIdx(index);
+      setDragSide(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = x / rect.width;
+    let side: 'left' | 'right' | null = null;
+    if (pct < 0.25) side = 'left';
+    else if (pct > 0.75) side = 'right';
+    onDrop(e, index, side);
+  };
+
   return (
     <div
-      draggable={!isMobile}
-      onDragStart={(e) => { e.dataTransfer.setData('moveFieldIdx', index.toString()); e.dataTransfer.effectAllowed = 'move'; setDragSourceIdx(index); }}
-      onDragEnd={() => setDragSourceIdx(null)}
-      onClick={(e) => { e.stopPropagation(); onSelect(index); }}
-      className={cn(
-        'relative group rounded-lg transition-all py-2 md:py-2.5 px-2 md:px-3 my-0.5',
-        isSelected ? 'ring-2 ring-primary/40 bg-primary/[0.03]' : 'hover:bg-accent/30',
-        isDragSource && 'opacity-40'
-      )}
+      className="relative"
+      onDragOver={handleDragOver}
+      onDragLeave={() => { setDragOverIdx(null); setDragSide(null); }}
+      onDrop={handleDrop}
     >
-      <div className="flex items-start gap-2">
-        {!isMobile ? (
-          <div className="flex flex-col items-center gap-0.5 pt-0.5">
-            <GripVertical className="w-4 h-4 text-muted-foreground/30 cursor-grab active:cursor-grabbing" />
+      {/* Left side drop indicator */}
+      {isDragOverLeft && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-md z-20 pointer-events-none">
+          <div className="absolute -left-1 top-1/2 -translate-y-1/2 bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 text-[9px] font-medium whitespace-nowrap shadow-sm">
+            ← Place here
           </div>
-        ) : (
-          <div className="flex flex-col items-center gap-0 pt-0.5 shrink-0">
-            <button type="button" disabled={index === 0} onClick={(e) => { e.stopPropagation(); onMoveField(index, index - 1); }}
-              className="p-0.5 text-muted-foreground/50 hover:text-foreground disabled:opacity-20 transition-colors">
-              <MoveUp className="w-3.5 h-3.5" />
-            </button>
-            <button type="button" disabled={index === totalFields - 1} onClick={(e) => { e.stopPropagation(); onMoveField(index, index + 1); }}
-              className="p-0.5 text-muted-foreground/50 hover:text-foreground disabled:opacity-20 transition-colors">
-              <MoveDown className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1.5">
-            <p className="text-xs md:text-sm font-medium text-foreground truncate">
-              {field.label}
-              {field.required && <span className="text-destructive ml-0.5">*</span>}
-            </p>
-            {field.width && field.width !== 'full' && (
-              <Badge variant="outline" className="text-[9px] h-4 px-1 border-muted-foreground/20 text-muted-foreground shrink-0">
-                {field.width === 'half' ? '½' : '⅓'}
-              </Badge>
-            )}
-          </div>
-          <FieldVisual field={field} />
         </div>
-      </div>
+      )}
+      {/* Right side drop indicator */}
+      {isDragOverRight && (
+        <div className="absolute right-0 top-0 bottom-0 w-1 bg-primary rounded-r-md z-20 pointer-events-none">
+          <div className="absolute -right-1 top-1/2 -translate-y-1/2 bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 text-[9px] font-medium whitespace-nowrap shadow-sm">
+            Place here →
+          </div>
+        </div>
+      )}
 
-      {/* Hover/selected actions */}
-      <div className={cn(
-        'absolute -top-2 right-1 flex items-center gap-0.5 bg-card border border-border rounded-md shadow-sm px-0.5 py-0.5 transition-opacity z-10',
-        isSelected ? 'opacity-100' : isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-      )}>
-        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onDuplicate(index); }} title="Duplicate">
-          <Copy className="w-3 h-3" />
-        </Button>
-        <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); onRemove(index); }} title="Delete">
-          <Trash2 className="w-3 h-3" />
-        </Button>
+      <div
+        draggable={!isMobile}
+        onDragStart={(e) => { e.dataTransfer.setData('moveFieldIdx', index.toString()); e.dataTransfer.effectAllowed = 'move'; setDragSourceIdx(index); }}
+        onDragEnd={() => setDragSourceIdx(null)}
+        onClick={(e) => { e.stopPropagation(); onSelect(index); }}
+        className={cn(
+          'relative group rounded-lg transition-all py-2 md:py-2.5 px-2 md:px-3 my-0.5',
+          isSelected ? 'ring-2 ring-primary/40 bg-primary/[0.03]' : 'hover:bg-accent/30',
+          isDragSource && 'opacity-40',
+          (isDragOverLeft || isDragOverRight) && 'bg-primary/[0.03]'
+        )}
+      >
+        <div className="flex items-start gap-2">
+          {!isMobile ? (
+            <div className="flex flex-col items-center gap-0.5 pt-0.5">
+              <GripVertical className="w-4 h-4 text-muted-foreground/30 cursor-grab active:cursor-grabbing" />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-0 pt-0.5 shrink-0">
+              <button type="button" disabled={index === 0} onClick={(e) => { e.stopPropagation(); onMoveField(index, index - 1); }}
+                className="p-0.5 text-muted-foreground/50 hover:text-foreground disabled:opacity-20 transition-colors">
+                <MoveUp className="w-3.5 h-3.5" />
+              </button>
+              <button type="button" disabled={index === totalFields - 1} onClick={(e) => { e.stopPropagation(); onMoveField(index, index + 1); }}
+                className="p-0.5 text-muted-foreground/50 hover:text-foreground disabled:opacity-20 transition-colors">
+                <MoveDown className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1.5">
+              <p className="text-xs md:text-sm font-medium text-foreground truncate">
+                {field.label}
+                {field.required && <span className="text-destructive ml-0.5">*</span>}
+              </p>
+              {field.width && field.width !== 'full' && (
+                <Badge variant="outline" className="text-[9px] h-4 px-1 border-muted-foreground/20 text-muted-foreground shrink-0">
+                  {field.width === 'half' ? '½' : '⅓'}
+                </Badge>
+              )}
+            </div>
+            <FieldVisual field={field} />
+          </div>
+        </div>
+
+        {/* Hover/selected actions */}
+        <div className={cn(
+          'absolute -top-2 right-1 flex items-center gap-0.5 bg-card border border-border rounded-md shadow-sm px-0.5 py-0.5 transition-opacity z-10',
+          isSelected ? 'opacity-100' : isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+        )}>
+          <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={e => { e.stopPropagation(); onDuplicate(index); }} title="Duplicate">
+            <Copy className="w-3 h-3" />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); onRemove(index); }} title="Delete">
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -805,36 +920,73 @@ function EmptyCanvas({ onDrop, onAddField, isMobile }: { onDrop: (e: React.DragE
   );
 }
 
-/* ═══════ Preview Mode ═══════ */
-function PreviewMode({ formData }: { formData: any }) {
+/* ═══════ Preview Mode with Device Switcher ═══════ */
+function PreviewMode({ formData, device }: { formData: any; device: PreviewDevice }) {
   const [responses, setResponses] = useState<Record<string, any>>({});
+  const fields = (formData.fields || []) as ExtendedFormField[];
+
+  const deviceStyles: Record<PreviewDevice, { maxWidth: string; label: string }> = {
+    desktop: { maxWidth: '100%', label: 'Desktop' },
+    tablet: { maxWidth: '768px', label: 'Tablet (768px)' },
+    phone: { maxWidth: '375px', label: 'Phone (375px)' },
+  };
+
+  const { maxWidth, label } = deviceStyles[device];
 
   return (
-    <div className="max-w-[700px] mx-auto py-4 md:py-8 px-3 md:px-6">
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="text-center py-6 md:py-8 px-4 md:px-6">
-          <h1 className="text-lg md:text-xl font-bold text-foreground">{formData.name || 'Untitled Form'}</h1>
-          {formData.description && <p className="text-xs md:text-sm text-muted-foreground mt-2 max-w-md mx-auto">{formData.description}</p>}
+    <div className="flex flex-col items-center py-4 md:py-8 px-3 md:px-6">
+      {/* Device label */}
+      {device !== 'desktop' && (
+        <div className="mb-3 flex items-center gap-2 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+          {device === 'tablet' ? <Tablet className="w-3 h-3" /> : <Smartphone className="w-3 h-3" />}
+          {label}
         </div>
-        <Separator />
-        <div className="p-4 md:p-6 space-y-4 md:space-y-5">
-          {formData.fields?.map((field: FormField) => (
-            <FormFieldRenderer key={field.id} field={field} value={responses[field.id]}
-              onChange={(v: any) => setResponses(prev => ({ ...prev, [field.id]: v }))} />
-          ))}
-          {formData.fields?.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">No fields added yet</p>}
-          {formData.requires_signature && (
-            <div className="pt-4 border-t border-border space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-foreground">Signature</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label className="text-sm">Client Name *</Label><Input placeholder="Printed Name" /></div>
-                <div className="space-y-1.5"><Label className="text-sm">Date *</Label><Input type="date" defaultValue={new Date().toISOString().split('T')[0]} /></div>
-              </div>
-              <div className="space-y-1.5"><Label className="text-sm">Signature *</Label><SignaturePad onSignatureChange={() => {}} /></div>
+      )}
+
+      <div
+        className={cn(
+          'w-full transition-all duration-300',
+          device !== 'desktop' && 'border-x border-border shadow-lg rounded-xl overflow-hidden'
+        )}
+        style={{ maxWidth }}
+      >
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="text-center py-6 md:py-8 px-4 md:px-6">
+            <h1 className="text-lg md:text-xl font-bold text-foreground">{formData.name || 'Untitled Form'}</h1>
+            {formData.description && <p className="text-xs md:text-sm text-muted-foreground mt-2 max-w-md mx-auto">{formData.description}</p>}
+          </div>
+          <Separator />
+          <div className="p-4 md:p-6">
+            {/* Render fields respecting width in a flex-wrap layout */}
+            <div className="flex flex-wrap gap-y-4">
+              {fields.map((field) => {
+                const w = field.width || 'full';
+                const widthClass =
+                  device === 'phone'
+                    ? 'w-full'
+                    : w === 'half' ? 'w-full sm:w-1/2' : w === 'third' ? 'w-full sm:w-1/3' : 'w-full';
+                return (
+                  <div key={field.id} className={cn(widthClass, 'px-1.5')}>
+                    <FormFieldRenderer field={field} value={responses[field.id]}
+                      onChange={(v: any) => setResponses(prev => ({ ...prev, [field.id]: v }))} />
+                  </div>
+                );
+              })}
             </div>
-          )}
+            {fields.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">No fields added yet</p>}
+            {formData.requires_signature && (
+              <div className="pt-4 mt-4 border-t border-border space-y-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-foreground">Signature</h3>
+                <div className={cn('grid gap-4', device === 'phone' ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2')}>
+                  <div className="space-y-1.5"><Label className="text-sm">Client Name *</Label><Input placeholder="Printed Name" /></div>
+                  <div className="space-y-1.5"><Label className="text-sm">Date *</Label><Input type="date" defaultValue={new Date().toISOString().split('T')[0]} /></div>
+                </div>
+                <div className="space-y-1.5"><Label className="text-sm">Signature *</Label><SignaturePad onSignatureChange={() => {}} /></div>
+              </div>
+            )}
+          </div>
+          <div className="p-4 md:p-6 pt-0"><Button className="w-full h-10 md:h-11" disabled>Submit Form</Button></div>
         </div>
-        <div className="p-4 md:p-6 pt-0"><Button className="w-full h-10 md:h-11" disabled>Submit Form</Button></div>
       </div>
     </div>
   );
