@@ -112,14 +112,14 @@ export default function ClientProfilePage() {
     enabled: !!id,
   });
 
-  // Fetch forms
+  // Fetch forms with full details
   const { data: forms = [] } = useQuery({
     queryKey: ['client-forms-profile', id],
     queryFn: async () => {
       if (!id) return [];
       const { data, error } = await supabase
         .from('client_forms')
-        .select('*, forms(name, form_type)')
+        .select('*, forms:form_id(name, form_type, fields, requires_signature)')
         .eq('client_id', id)
         .order('created_at', { ascending: false });
       if (error) throw error;
