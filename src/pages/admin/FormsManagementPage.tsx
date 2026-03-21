@@ -79,6 +79,9 @@ export function FormsManagementPage() {
   const [assignClientSearch, setAssignClientSearch] = useState('');
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
 
+  // Submission detail viewer
+  const [viewingSubmission, setViewingSubmission] = useState<any>(null);
+
   // Builder state
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [builderMode, setBuilderMode] = useState<'form' | 'chart'>('form');
