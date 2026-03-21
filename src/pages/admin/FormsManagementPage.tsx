@@ -429,7 +429,11 @@ export function FormsManagementPage() {
                     <TableCell className="text-muted-foreground">
                       {submission.signed_at ? format(new Date(submission.signed_at), 'MMM d, yyyy') : 'Not signed'}
                     </TableCell>
-                    <TableCell><Button variant="ghost" size="icon"><Eye className="w-4 h-4" /></Button></TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => setViewingSubmission(submission)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {submissions.length === 0 && (
