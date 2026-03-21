@@ -242,7 +242,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
               Mark as Confirmed
             </Button>
           )}
-          {appointment.status === 'confirmed' && !isGoogleEvent && (
+          {(appointment.status === 'confirmed' || appointment.status === 'scheduled') && !isGoogleEvent && (
             <Button
               size="sm"
               className="h-7 text-xs"
@@ -250,6 +250,16 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
             >
               <CheckCircle className="w-3 h-3 mr-1" />
               Check In
+            </Button>
+          )}
+          {appointment.status === 'checked_in' && !isGoogleEvent && (
+            <Button
+              size="sm"
+              className="h-7 text-xs bg-success hover:bg-success/90 text-success-foreground"
+              onClick={() => onStatusChange?.(appointment.id, 'in_progress')}
+            >
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Start Treatment
             </Button>
           )}
         </div>
