@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +8,7 @@ import { UnifiedAuthProvider, useUnifiedAuth } from "@/contexts/UnifiedAuthConte
 import { ClientAuthProvider } from "@/contexts/ClientAuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ClientPortalLayout } from "@/components/layout/ClientPortalLayout";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 // Pages
 import { LoginPage } from "@/pages/LoginPage";
@@ -205,19 +206,23 @@ function AppRoutes() {
 
 const App = React.forwardRef<HTMLDivElement>(function App(_props, _ref) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <UnifiedAuthProvider>
-          <ClientAuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </ClientAuthProvider>
-        </UnifiedAuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <UnifiedAuthProvider>
+            <ClientAuthProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ErrorBoundary>
+                  <AppRoutes />
+                </ErrorBoundary>
+              </BrowserRouter>
+            </ClientAuthProvider>
+          </UnifiedAuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 });
 

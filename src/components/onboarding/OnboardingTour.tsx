@@ -1,58 +1,90 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft, Sparkles, Calendar, DollarSign, Clock, Users, Settings } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Sparkles, Calendar, DollarSign, Clock, Users, Settings, CreditCard, Package, FileText, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 
 interface TourStep {
   id: string;
   title: string;
   description: string;
   icon: React.ElementType;
-  highlight?: string; // CSS selector or description
   position: 'center' | 'bottom-right' | 'bottom-left';
+  roleFilter?: ('owner' | 'employee')[];
 }
 
 const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
     title: 'Welcome to Elita! 🎉',
-    description: 'Your all-in-one MedSpa management platform. Let\'s take a quick tour of the key features.',
+    description: 'Your all-in-one MedSpa management platform. Let\'s walk through the key features so you can hit the ground running.',
     icon: Sparkles,
     position: 'center',
   },
   {
+    id: 'clock',
+    title: 'Clock In / Out',
+    description: 'Start every shift by clocking in from the dashboard. Your hours are automatically tracked for payroll.',
+    icon: Clock,
+    position: 'bottom-right',
+  },
+  {
     id: 'schedule',
     title: 'Your Schedule',
-    description: 'View today\'s appointments at a glance. Click any appointment to see details, check in clients, or add notes.',
+    description: 'View and manage appointments. Click any slot to see details, check in clients, or add notes. Clients can self-check-in when they arrive!',
     icon: Calendar,
     position: 'bottom-right',
   },
   {
-    id: 'metrics',
-    title: 'Performance Metrics',
-    description: 'Track your daily sales, weekly revenue, and monthly commissions in real time. Stay on top of your goals.',
-    icon: DollarSign,
-    position: 'bottom-right',
-  },
-  {
-    id: 'clock',
-    title: 'Time Clock',
-    description: 'Clock in and out right from the dashboard. Your hours are automatically tracked for payroll.',
-    icon: Clock,
-    position: 'bottom-left',
-  },
-  {
     id: 'clients',
-    title: 'Client Management',
-    description: 'Access full client profiles, treatment history, photos, and notes. Use the sidebar to navigate to Clients.',
+    title: 'Client Profiles',
+    description: 'Access full client profiles with treatment history, photos, forms, and notes. Everything in one place.',
     icon: Users,
     position: 'bottom-right',
   },
   {
+    id: 'pos',
+    title: 'Point of Sale',
+    description: 'Complete checkouts, apply packages or membership credits, add retail products, and generate receipts — all in one flow.',
+    icon: CreditCard,
+    position: 'bottom-left',
+  },
+  {
+    id: 'metrics',
+    title: 'Track Your Performance',
+    description: 'Monitor daily sales, weekly revenue, and monthly commissions in real time on your dashboard.',
+    icon: DollarSign,
+    position: 'bottom-right',
+  },
+  {
+    id: 'packages',
+    title: 'Packages & Memberships',
+    description: 'Manage service packages, track remaining sessions, and handle membership credits for your clients.',
+    icon: Package,
+    position: 'bottom-left',
+    roleFilter: ['owner'],
+  },
+  {
+    id: 'forms',
+    title: 'Digital Forms',
+    description: 'Create intake forms, consent forms, and questionnaires. Clients fill them out digitally — no more paper!',
+    icon: FileText,
+    position: 'bottom-right',
+    roleFilter: ['owner'],
+  },
+  {
+    id: 'analytics',
+    title: 'Business Analytics',
+    description: 'Deep insights into revenue, staff performance, service popularity, and client retention. Data-driven decisions.',
+    icon: BarChart3,
+    position: 'bottom-left',
+    roleFilter: ['owner'],
+  },
+  {
     id: 'settings',
-    title: 'Customize Your Setup',
-    description: 'Head to Settings to configure your business info, branding, payment methods, and policies. You\'re all set!',
+    title: 'You\'re All Set! 🚀',
+    description: 'Head to Settings to configure your business info, branding, and policies. If you need this tour again, find it in Settings.',
     icon: Settings,
     position: 'center',
   },
@@ -68,6 +100,11 @@ interface OnboardingTourProps {
 export function OnboardingTour({ forceShow = false, onComplete }: OnboardingTourProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const { role } = useUnifiedAuth();
+
+  const filteredSteps = TOUR_STEPS.filter(
+    step => !step.roleFilter || step.roleFilter.includes(role as 'owner' | 'employee')
+  );
 
   useEffect(() => {
     if (forceShow) {
@@ -77,7 +114,6 @@ export function OnboardingTour({ forceShow = false, onComplete }: OnboardingTour
     }
     const completed = localStorage.getItem(STORAGE_KEY);
     if (!completed) {
-      // Small delay so the dashboard renders first
       const timer = setTimeout(() => setIsVisible(true), 1200);
       return () => clearTimeout(timer);
     }
@@ -90,7 +126,7 @@ export function OnboardingTour({ forceShow = false, onComplete }: OnboardingTour
   }, [onComplete]);
 
   const next = () => {
-    if (currentStep < TOUR_STEPS.length - 1) {
+    if (currentStep < filteredSteps.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
       completeTour();
@@ -98,20 +134,16 @@ export function OnboardingTour({ forceShow = false, onComplete }: OnboardingTour
   };
 
   const prev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-    }
+    if (currentStep > 0) setCurrentStep(prev => prev - 1);
   };
 
-  const skip = () => completeTour();
+  if (!isVisible || filteredSteps.length === 0) return null;
 
-  if (!isVisible) return null;
-
-  const step = TOUR_STEPS[currentStep];
+  const step = filteredSteps[currentStep];
   const StepIcon = step.icon;
-  const isLast = currentStep === TOUR_STEPS.length - 1;
+  const isLast = currentStep === filteredSteps.length - 1;
   const isFirst = currentStep === 0;
-  const progress = ((currentStep + 1) / TOUR_STEPS.length) * 100;
+  const progress = ((currentStep + 1) / filteredSteps.length) * 100;
 
   return (
     <AnimatePresence>
@@ -122,19 +154,15 @@ export function OnboardingTour({ forceShow = false, onComplete }: OnboardingTour
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex items-center justify-center"
         >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={skip} />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => completeTour()} />
 
-          {/* Tour Card */}
           <motion.div
             key={step.id}
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className={cn(
-              "relative z-10 w-full max-w-md mx-4 rounded-2xl bg-card border border-border shadow-2xl overflow-hidden"
-            )}
+            className="relative z-10 w-full max-w-md mx-4 rounded-2xl bg-card border border-border shadow-2xl overflow-hidden"
           >
             {/* Progress Bar */}
             <div className="h-1 bg-muted">
@@ -146,28 +174,29 @@ export function OnboardingTour({ forceShow = false, onComplete }: OnboardingTour
               />
             </div>
 
-            {/* Close */}
             <button
-              onClick={skip}
+              onClick={() => completeTour()}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
-            {/* Content */}
             <div className="p-6 pt-5">
-              {/* Icon */}
-              <motion.div
-                key={step.id + '-icon'}
-                initial={{ scale: 0, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 0.1 }}
-                className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4"
-              >
-                <StepIcon className="w-7 h-7 text-primary" />
-              </motion.div>
+              <div className="flex items-center gap-2 mb-4">
+                <motion.div
+                  key={step.id + '-icon'}
+                  initial={{ scale: 0, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 0.1 }}
+                  className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center"
+                >
+                  <StepIcon className="w-6 h-6 text-primary" />
+                </motion.div>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {currentStep + 1} of {filteredSteps.length}
+                </span>
+              </div>
 
-              {/* Text */}
               <motion.div
                 key={step.id + '-text'}
                 initial={{ opacity: 0, x: 20 }}
@@ -180,7 +209,7 @@ export function OnboardingTour({ forceShow = false, onComplete }: OnboardingTour
 
               {/* Step Dots */}
               <div className="flex items-center gap-1.5 mt-6 mb-4">
-                {TOUR_STEPS.map((_, i) => (
+                {filteredSteps.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setCurrentStep(i)}
@@ -196,17 +225,15 @@ export function OnboardingTour({ forceShow = false, onComplete }: OnboardingTour
                 ))}
               </div>
 
-              {/* Actions */}
               <div className="flex items-center justify-between">
                 <div>
-                  {!isFirst && (
+                  {!isFirst ? (
                     <Button variant="ghost" size="sm" onClick={prev} className="gap-1">
                       <ChevronLeft className="w-4 h-4" />
                       Back
                     </Button>
-                  )}
-                  {isFirst && (
-                    <Button variant="ghost" size="sm" onClick={skip} className="text-muted-foreground">
+                  ) : (
+                    <Button variant="ghost" size="sm" onClick={() => completeTour()} className="text-muted-foreground">
                       Skip Tour
                     </Button>
                   )}
