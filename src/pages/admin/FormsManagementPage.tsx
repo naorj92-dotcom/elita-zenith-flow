@@ -79,6 +79,9 @@ export function FormsManagementPage() {
   const [assignClientSearch, setAssignClientSearch] = useState('');
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
 
+  // Submission detail viewer
+  const [viewingSubmission, setViewingSubmission] = useState<any>(null);
+
   // Builder state
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [builderMode, setBuilderMode] = useState<'form' | 'chart'>('form');
@@ -101,15 +104,15 @@ export function FormsManagementPage() {
     },
   });
 
-  // Fetch submissions
+  // Fetch submissions with full form fields and responses
   const { data: submissions = [] } = useQuery({
-    queryKey: ['client-forms'],
+    queryKey: ['client-forms-admin'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_forms')
-        .select(`*, forms:form_id (name, form_type), clients:client_id (first_name, last_name)`)
+        .select(`*, forms:form_id (name, form_type, fields, requires_signature), clients:client_id (first_name, last_name, email)`)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100);
       if (error) throw error;
       return data;
     },
@@ -426,7 +429,11 @@ export function FormsManagementPage() {
                     <TableCell className="text-muted-foreground">
                       {submission.signed_at ? format(new Date(submission.signed_at), 'MMM d, yyyy') : 'Not signed'}
                     </TableCell>
-                    <TableCell><Button variant="ghost" size="icon"><Eye className="w-4 h-4" /></Button></TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => setViewingSubmission(submission)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {submissions.length === 0 && (
@@ -498,6 +505,82 @@ export function FormsManagementPage() {
               {assignMutation.isPending ? 'Assigning...' : `Assign to ${selectedClientIds.length || ''} Client${selectedClientIds.length !== 1 ? 's' : ''}`}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Submission Detail Dialog */}
+      <Dialog open={!!viewingSubmission} onOpenChange={() => setViewingSubmission(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0">
+          <DialogHeader className="p-5 pb-3 border-b border-border">
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-primary" />
+              {viewingSubmission?.forms?.name || 'Form Submission'}
+            </DialogTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{viewingSubmission?.clients?.first_name} {viewingSubmission?.clients?.last_name}</span>
+              {viewingSubmission?.clients?.email && (
+                <>
+                  <span>·</span>
+                  <span>{viewingSubmission.clients.email}</span>
+                </>
+              )}
+            </div>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="p-5 space-y-4">
+              {viewingSubmission?.forms?.fields && Array.isArray(viewingSubmission.forms.fields) ? (
+                (viewingSubmission.forms.fields as any[]).map((field: any) => {
+                  const value = viewingSubmission.responses?.[field.id];
+                  return (
+                    <div key={field.id} className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        {field.label}
+                        {field.required && <span className="text-destructive ml-1">*</span>}
+                      </p>
+                      <div className="p-3 rounded-lg border border-border bg-muted/30 text-sm">
+                        {field.type === 'checkbox' ? (
+                          <span className={value ? 'text-success' : 'text-destructive'}>
+                            {value ? '✓ Accepted' : '✗ Not accepted'}
+                          </span>
+                        ) : value ? (
+                          <span className="text-foreground whitespace-pre-wrap">{String(value)}</span>
+                        ) : (
+                          <span className="text-muted-foreground italic">Not answered</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-muted-foreground">No form fields available</p>
+              )}
+
+              {/* Signature */}
+              {viewingSubmission?.signature_data && (
+                <div className="space-y-1 pt-4 border-t border-border">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Signature</p>
+                  <div className="p-3 rounded-lg border border-border bg-background">
+                    <img src={viewingSubmission.signature_data} alt="Client Signature" className="max-h-24" />
+                    {viewingSubmission.signed_at && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Signed on {format(new Date(viewingSubmission.signed_at), 'MMMM d, yyyy at h:mm a')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Status */}
+              <div className="flex items-center gap-2 pt-4 border-t border-border">
+                <Badge variant={viewingSubmission?.status === 'completed' ? 'default' : 'secondary'} className="capitalize">
+                  {viewingSubmission?.status}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  Assigned {viewingSubmission?.created_at ? format(new Date(viewingSubmission.created_at), 'MMM d, yyyy') : ''}
+                </span>
+              </div>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>

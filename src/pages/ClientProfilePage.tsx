@@ -112,14 +112,14 @@ export default function ClientProfilePage() {
     enabled: !!id,
   });
 
-  // Fetch forms
+  // Fetch forms with full details
   const { data: forms = [] } = useQuery({
     queryKey: ['client-forms-profile', id],
     queryFn: async () => {
       if (!id) return [];
       const { data, error } = await supabase
         .from('client_forms')
-        .select('*, forms(name, form_type)')
+        .select('*, forms:form_id(name, form_type, fields, requires_signature)')
         .eq('client_id', id)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -660,23 +660,72 @@ function PackagesTab({ packages, clientId }: { packages: any[]; clientId?: strin
 
 // ─── Forms Tab ───────────────────────────────────────────
 function FormsTab({ forms }: { forms: any[] }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   if (forms.length === 0) {
     return <EmptyState icon={FileText} title="No forms" description="No forms or consents on file." compact />;
   }
   return (
     <div className="space-y-2">
-      {forms.map((f) => (
-        <div key={f.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card">
-          <FileText className="h-5 w-5 text-muted-foreground" />
-          <div className="flex-1">
-            <p className="text-sm font-medium">{f.forms?.name || 'Form'}</p>
-            <p className="text-xs text-muted-foreground capitalize">{f.forms?.form_type} · {f.status}</p>
+      {forms.map((f) => {
+        const isExpanded = expandedId === f.id;
+        const fields = Array.isArray(f.forms?.fields) ? f.forms.fields : [];
+        const isCompleted = f.status === 'completed';
+
+        return (
+          <div key={f.id} className="rounded-lg border border-border bg-card overflow-hidden">
+            <button
+              onClick={() => setExpandedId(isExpanded ? null : f.id)}
+              className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/30 transition-colors"
+            >
+              <FileText className={cn("h-5 w-5 shrink-0", isCompleted ? "text-success" : "text-amber-500")} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{f.forms?.name || 'Form'}</p>
+                <p className="text-xs text-muted-foreground capitalize">{f.forms?.form_type} · {f.status}</p>
+              </div>
+              <Badge variant={isCompleted ? 'default' : 'secondary'} className="shrink-0 capitalize text-xs">
+                {f.status}
+              </Badge>
+              <span className="text-xs text-muted-foreground shrink-0">
+                {isValid(new Date(f.created_at)) ? format(new Date(f.created_at), 'MMM d, yyyy') : '—'}
+              </span>
+            </button>
+            {isExpanded && isCompleted && fields.length > 0 && (
+              <div className="border-t border-border px-4 py-3 space-y-3 bg-muted/10">
+                {fields.map((field: any) => {
+                  const value = f.responses?.[field.id];
+                  return (
+                    <div key={field.id} className="space-y-0.5">
+                      <p className="text-xs font-medium text-muted-foreground">{field.label}</p>
+                      <p className="text-sm text-foreground">
+                        {field.type === 'checkbox'
+                          ? (value ? '✓ Yes' : '✗ No')
+                          : value || <span className="text-muted-foreground italic">—</span>}
+                      </p>
+                    </div>
+                  );
+                })}
+                {f.signature_data && (
+                  <div className="pt-2 border-t border-border space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Signature</p>
+                    <img src={f.signature_data} alt="Signature" className="max-h-16 rounded" />
+                    {f.signed_at && (
+                      <p className="text-[10px] text-muted-foreground">
+                        Signed {format(new Date(f.signed_at), 'MMM d, yyyy h:mm a')}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            {isExpanded && !isCompleted && (
+              <div className="border-t border-border px-4 py-3 bg-muted/10">
+                <p className="text-sm text-muted-foreground italic">Form not yet completed by client.</p>
+              </div>
+            )}
           </div>
-          <span className="text-xs text-muted-foreground">
-            {isValid(new Date(f.created_at)) ? format(new Date(f.created_at), 'MMM d, yyyy') : '—'}
-          </span>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
