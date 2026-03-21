@@ -531,6 +531,13 @@ export function FormBuilderFull({ formData, onChange, onSave, onCancel, isSaving
               onDrop={handleCanvasDrop}
               onAddField={addField}
               isMobile={isMobile}
+              onMoveField={(from, to) => {
+                const next = [...fields];
+                const [moved] = next.splice(from, 1);
+                next.splice(to, 0, moved);
+                set('fields', next);
+                setSelectedIdx(to);
+              }}
             />
           )}
         </div>
