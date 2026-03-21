@@ -104,15 +104,15 @@ export function FormsManagementPage() {
     },
   });
 
-  // Fetch submissions
+  // Fetch submissions with full form fields and responses
   const { data: submissions = [] } = useQuery({
-    queryKey: ['client-forms'],
+    queryKey: ['client-forms-admin'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_forms')
-        .select(`*, forms:form_id (name, form_type), clients:client_id (first_name, last_name)`)
+        .select(`*, forms:form_id (name, form_type, fields, requires_signature), clients:client_id (first_name, last_name, email)`)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100);
       if (error) throw error;
       return data;
     },
