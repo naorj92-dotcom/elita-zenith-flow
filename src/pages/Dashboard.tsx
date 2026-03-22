@@ -176,9 +176,10 @@ export function Dashboard() {
   );
 
   const kpiCards = [
-    { label: 'Appointments', value: metrics.today_appointments, icon: Calendar, sub: 'Today' },
-    { label: 'Sales', value: `$${metrics.today_sales.toLocaleString()}`, icon: DollarSign, sub: 'Today' },
+    { label: 'Today\'s Bookings', value: metrics.today_appointments, icon: Calendar, sub: 'Appointments' },
+    { label: 'Today\'s Revenue', value: `$${metrics.today_revenue.toLocaleString()}`, icon: DollarSign, sub: 'Revenue' },
     { label: 'Week Sales', value: `$${metrics.week_sales.toLocaleString()}`, icon: TrendingUp, sub: 'This week' },
+    { label: 'New Clients', value: metrics.new_clients_week, icon: Users, sub: 'This week' },
     ...(hasCommission ? [{ label: 'Commission', value: `$${metrics.month_commission.toLocaleString()}`, icon: Target, sub: 'This month' }] : []),
   ];
 
