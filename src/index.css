@@ -5,88 +5,82 @@
 /* Elita Medical Spa - Medical Luxury Design System */
 /* Clean, Professional, Calm, Premium, Trustworthy */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Medical Luxury Color Palette */
-    /* Background: warm off-white / cream */
-    --background: 40 20% 97%;
-    --foreground: 30 10% 18%;
+    /* Elita Luxury Palette — Black / White / Warm Beige */
+    --background: 40 25% 96%;
+    --foreground: 0 0% 10%;
     
-    /* Cards / surfaces: pure white */
     --card: 0 0% 100%;
-    --card-foreground: 30 10% 18%;
+    --card-foreground: 0 0% 10%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 30 10% 18%;
+    --popover-foreground: 0 0% 10%;
     
-    /* Accent: light brownish taupe - ONLY for primary CTAs, active nav, highlights */
-    --primary: 30 25% 58%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 30 28% 50%;
-    --primary-muted: 30 18% 72%;
+    /* Primary: rich warm black with beige accent */
+    --primary: 30 8% 15%;
+    --primary-foreground: 40 30% 96%;
+    --primary-hover: 30 10% 22%;
+    --primary-muted: 35 12% 45%;
     
-    /* Secondary: subtle, understated */
-    --secondary: 35 15% 95%;
-    --secondary-foreground: 30 10% 30%;
+    --secondary: 38 18% 93%;
+    --secondary-foreground: 30 8% 25%;
     
-    /* Soft muted tones */
-    --muted: 35 12% 93%;
-    --muted-foreground: 30 8% 50%;
+    --muted: 38 15% 92%;
+    --muted-foreground: 30 6% 48%;
     
-    /* Warm accent for hover states */
-    --accent: 35 20% 94%;
-    --accent-foreground: 30 10% 22%;
+    --accent: 36 25% 91%;
+    --accent-foreground: 0 0% 10%;
     
-    /* Status Colors - muted, not harsh */
-    --destructive: 0 55% 50%;
+    /* Status Colors */
+    --destructive: 0 55% 48%;
     --destructive-foreground: 0 0% 100%;
     
-    --success: 145 35% 42%;
+    --success: 152 40% 38%;
     --success-foreground: 0 0% 100%;
     
-    --warning: 38 70% 50%;
-    --warning-foreground: 30 10% 15%;
+    --warning: 38 75% 50%;
+    --warning-foreground: 0 0% 10%;
     
-    --info: 210 45% 50%;
+    --info: 210 50% 48%;
     --info-foreground: 0 0% 100%;
     
-    /* Borders & Inputs - subtle 1px light gray */
-    --border: 35 15% 88%;
-    --input: 35 15% 92%;
-    --ring: 32 35% 52%;
+    /* Borders — crisp and light */
+    --border: 38 12% 88%;
+    --input: 38 12% 90%;
+    --ring: 30 8% 15%;
     
-    /* Rounded corners: 12-16px */
     --radius: 0.75rem;
     
-    /* Sidebar */
+    /* Sidebar — clean white */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 30 10% 30%;
-    --sidebar-primary: 32 35% 52%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 35 15% 96%;
-    --sidebar-accent-foreground: 30 10% 22%;
-    --sidebar-border: 35 15% 90%;
-    --sidebar-ring: 32 35% 52%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 30 8% 15%;
+    --sidebar-primary-foreground: 40 30% 96%;
+    --sidebar-accent: 38 18% 95%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 38 12% 90%;
+    --sidebar-ring: 30 8% 15%;
     
-    /* Elita Brand Variables */
-    --elita-camel: 32 35% 52%;
-    --elita-gold: 38 45% 55%;
-    --elita-cream: 40 20% 97%;
-    --elita-cream-dark: 35 15% 93%;
-    --elita-charcoal: 30 10% 18%;
-    --elita-gray: 30 8% 50%;
-    --elita-light-gray: 35 15% 88%;
+    /* Brand Variables */
+    --elita-camel: 33 30% 60%;
+    --elita-gold: 38 50% 55%;
+    --elita-cream: 40 25% 96%;
+    --elita-cream-dark: 38 15% 92%;
+    --elita-charcoal: 0 0% 10%;
+    --elita-gray: 30 6% 48%;
+    --elita-light-gray: 38 12% 88%;
     
-    /* Shadows - soft and minimal */
-    --shadow-sm: 0 1px 3px hsl(30 10% 18% / 0.03);
-    --shadow-md: 0 4px 12px hsl(30 10% 18% / 0.05);
-    --shadow-lg: 0 8px 24px hsl(30 10% 18% / 0.08);
-    --shadow-glow: 0 0 20px hsl(32 35% 52% / 0.12);
+    /* Shadows */
+    --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.04);
+    --shadow-md: 0 4px 14px hsl(0 0% 0% / 0.06);
+    --shadow-lg: 0 10px 30px hsl(0 0% 0% / 0.08);
+    --shadow-glow: 0 0 24px hsl(33 30% 60% / 0.15);
     
-    /* Typography - clean modern sans-serif */
-    --font-heading: 'Inter', system-ui, sans-serif;
+    /* Typography */
+    --font-heading: 'Playfair Display', Georgia, serif;
     --font-body: 'Inter', system-ui, sans-serif;
   }
 
