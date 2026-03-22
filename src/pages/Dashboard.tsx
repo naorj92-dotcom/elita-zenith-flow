@@ -55,6 +55,8 @@ export function Dashboard() {
     today_sales: 0,
     week_sales: 0,
     month_commission: 0,
+    new_clients_week: 0,
+    today_revenue: 0,
   });
 
   useEffect(() => {
@@ -73,6 +75,7 @@ export function Dashboard() {
           scheduled_at,
           duration_minutes,
           status,
+          total_amount,
           clients (first_name, last_name),
           services (name)
         `)
@@ -90,26 +93,35 @@ export function Dashboard() {
           status: apt.status as AppointmentStatus,
           duration: apt.duration_minutes,
         }));
+        const todayRevenue = appointmentsData
+          .filter((a: any) => a.status === 'completed')
+          .reduce((sum: number, a: any) => sum + Number(a.total_amount || 0), 0);
         setAppointments(formattedAppointments);
-        setMetrics(prev => ({ ...prev, today_appointments: formattedAppointments.length }));
+        setMetrics(prev => ({ ...prev, today_appointments: formattedAppointments.length, today_revenue: todayRevenue }));
       }
 
       const weekStart = new Date(today);
       weekStart.setDate(today.getDate() - today.getDay());
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
-      const { data: transactions } = await supabase
-        .from('transactions')
-        .select('amount, commission_amount, transaction_date')
-        .eq('staff_id', staff.id)
-        .gte('transaction_date', monthStart.toISOString());
+      const [transRes, newClientsRes] = await Promise.all([
+        supabase
+          .from('transactions')
+          .select('amount, commission_amount, transaction_date')
+          .eq('staff_id', staff.id)
+          .gte('transaction_date', monthStart.toISOString()),
+        supabase
+          .from('clients')
+          .select('id', { count: 'exact', head: true })
+          .gte('created_at', weekStart.toISOString()),
+      ]);
 
-      if (transactions) {
+      if (transRes.data) {
         let todaySales = 0;
         let weekSales = 0;
         let monthCommission = 0;
 
-        transactions.forEach(t => {
+        transRes.data.forEach(t => {
           const tDate = new Date(t.transaction_date);
           monthCommission += Number(t.commission_amount) || 0;
           
@@ -126,6 +138,7 @@ export function Dashboard() {
           today_sales: todaySales,
           week_sales: weekSales,
           month_commission: monthCommission,
+          new_clients_week: newClientsRes.count || 0,
         }));
       }
     };
@@ -163,9 +176,10 @@ export function Dashboard() {
   );
 
   const kpiCards = [
-    { label: 'Appointments', value: metrics.today_appointments, icon: Calendar, sub: 'Today' },
-    { label: 'Sales', value: `$${metrics.today_sales.toLocaleString()}`, icon: DollarSign, sub: 'Today' },
+    { label: 'Today\'s Bookings', value: metrics.today_appointments, icon: Calendar, sub: 'Appointments' },
+    { label: 'Today\'s Revenue', value: `$${metrics.today_revenue.toLocaleString()}`, icon: DollarSign, sub: 'Revenue' },
     { label: 'Week Sales', value: `$${metrics.week_sales.toLocaleString()}`, icon: TrendingUp, sub: 'This week' },
+    { label: 'New Clients', value: metrics.new_clients_week, icon: Users, sub: 'This week' },
     ...(hasCommission ? [{ label: 'Commission', value: `$${metrics.month_commission.toLocaleString()}`, icon: Target, sub: 'This month' }] : []),
   ];
 
@@ -210,7 +224,7 @@ export function Dashboard() {
       </motion.div>
 
       {/* KPI Cards */}
-      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {kpiCards.map((stat, i) => (
           <Card key={stat.label}>
             <CardContent className="p-4">

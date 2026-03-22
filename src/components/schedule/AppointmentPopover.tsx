@@ -208,6 +208,30 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
 
       <Separator className="my-3" />
 
+      {/* Provider Quick Actions */}
+      {!isGoogleEvent && (
+        <div className="space-y-1.5 mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Quick Actions</p>
+          <div className="grid grid-cols-3 gap-1.5">
+            <Link to={`/clients/${appointment.client_id}?tab=forms`}>
+              <Button variant="outline" size="sm" className="w-full h-8 text-[10px] gap-1 px-1.5">
+                📝 Add Notes
+              </Button>
+            </Link>
+            <Link to={`/clients/${appointment.client_id}?tab=products`}>
+              <Button variant="outline" size="sm" className="w-full h-8 text-[10px] gap-1 px-1.5">
+                💡 Recommend
+              </Button>
+            </Link>
+            <Link to={`/schedule/new?client=${appointment.client_id}`}>
+              <Button variant="outline" size="sm" className="w-full h-8 text-[10px] gap-1 px-1.5">
+                🔄 Rebook
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex items-center justify-between">
         <div className="flex gap-1">
@@ -239,7 +263,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
               onClick={() => onStatusChange?.(appointment.id, 'confirmed')}
             >
               <CheckCircle className="w-3 h-3 mr-1" />
-              Mark as Confirmed
+              Confirm
             </Button>
           )}
           {(appointment.status === 'confirmed' || appointment.status === 'scheduled') && !isGoogleEvent && (
@@ -259,7 +283,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
               onClick={() => onStatusChange?.(appointment.id, 'in_progress')}
             >
               <CheckCircle className="w-3 h-3 mr-1" />
-              Start Treatment
+              Start
             </Button>
           )}
         </div>
