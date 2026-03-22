@@ -224,7 +224,7 @@ export function Dashboard() {
       </motion.div>
 
       {/* KPI Cards */}
-      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {kpiCards.map((stat, i) => (
           <Card key={stat.label}>
             <CardContent className="p-4">
