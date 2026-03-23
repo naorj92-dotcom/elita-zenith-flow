@@ -152,10 +152,11 @@
     line-height: 1.65;
     /* Living ambient background — cream → champagne → warm beige */
     background:
-      radial-gradient(ellipse 80% 50% at 50% 5%, hsl(34 36% 92% / 0.7) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 60%, hsl(30 30% 90% / 0.3) 0%, transparent 50%),
-      radial-gradient(ellipse 50% 35% at 20% 80%, hsl(28 28% 88% / 0.25) 0%, transparent 50%),
-      linear-gradient(180deg, hsl(33 28% 96%) 0%, hsl(32 30% 93%) 35%, hsl(30 24% 92%) 70%, hsl(33 28% 96%) 100%);
+      radial-gradient(ellipse 70% 40% at 50% 0%, hsl(34 40% 92% / 0.8) 0%, transparent 55%),
+      radial-gradient(ellipse 55% 35% at 85% 50%, hsl(30 34% 90% / 0.35) 0%, transparent 45%),
+      radial-gradient(ellipse 45% 30% at 15% 75%, hsl(28 30% 88% / 0.3) 0%, transparent 45%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, hsl(34 48% 60% / 0.03) 0%, transparent 60%),
+      linear-gradient(180deg, hsl(33 30% 96.5%) 0%, hsl(32 32% 94%) 30%, hsl(30 26% 92.5%) 65%, hsl(33 28% 95.5%) 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
@@ -168,7 +169,7 @@
     pointer-events: none;
     z-index: 9999;
     background:
-      radial-gradient(ellipse 100% 100% at 50% 50%, transparent 55%, hsl(22 20% 18% / 0.04) 100%);
+      radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, hsl(22 20% 16% / 0.07) 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -187,17 +188,19 @@
   /* ═══ JOURNEY HERO — full-width luxury section ═══ */
   .journey-hero {
     background: linear-gradient(172deg,
-      hsl(36 36% 99%) 0%,
-      hsl(34 32% 97%) 20%,
-      hsl(32 28% 95%) 50%,
-      hsl(30 24% 93.5%) 80%,
-      hsl(33 28% 96%) 100%);
+      hsl(36 40% 99%) 0%,
+      hsl(35 36% 97.5%) 15%,
+      hsl(33 32% 95.5%) 40%,
+      hsl(31 28% 94%) 65%,
+      hsl(30 24% 93%) 85%,
+      hsl(33 30% 95%) 100%);
     box-shadow:
-      0 24px 80px hsl(22 24% 22% / 0.07),
-      0 8px 24px hsl(22 24% 22% / 0.03),
-      0 0 0 1px hsl(32 26% 89% / 0.35),
-      inset 0 1px 0 hsl(38 44% 100% / 0.85),
-      inset 0 -1px 0 hsl(30 18% 85% / 0.2);
+      0 32px 100px hsl(22 24% 18% / 0.1),
+      0 12px 36px hsl(22 24% 18% / 0.05),
+      0 0 120px hsl(34 48% 60% / 0.05),
+      0 0 0 1px hsl(32 28% 90% / 0.4),
+      inset 0 2px 0 hsl(38 48% 100% / 0.9),
+      inset 0 -1px 0 hsl(30 18% 85% / 0.25);
   }
 
   /* ═══ CARD TIER 1 — Hero (glowing, immersive) ═══ */
@@ -275,16 +278,28 @@
     position: relative;
     overflow: hidden;
   }
+  .btn-glow::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    background: radial-gradient(ellipse 100% 80% at 50% 100%, hsl(34 48% 60% / 0.12) 0%, transparent 65%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: -1;
+  }
   .btn-glow::after {
     content: '';
     position: absolute;
     inset: -2px;
     border-radius: inherit;
-    background: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(34 48% 60% / 0.15) 0%, transparent 60%);
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(34 48% 60% / 0.2) 0%, transparent 55%);
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.4s ease;
   }
+  .btn-glow:hover::before { opacity: 1; }
   .btn-glow:hover::after { opacity: 1; }
 
   /* ═══ Luxury dividers ═══ */

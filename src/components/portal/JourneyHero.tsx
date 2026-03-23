@@ -50,30 +50,32 @@ export function JourneyHero({
       className="relative z-10"
     >
       {/* ─── Full-width glowing hero container ─── */}
-      <div className="journey-hero luxury-dust relative overflow-hidden rounded-[1.5rem]">
-        {/* Ambient glow layers */}
+      <div className="journey-hero luxury-dust relative overflow-hidden rounded-[2rem]">
+        {/* Ambient glow layers — stronger radials */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-[70%] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(34_48%_60%/0.1)_0%,transparent_65%)]" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[120%] h-[40%] bg-[radial-gradient(ellipse_70%_60%_at_50%_100%,hsl(30_40%_52%/0.05)_0%,transparent_60%)]" />
-          <div className="absolute top-[20%] right-0 w-[50%] h-[60%] bg-[radial-gradient(ellipse_50%_50%_at_90%_40%,hsl(34_48%_60%/0.06)_0%,transparent_60%)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[160%] h-[80%] bg-[radial-gradient(ellipse_65%_55%_at_50%_0%,hsl(34_48%_60%/0.16)_0%,transparent_60%)]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[50%] bg-[radial-gradient(ellipse_75%_65%_at_50%_100%,hsl(30_40%_52%/0.08)_0%,transparent_55%)]" />
+          <div className="absolute top-[15%] right-0 w-[60%] h-[70%] bg-[radial-gradient(ellipse_55%_55%_at_85%_35%,hsl(34_48%_60%/0.1)_0%,transparent_55%)]" />
+          {/* Central hero spotlight */}
+          <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[50%] h-[40%] bg-[radial-gradient(circle_at_center,hsl(34_48%_60%/0.08)_0%,transparent_70%)]" />
         </div>
 
-        <div className="relative px-8 pt-12 pb-10 sm:px-12 sm:pt-16 sm:pb-14">
+        <div className="relative px-8 pt-16 pb-12 sm:px-12 sm:pt-24 sm:pb-18">
           {/* ─── Welcome & Title ─── */}
-          <div className="text-center mb-10 sm:mb-14">
+          <div className="text-center mb-12 sm:mb-16">
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-[9px] sm:text-[10px] font-semibold text-elita-camel uppercase tracking-[0.5em] mb-4"
+              className="text-[9px] sm:text-[11px] font-semibold text-elita-camel uppercase tracking-[0.55em] mb-5"
             >
               Welcome back, {firstName}
             </motion.p>
             <motion.h1
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-[2.75rem] sm:text-[3.75rem] font-heading font-semibold text-foreground leading-[0.92] tracking-[-0.035em]"
+              transition={{ delay: 0.3, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="text-[3.25rem] sm:text-[4.5rem] font-heading font-semibold text-foreground leading-[0.88] tracking-[-0.04em]"
             >
               Your Elita
               <br />
@@ -84,7 +86,7 @@ export function JourneyHero({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.45, duration: 0.5 }}
-                className="text-[11px] sm:text-xs text-muted-foreground mt-4 tracking-wide"
+                className="text-[11px] sm:text-xs text-muted-foreground/70 mt-5 tracking-widest uppercase font-medium"
               >
                 Stage {currentStage + 1} of {STAGES.length}
               </motion.p>
@@ -116,45 +118,50 @@ export function JourneyHero({
           >
             {nextAppointment ? (
               <div
-                className="relative p-8 sm:p-10 rounded-[1.25rem] overflow-hidden grain-overlay"
+                className="relative p-10 sm:p-12 rounded-[1.5rem] overflow-hidden grain-overlay luxury-dust"
                 style={{
-                  background: 'linear-gradient(165deg, hsl(26 22% 28%) 0%, hsl(24 20% 24%) 40%, hsl(22 18% 22%) 100%)',
-                  boxShadow: '0 16px 56px hsl(22 24% 12% / 0.25), 0 6px 20px hsl(22 24% 12% / 0.12), inset 0 1px 0 hsl(34 30% 40% / 0.2)',
+                  background: 'linear-gradient(165deg, hsl(24 24% 26%) 0%, hsl(22 22% 21%) 35%, hsl(20 20% 18%) 70%, hsl(18 18% 16%) 100%)',
+                  boxShadow: '0 24px 80px hsl(20 24% 10% / 0.35), 0 8px 28px hsl(20 24% 10% / 0.18), 0 0 60px hsl(34 48% 60% / 0.06), inset 0 1px 0 hsl(34 34% 45% / 0.25), inset 0 -1px 0 hsl(20 18% 12% / 0.3)',
                 }}
               >
-                {/* Subtle gold glow overlay */}
+                {/* Gold glow overlay — stronger */}
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'radial-gradient(ellipse 70% 60% at 80% 20%, hsl(34 48% 60% / 0.12) 0%, transparent 60%)',
+                    background: 'radial-gradient(ellipse 60% 50% at 80% 15%, hsl(34 48% 60% / 0.18) 0%, transparent 55%), radial-gradient(ellipse 40% 40% at 20% 85%, hsl(30 40% 52% / 0.06) 0%, transparent 50%)',
                   }}
                 />
+                {/* Gold edge highlight — top */}
+                <div
+                  className="absolute top-0 left-[10%] right-[10%] h-[1px] pointer-events-none"
+                  style={{ background: 'linear-gradient(90deg, transparent, hsl(34 48% 60% / 0.3), transparent)' }}
+                />
 
-                <div className="relative">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.45em] mb-4"
-                     style={{ color: 'hsl(34 48% 65%)' }}>
+                <div className="relative z-10">
+                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.5em] mb-5"
+                     style={{ color: 'hsl(34 48% 68%)' }}>
                     Your Next Visit
                   </p>
 
-                  <p className="text-2xl sm:text-[1.85rem] font-heading font-semibold leading-snug tracking-tight"
-                     style={{ color: 'hsl(36 30% 95%)' }}>
+                  <p className="text-[1.75rem] sm:text-[2.15rem] font-heading font-semibold leading-snug tracking-tight"
+                     style={{ color: 'hsl(36 30% 96%)' }}>
                     {nextAppointment.services?.name}
                   </p>
 
-                  <div className="divider-luxe my-5 opacity-30" />
+                  <div className="divider-luxe my-6 opacity-25" />
 
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                         style={{ background: 'hsl(34 48% 60% / 0.12)', border: '1px solid hsl(34 48% 60% / 0.15)' }}>
-                      <Clock className="w-4 h-4" style={{ color: 'hsl(34 48% 65%)' }} />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                         style={{ background: 'hsl(34 48% 60% / 0.14)', border: '1px solid hsl(34 48% 60% / 0.18)', boxShadow: '0 0 20px hsl(34 48% 60% / 0.08)' }}>
+                      <Clock className="w-[18px] h-[18px]" style={{ color: 'hsl(34 48% 68%)' }} />
                     </div>
                     <div>
-                      <p className="text-[13px] font-medium"
-                         style={{ color: 'hsl(36 26% 88%)' }}>
+                      <p className="text-[14px] font-medium"
+                         style={{ color: 'hsl(36 26% 90%)' }}>
                         {format(new Date(nextAppointment.scheduled_at), 'EEEE, MMMM d')}
                       </p>
-                      <p className="text-[11px] mt-0.5"
-                         style={{ color: 'hsl(34 18% 60%)' }}>
+                      <p className="text-[11px] mt-1"
+                         style={{ color: 'hsl(34 18% 58%)' }}>
                         {format(new Date(nextAppointment.scheduled_at), 'h:mm a')}
                         {nextAppointment.staff && (
                           <span> · with {nextAppointment.staff.first_name} {nextAppointment.staff.last_name}</span>
@@ -214,16 +221,16 @@ export function JourneyHero({
           )}
 
           {/* ─── Divider ─── */}
-          <div className="divider-luxe mb-8" />
+          <div className="divider-luxe mb-10" />
 
           {/* ─── Primary CTA ─── */}
           <Button
             asChild
             size="lg"
-            className="w-full h-14 text-[13px] font-semibold gap-3 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-lg transition-all duration-400 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] btn-glow"
+            className="w-full h-16 text-[14px] font-semibold gap-3 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-xl transition-all duration-400 hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:scale-[0.99] btn-glow"
           >
             <Link to={bookingHref}>
-              <CalendarPlus className="h-4.5 w-4.5" />
+              <CalendarPlus className="h-5 w-5" />
               {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
             </Link>
           </Button>
