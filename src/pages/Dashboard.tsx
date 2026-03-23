@@ -27,9 +27,9 @@ interface TodayAppointment {
 }
 
 const fadeUp = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
+  transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
 };
 
 export function Dashboard() {
@@ -122,15 +122,24 @@ export function Dashboard() {
       <OnboardingTour />
 
       {/* ═══ HERO HEADER ═══ */}
-      <motion.div {...fadeUp} className="card-hero glow-accent relative mb-12 mt-2 sm:mt-4">
+      <motion.div {...fadeUp} className="card-hero glow-accent relative mb-14 mt-2 sm:mt-4">
         <div className="accent-line" />
-        <div className="relative p-8 sm:p-10">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
+        {/* Ambient glow behind hero */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[1.25rem]">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-[70%] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(34_48%_60%/0.1)_0%,transparent_60%)]" />
+          <motion.div
+            className="absolute top-[10%] right-[10%] w-[50%] h-[60%] bg-[radial-gradient(circle_at_center,hsl(34_48%_60%/0.08)_0%,transparent_60%)]"
+            animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.08, 1] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </div>
+        <div className="relative p-8 sm:p-12">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
             <div>
-              <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.45em] mb-3">
+              <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.5em] mb-4">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
-              <h1 className="text-3xl sm:text-[2.75rem] font-heading font-semibold text-foreground tracking-[-0.03em] leading-[0.95]">
+              <h1 className="text-3xl sm:text-[3rem] font-heading font-semibold text-foreground tracking-[-0.04em] leading-[0.9]">
                 Welcome back,
                 <br />
                 <span className="italic font-normal">{firstName}</span>
@@ -141,7 +150,7 @@ export function Dashboard() {
               disabled={isLoading} 
               variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
               size="default" 
-              className="gap-2 shrink-0 rounded-2xl h-12 px-6 shadow-sm"
+              className="gap-2 shrink-0 rounded-2xl h-13 px-7 btn-glow"
             >
               {clockStatus?.is_clocked_in ? (
                 <><Square className="w-4 h-4" /> Clock Out</>
@@ -149,13 +158,17 @@ export function Dashboard() {
             </Button>
           </div>
 
-          <div className="divider-luxe mt-8 mb-8" />
+          <div className="divider-luxe mt-10 mb-10" />
 
-          {/* KPI Cards — inside hero for dominance */}
+          {/* KPI Cards */}
           <div className="grid grid-cols-3 gap-5">
             {kpiCards.map((stat) => (
-              <div key={stat.label} className="p-5 rounded-2xl border border-border/20 hover:border-border/40 transition-all duration-300"
-                   style={{ background: 'linear-gradient(168deg, hsl(36 24% 99%) 0%, hsl(34 18% 97.5%) 100%)', boxShadow: 'inset 0 1px 0 hsl(36 30% 100% / 0.5), 0 2px 8px hsl(20 18% 24% / 0.02)' }}>
+              <motion.div
+                key={stat.label}
+                whileHover={{ y: -3, scale: 1.01 }}
+                transition={{ duration: 0.4 }}
+                className="glass p-5 sm:p-6 rounded-2xl"
+              >
                 <p className="text-3xl sm:text-4xl font-heading font-bold text-foreground leading-none tracking-tight">{stat.value}</p>
                 <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1">
                   {stat.change !== null && stat.change !== 0 && (
@@ -165,14 +178,14 @@ export function Dashboard() {
                   )}
                   {stat.sub}
                 </p>
-                <p className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-[0.3em] mt-3">{stat.label}</p>
-              </div>
+                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-[0.35em] mt-3">{stat.label}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </motion.div>
 
-      <div className="space-y-12 relative z-10">
+      <div className="space-y-14 relative z-10">
         {/* Today's Action Items */}
         <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
           <TodaysFocusWidget />
@@ -187,21 +200,27 @@ export function Dashboard() {
                 View All <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </CardHeader>
-            <CardContent className="space-y-2 px-7 pb-7">
+            <CardContent className="space-y-2.5 px-7 pb-7">
               {appointments.length === 0 ? (
                 <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
               ) : (
                 appointments.slice(0, 5).map((apt) => (
-                  <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-2xl bg-muted/20 hover:bg-muted/40 hover:shadow-sm transition-all duration-300">
-                    <div className="text-center min-w-[52px]">
-                      <p className="text-sm font-semibold text-foreground">{apt.time}</p>
-                      <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
-                    </div>
-                    <StatusBadge status={apt.status} />
+                  <Link key={apt.id} to={`/schedule/${apt.id}`}>
+                    <motion.div
+                      whileHover={{ y: -2 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center gap-4 p-4 rounded-2xl bg-muted/15 hover:bg-muted/30 hover:shadow-sm transition-all duration-400"
+                    >
+                      <div className="text-center min-w-[52px]">
+                        <p className="text-sm font-semibold text-foreground">{apt.time}</p>
+                        <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
+                      </div>
+                      <StatusBadge status={apt.status} />
+                    </motion.div>
                   </Link>
                 ))
               )}
@@ -216,7 +235,7 @@ export function Dashboard() {
 
         {/* Quick Actions */}
         <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
-          <p className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.45em] mb-5">Quick Actions</p>
+          <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.5em] mb-6">Quick Actions</p>
           <div className="grid grid-cols-2 gap-4">
             {[
               { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
@@ -224,12 +243,19 @@ export function Dashboard() {
               { label: 'View Schedule', href: '/schedule', icon: Clock },
               { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
             ].map((action) => (
-              <Link key={action.label} to={action.href} className="flex items-center gap-4 p-6 rounded-2xl bg-card border border-border/50 hover:border-elita-camel/15 hover:shadow-md hover:-translate-y-1 transition-all duration-300 active:scale-[0.98]"
-                    style={{ boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.4), var(--shadow-sm)' }}>
-                <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center">
-                  <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
-                </div>
-                <span className="text-sm font-medium text-foreground">{action.label}</span>
+              <Link key={action.label} to={action.href}>
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.4 }}
+                  className="flex items-center gap-4 p-6 rounded-2xl glass hover:shadow-md"
+                >
+                  <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center"
+                       style={{ boxShadow: '0 0 16px hsl(34 48% 60% / 0.06)' }}>
+                    <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{action.label}</span>
+                </motion.div>
               </Link>
             ))}
           </div>
