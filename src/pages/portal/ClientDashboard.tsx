@@ -10,6 +10,7 @@ import { differenceInDays, format } from 'date-fns';
 import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type ProgressData, type TreatmentCategory } from '@/lib/elitaMethod';
 import { cn } from '@/lib/utils';
 import { JourneyHero } from '@/components/portal/JourneyHero';
+import { PendingFormsBanner } from '@/components/portal/PendingFormsBanner';
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
