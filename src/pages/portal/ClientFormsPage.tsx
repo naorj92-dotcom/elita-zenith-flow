@@ -157,6 +157,8 @@ export function ClientFormsPage() {
     setSelectedForm(form);
     setResponses(form.responses || {});
     setSignatureData(form.signature_data);
+    setTypedSignatureName((form.responses as any)?.__typed_signature_name || '');
+    setSignatureConfirmed(!!(form.responses as any)?.__signature_confirmed);
     setFieldErrors({});
   };
 
@@ -164,6 +166,8 @@ export function ClientFormsPage() {
     setSelectedForm(null);
     setResponses({});
     setSignatureData(null);
+    setTypedSignatureName('');
+    setSignatureConfirmed(false);
     setFieldErrors({});
   };
 
