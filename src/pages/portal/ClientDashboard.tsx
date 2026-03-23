@@ -195,23 +195,23 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGES — offset right ═══ */}
+      {/* ═══ PACKAGES — stronger cards ═══ */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-16 relative z-10 sm:mr-[-4px] sm:ml-4">
+        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-20 relative z-10 sm:ml-4">
           <SectionLabel>Session Progress</SectionLabel>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
-                <div key={pkg.id} className="card-premium p-6 hover:-translate-y-1">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-[13px] font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                    <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
+                <div key={pkg.id} className="card-premium p-7 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-[14px] font-heading font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
+                    <span className="text-xl font-heading font-bold text-elita-camel">{pct}%</span>
                   </div>
-                  <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                  <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
                     <motion.div className="h-full rounded-full progress-glow" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-2.5">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
+                  <p className="text-[12px] text-muted-foreground mt-3">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
                 </div>
               );
             })}
