@@ -245,6 +245,7 @@ export default function ClientProfilePage() {
                   { value: 'packages', label: 'Packages' },
                   { value: 'products', label: 'Products' },
                   { value: 'forms', label: 'Forms & Charts' },
+                  { value: 'chart-history', label: 'Chart History' },
                   { value: 'gallery', label: 'Gallery' },
                   { value: 'files', label: 'Files' },
                 ].map((tab) => (
