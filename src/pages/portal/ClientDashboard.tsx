@@ -207,6 +207,7 @@ export function ClientDashboard() {
           treatmentProgress={treatmentProgress}
           nextAppointment={nextAppointment}
           recommendation={recommendation}
+          recommendedServiceInfo={recommendedServiceInfo || undefined}
           bookingHref={bookingHref}
         />
       </div>
