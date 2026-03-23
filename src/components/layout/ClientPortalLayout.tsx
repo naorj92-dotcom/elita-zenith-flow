@@ -109,7 +109,7 @@ export function ClientPortalLayout() {
                     "flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 text-sm",
                     itemActive ? "bg-elita-camel/12 text-elita-camel font-medium" : "text-sidebar-foreground hover:bg-sidebar-accent"
                   )}>
-                  <Icon className={cn("w-4 h-4", itemActive ? "text-primary-foreground" : "text-muted-foreground")} />
+                  <Icon className={cn("w-4 h-4", itemActive ? "text-elita-camel" : "text-muted-foreground")} />
                   <span>{category.label}</span>
                   {badge > 0 && (
                     <Badge className="ml-auto h-4.5 min-w-[18px] px-1 text-[9px] bg-destructive text-destructive-foreground border-0">{badge}</Badge>
