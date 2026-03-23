@@ -204,7 +204,7 @@ export function ClientDashboard() {
             )}
 
             {/* Primary CTA — inside hero for focus */}
-            <Button asChild size="lg" className="w-full h-13 text-sm font-semibold gap-2.5 rounded-2xl bg-elita-taupe text-primary-foreground hover:bg-elita-taupe/85">
+            <Button asChild size="lg" className="w-full h-13 text-sm font-semibold gap-2.5 rounded-2xl bg-elita-gold text-white hover:bg-elita-camel">
               <Link to={bookingHref}>
                 <CalendarPlus className="h-4 w-4" />
                 {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
