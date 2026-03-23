@@ -205,7 +205,7 @@ export const FRONT_DESK_ADDITIONAL: NavItem[] = [
   { label: 'Receipts', href: '/receipts', icon: Receipt },
 ];
 
-// Client Portal Navigation
+// Client Portal Navigation — 5 consolidated sections
 export const CLIENT_NAVIGATION: NavCategory[] = [
   {
     label: 'Home',
@@ -215,63 +215,28 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
     ],
   },
   {
-    label: 'Book',
-    icon: CalendarPlus,
-    items: [
-      { label: 'Book Appointment', href: '/portal/book', icon: CalendarPlus },
-      { label: 'Join Waitlist', href: '/portal/waitlist', icon: ClipboardListIcon },
-    ],
-  },
-  {
-    label: 'My Appointments',
+    label: 'Appointments',
     icon: Calendar,
     items: [
-      { label: 'Upcoming', href: '/portal/appointments', icon: Calendar },
+      { label: 'My Appointments', href: '/portal/appointments', icon: Calendar },
+      { label: 'Book Appointment', href: '/portal/book', icon: CalendarPlus },
+      { label: 'Join Waitlist', href: '/portal/waitlist', icon: ClipboardListIcon },
       { label: 'History', href: '/portal/history', icon: History },
     ],
   },
   {
-    label: 'My Membership',
+    label: 'My Plan',
     icon: Crown,
     items: [
-      { label: 'Membership', href: '/portal/memberships', icon: Crown },
-      { label: 'Benefits', href: '/portal/benefits', icon: Star },
-    ],
-  },
-  {
-    label: 'My Packages',
-    icon: Package,
-    items: [
-      { label: 'Packages', href: '/portal/packages', icon: Package },
-    ],
-  },
-  {
-    label: 'Photos',
-    icon: Camera,
-    items: [
-      { label: 'My Photos', href: '/portal/photos', icon: Camera },
-    ],
-  },
-  {
-    label: 'Forms',
-    icon: FileText,
-    items: [
-      { label: 'Forms & Consents', href: '/portal/forms', icon: FileText },
-    ],
-  },
-  {
-    label: 'Payments',
-    icon: Wallet,
-    items: [
-      { label: 'Payment History', href: '/portal/payments', icon: Wallet },
-      { label: 'Gift Cards', href: '/portal/gift-cards', icon: Gift },
+      { label: 'My Packages', href: '/portal/packages', icon: Package },
+      { label: 'My Membership', href: '/portal/memberships', icon: Crown },
     ],
   },
   {
     label: 'Messages',
     icon: MessageCircle,
     items: [
-      { label: 'Chat', href: '/portal/messages', icon: MessageCircle },
+      { label: 'Messages', href: '/portal/messages', icon: MessageCircle },
     ],
   },
   {
@@ -279,8 +244,11 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
     icon: User,
     items: [
       { label: 'My Profile', href: '/portal/profile', icon: User },
-      { label: 'Recommendations', href: '/portal/recommendations', icon: Heart },
+      { label: 'Photos', href: '/portal/photos', icon: Camera },
+      { label: 'Forms', href: '/portal/forms', icon: FileText },
+      { label: 'Payments', href: '/portal/payments', icon: Wallet },
       { label: 'AI Skin Analysis', href: '/portal/skin-analysis', icon: Sparkles },
+      { label: 'Recommendations', href: '/portal/recommendations', icon: Heart },
       { label: 'Refer a Friend', href: '/portal', icon: Gift },
       { label: 'Reviews', href: '/portal/reviews', icon: Star },
       { label: 'Family', href: '/portal/family', icon: Users },
@@ -308,9 +276,9 @@ export const EMPLOYEE_MOBILE_NAV: NavItem[] = [
 
 export const CLIENT_MOBILE_NAV: NavItem[] = [
   { label: 'Home', href: '/portal', icon: Home },
-  { label: 'Book', href: '/portal/book', icon: CalendarPlus },
   { label: 'Appointments', href: '/portal/appointments', icon: Calendar },
-  { label: 'Membership', href: '/portal/memberships', icon: Crown },
+  { label: 'My Plan', href: '/portal/packages', icon: Crown },
+  { label: 'Messages', href: '/portal/messages', icon: MessageCircle },
   { label: 'Profile', href: '/portal/profile', icon: User },
 ];
 
