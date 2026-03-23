@@ -558,7 +558,7 @@ interface ProviderColumnProps {
   formStatusMap?: Record<string, 'complete' | 'pending' | 'none'>;
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow, formStatusMap }: ProviderColumnProps) {
   return (
     <div
       data-staff-col={staffId}
