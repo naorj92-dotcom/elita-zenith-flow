@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Calendar, Clock, DollarSign, TrendingUp, Users, ChevronRight,
-  Play, Square, Target, Zap, ArrowUpRight, ArrowDownRight,
+  Calendar, Clock, DollarSign, Users, ChevronRight,
+  Play, Square, ArrowUpRight, ArrowDownRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,7 +27,7 @@ interface TodayAppointment {
 }
 
 const fadeUp = {
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
 };
@@ -112,19 +112,19 @@ export function Dashboard() {
   const clientsChange = metrics.last_week_clients > 0 ? Math.round(((metrics.new_clients_week - metrics.last_week_clients) / metrics.last_week_clients) * 100) : 0;
 
   const kpiCards = [
-    { label: "Today's Bookings", value: metrics.today_appointments, icon: Calendar, sub: 'Appointments', change: null },
-    { label: "Today's Revenue", value: `$${metrics.today_revenue.toLocaleString()}`, icon: DollarSign, sub: revenueChange !== 0 ? `${revenueChange > 0 ? '+' : ''}${revenueChange}% vs yesterday` : 'Today', change: revenueChange },
-    { label: 'New Clients', value: metrics.new_clients_week, icon: Users, sub: clientsChange !== 0 ? `${clientsChange > 0 ? '+' : ''}${clientsChange}% vs last week` : 'This week', change: clientsChange },
+    { label: "Today's Bookings", value: metrics.today_appointments, sub: 'Appointments', change: null },
+    { label: "Today's Revenue", value: `$${metrics.today_revenue.toLocaleString()}`, sub: revenueChange !== 0 ? `${revenueChange > 0 ? '+' : ''}${revenueChange}% vs yesterday` : 'Today', change: revenueChange },
+    { label: 'New Clients', value: metrics.new_clients_week, sub: clientsChange !== 0 ? `${clientsChange > 0 ? '+' : ''}${clientsChange}% vs last week` : 'This week', change: clientsChange },
   ];
 
   return (
-    <div className="p-5 sm:p-8 md:p-10 max-w-5xl mx-auto space-y-8">
+    <div className="p-5 sm:p-8 md:p-10 max-w-5xl mx-auto space-y-10">
       <OnboardingTour />
 
       {/* Header */}
       <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-2">
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-2">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
           <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight">
@@ -145,12 +145,12 @@ export function Dashboard() {
       </motion.div>
 
       {/* KPI Cards */}
-      <motion.div {...fadeUp} transition={{ delay: 0.06 }} className="grid grid-cols-3 gap-4">
+      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-3 gap-4">
         {kpiCards.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-5">
               <p className="text-2xl sm:text-3xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
-              <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+              <p className="text-[11px] text-muted-foreground mt-2.5 flex items-center gap-1">
                 {stat.change !== null && stat.change !== 0 && (
                   stat.change > 0
                     ? <ArrowUpRight className="w-3 h-3 text-success" />
@@ -158,19 +158,19 @@ export function Dashboard() {
                 )}
                 {stat.sub}
               </p>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.12em] mt-3">{stat.label}</p>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mt-3">{stat.label}</p>
             </CardContent>
           </Card>
         ))}
       </motion.div>
 
-      {/* Today's Focus */}
-      <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
+      {/* Today's Focus — actionable insights */}
+      <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
         <TodaysFocusWidget />
       </motion.div>
 
       {/* Today's Schedule */}
-      <motion.div {...fadeUp} transition={{ delay: 0.14 }}>
+      <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Today's Schedule</CardTitle>
@@ -182,8 +182,8 @@ export function Dashboard() {
             {appointments.length === 0 ? (
               <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
             ) : (
-              appointments.slice(0, 6).map((apt) => (
-                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors duration-200 group">
+              appointments.slice(0, 5).map((apt) => (
+                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors duration-200">
                   <div className="text-center min-w-[48px]">
                     <p className="text-sm font-semibold text-foreground">{apt.time}</p>
                     <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
@@ -201,23 +201,23 @@ export function Dashboard() {
       </motion.div>
 
       {/* Operations */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
+      <motion.div {...fadeUp} transition={{ delay: 0.17 }}>
         <TodayOpsWidget />
       </motion.div>
 
-      {/* Quick Actions */}
-      <motion.div {...fadeUp} transition={{ delay: 0.22 }}>
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-4">Quick Actions</p>
+      {/* Quick Actions — secondary weight */}
+      <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-4">Quick Actions</p>
         <div className="grid grid-cols-2 gap-3">
           {[
             { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
             { label: 'Add Client', href: '/clients/new', icon: Users },
             { label: 'View Schedule', href: '/schedule', icon: Clock },
-            { label: 'Quick Checkout', href: '/pos', icon: Zap },
+            { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
           ].map((action) => (
-            <Link key={action.label} to={action.href} className="flex items-center gap-4 p-5 rounded-xl bg-card border border-border hover:border-elita-camel/20 transition-all duration-300 group">
-              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-elita-camel/10 transition-colors duration-300">
-                <action.icon className="w-4.5 h-4.5 text-muted-foreground group-hover:text-elita-camel transition-colors duration-300" />
+            <Link key={action.label} to={action.href} className="flex items-center gap-4 p-5 rounded-xl bg-card border border-border hover:border-elita-camel/20 transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
               </div>
               <span className="text-sm font-medium text-foreground">{action.label}</span>
             </Link>
