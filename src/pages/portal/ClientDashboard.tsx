@@ -234,6 +234,7 @@ export function ClientDashboard() {
           recommendation={recommendation}
           recommendedServiceInfo={recommendedServiceInfo || undefined}
           bookingHref={bookingHref}
+          stageAppointments={stageAppointments}
         />
       </div>
 
