@@ -155,16 +155,6 @@ export function Dashboard() {
     fetchDashboardData();
   }, [staff]);
 
-  const handleClockAction = async () => {
-    if (clockStatus?.is_clocked_in) {
-      const success = await clockOut();
-      if (success) toast({ title: "Clocked Out", description: "Have a great rest of your day." });
-    } else {
-      const success = await clockIn();
-      if (success) toast({ title: "Clocked In", description: "Welcome. Have a productive day." });
-    }
-  };
-
   const firstName = staff?.first_name || 'there';
   const m = allMetrics[metricPeriod];
   const revChange = m.prevRevenue > 0 ? Math.round(((m.revenue - m.prevRevenue) / m.prevRevenue) * 100) : 0;
