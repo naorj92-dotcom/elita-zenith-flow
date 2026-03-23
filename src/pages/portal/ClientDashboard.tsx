@@ -109,7 +109,7 @@ export function ClientDashboard() {
     <div className="max-w-xl mx-auto pb-32 page-atmosphere">
 
       {/* ═══ HERO — LUXURY JOURNEY SECTION ═══ */}
-      <div className="mt-4 sm:mt-8">
+      <div className="mt-4 sm:mt-8 mb-20">
         <JourneyHero
           firstName={firstName}
           hasGoals={hasGoals}
@@ -166,14 +166,14 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ TREATMENT PLAN — offset left for editorial feel ═══ */}
+      {/* ═══ TREATMENT PLAN — elevated with more presence ═══ */}
       {treatmentProgress.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-16 relative z-10 sm:-ml-2">
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-20 relative z-10 sm:-ml-2">
           <SectionLabel>Your Personalized Plan</SectionLabel>
-          <div className="card-minimal p-5 space-y-3">
-            <div className="flex items-center gap-2.5 mb-1">
-              <Target className="w-3.5 h-3.5 text-elita-camel" />
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="card-elevated p-6 sm:p-7 space-y-3.5">
+            <div className="flex items-center gap-2.5 mb-2">
+              <Target className="w-4 h-4 text-elita-camel" />
+              <p className="text-[11px] font-semibold text-foreground/70 uppercase tracking-wider">
                 {GOALS.find(g => g.key === clientGoals[0])?.label}
               </p>
             </div>
@@ -181,13 +181,13 @@ export function ClientDashboard() {
               const cat = CATEGORIES[p.category as TreatmentCategory];
               const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
               return (
-                <div key={p.category} className="flex items-center gap-2.5">
-                  <span className="text-xs w-4 text-center">{cat?.emoji}</span>
-                  <span className="text-[11px] text-muted-foreground w-12">{cat?.label}</span>
-                  <div className="flex-1 h-1.5 bg-muted/40 rounded-full overflow-hidden">
-                    <motion.div className="h-full bg-elita-camel/40 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
+                <div key={p.category} className="flex items-center gap-3">
+                  <span className="text-sm w-5 text-center">{cat?.emoji}</span>
+                  <span className="text-[12px] text-muted-foreground font-medium w-14">{cat?.label}</span>
+                  <div className="flex-1 h-2 bg-muted/50 rounded-full overflow-hidden">
+                    <motion.div className="h-full progress-glow rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
                   </div>
-                  <span className="text-[9px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
+                  <span className="text-[10px] text-muted-foreground font-medium w-8 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                 </div>
               );
             })}
@@ -195,23 +195,23 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGES — offset right ═══ */}
+      {/* ═══ PACKAGES — stronger cards ═══ */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-16 relative z-10 sm:mr-[-4px] sm:ml-4">
+        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-20 relative z-10 sm:ml-4">
           <SectionLabel>Session Progress</SectionLabel>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
-                <div key={pkg.id} className="card-premium p-6 hover:-translate-y-1">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-[13px] font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                    <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
+                <div key={pkg.id} className="card-premium p-7 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-[14px] font-heading font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
+                    <span className="text-xl font-heading font-bold text-elita-camel">{pct}%</span>
                   </div>
-                  <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                  <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
                     <motion.div className="h-full rounded-full progress-glow" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-2.5">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
+                  <p className="text-[12px] text-muted-foreground mt-3">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
                 </div>
               );
             })}
@@ -219,10 +219,10 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ QUICK ACTIONS — offset left ═══ */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-16 relative z-10 sm:-ml-1">
+      {/* ═══ QUICK ACTIONS — subdued, smaller ═══ */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-20 relative z-10 sm:-ml-1">
         <SectionLabel>Quick Actions</SectionLabel>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2.5">
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬', span: 'col-span-2' },
             { label: 'Photos', href: '/portal/photos', icon: '📸', span: '' },
@@ -230,12 +230,11 @@ export function ClientDashboard() {
             { label: 'Visit History', href: '/portal/history', icon: '📋', span: 'col-span-2' },
           ].map((item) => (
             <Link key={item.href} to={item.href} className={cn(
-              'flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 hover:border-elita-camel/15 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]',
+              'flex items-center gap-2.5 p-3.5 rounded-xl bg-card/60 border border-border/30 hover:border-elita-camel/15 hover:bg-card hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]',
               item.span
-            )}
-            style={{ boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.4)' }}>
-              <span className="text-base">{item.icon}</span>
-              <span className="text-[13px] font-medium text-muted-foreground">{item.label}</span>
+            )}>
+              <span className="text-sm">{item.icon}</span>
+              <span className="text-[12px] font-medium text-muted-foreground">{item.label}</span>
             </Link>
           ))}
         </div>
@@ -246,9 +245,12 @@ export function ClientDashboard() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.45em] mb-5">
-      {children}
-    </p>
+    <div className="mb-6">
+      <div className="divider-luxe mb-5" />
+      <p className="text-[9px] font-bold text-muted-foreground/45 uppercase tracking-[0.5em]">
+        {children}
+      </p>
+    </div>
   );
 }
 
