@@ -405,6 +405,17 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
           )}
         </div>
       </div>
+
+      {/* Chart Note Dialog */}
+      {canChart && appointment.client_id && (
+        <ChartNoteForm
+          appointmentId={appointment.id}
+          clientId={appointment.client_id}
+          serviceName={appointment.service_name}
+          open={showChartNote}
+          onOpenChange={setShowChartNote}
+        />
+      )}
     </div>
   );
 }
