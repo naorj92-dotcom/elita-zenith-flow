@@ -275,24 +275,24 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGE PROGRESS ═══ */}
+      {/* ═══ PACKAGE PROGRESS (reduced weight) ═══ */}
       {activePackages.length > 0 && (
         <motion.div {...fadeUp} transition={{ delay: 0.14 }}>
           <SectionLabel>Session Progress</SectionLabel>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
-                <Card key={pkg.id} className="shadow-md hover:shadow-lg transition-shadow duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-sm font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                      <span className="text-xl font-heading font-bold text-elita-camel">{pct}%</span>
+                <Card key={pkg.id}>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[13px] font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
+                      <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
                     </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-1 bg-muted rounded-full overflow-hidden">
                       <motion.div className="h-full bg-elita-camel rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2.5">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
+                    <p className="text-[11px] text-muted-foreground mt-2">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
                   </CardContent>
                 </Card>
               );
