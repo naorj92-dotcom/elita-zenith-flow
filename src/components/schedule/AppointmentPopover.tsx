@@ -74,6 +74,25 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [isChanging, setIsChanging] = useState(false);
   const [suggestionAccepted, setSuggestionAccepted] = useState<boolean | null>(null);
   const [showChartNote, setShowChartNote] = useState(false);
+  const [showPendingForms, setShowPendingForms] = useState(false);
+
+  // Fetch form status for this appointment
+  const { data: formStatus } = useQuery({
+    queryKey: ['appointment-forms', appointment.id, appointment.client_id],
+    queryFn: async () => {
+      if (!appointment.client_id || isGoogleEvent) return null;
+      const { data, error } = await supabase
+        .from('client_forms')
+        .select('id, status, forms:form_id (name)')
+        .eq('client_id', appointment.client_id)
+        .or(`appointment_id.eq.${appointment.id},appointment_id.is.null`);
+      if (error) return null;
+      const pending = (data || []).filter((f: any) => f.status === 'pending');
+      const completed = (data || []).filter((f: any) => f.status === 'completed');
+      return { pending, completed, total: data?.length || 0 };
+    },
+    enabled: !!appointment.client_id && !isGoogleEvent,
+  });
 
   // Complete & Plan flow state
   const [showCompleteFlow, setShowCompleteFlow] = useState(false);
