@@ -258,6 +258,50 @@ export function Dashboard() {
               </motion.div>
             ))}
           </div>
+
+          {/* Daily Revenue Goal */}
+          {(() => {
+            const dailyGoal = 2000;
+            const todayRev = allMetrics.today.revenue;
+            const progress = Math.min((todayRev / dailyGoal) * 100, 100);
+            const remaining = Math.max(dailyGoal - todayRev, 0);
+            const goalHit = todayRev >= dailyGoal;
+            return (
+              <div className="mt-10 glass rounded-2xl p-6 sm:p-7">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <Target className="w-4.5 h-4.5 text-primary" />
+                    <span className="text-xs font-bold text-muted-foreground/60 uppercase tracking-[0.25em]">Daily Revenue Goal</span>
+                  </div>
+                  {goalHit && (
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400 }}
+                      className="flex items-center gap-1 text-[10px] font-semibold text-success bg-success/10 px-2.5 py-1 rounded-full">
+                      <Trophy className="w-3 h-3" /> Goal Hit!
+                    </motion.div>
+                  )}
+                </div>
+                <div className="flex items-end justify-between mb-3">
+                  <p className="text-2xl sm:text-3xl font-heading font-bold text-foreground tracking-tight">
+                    ${todayRev.toLocaleString(undefined, { minimumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-xs text-muted-foreground/50 font-medium">
+                    of ${dailyGoal.toLocaleString()} goal
+                  </p>
+                </div>
+                <Progress value={progress} className="h-2.5 bg-muted/30" />
+                {!goalHit && remaining > 0 && (
+                  <motion.p
+                    animate={{ opacity: [0.6, 1, 0.6] }}
+                    transition={{ repeat: Infinity, duration: 3 }}
+                    className="flex items-center gap-1.5 text-[11px] text-primary font-medium mt-3"
+                  >
+                    <Flame className="w-3.5 h-3.5" />
+                    ${remaining.toLocaleString()} to go
+                  </motion.p>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </motion.div>
 
