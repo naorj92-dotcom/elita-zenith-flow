@@ -110,6 +110,71 @@ export function ClientDashboard() {
   const hasGoals = clientGoals.length > 0;
   const recommendation = hasGoals ? getSimpleRecommendation(clientGoals, treatmentProgress) : null;
 
+  // Fetch recommended service details + next available slots
+  const { data: recommendedServiceInfo } = useQuery({
+    queryKey: ['recommended-service-info', recommendation?.category],
+    queryFn: async () => {
+      if (!recommendation) return null;
+      const cat = CATEGORIES[recommendation.category];
+      // Find a matching service by category
+      const { data: services } = await supabase
+        .from('services')
+        .select('id, name, duration_minutes, price, category')
+        .eq('is_active', true)
+        .eq('category', cat.label)
+        .order('price', { ascending: true })
+        .limit(1);
+      const service = services?.[0];
+      if (!service) return null;
+
+      // Find next 2 available appointment slots in the next 7 days
+      const now = new Date();
+      const weekOut = addDays(now, 7);
+      const { data: bookedSlots } = await supabase
+        .from('appointments')
+        .select('scheduled_at, duration_minutes, staff_id')
+        .gte('scheduled_at', now.toISOString())
+        .lte('scheduled_at', weekOut.toISOString())
+        .in('status', ['scheduled', 'confirmed', 'checked_in', 'in_progress']);
+
+      // Get active staff
+      const { data: staffList } = await supabase
+        .from('staff')
+        .select('id')
+        .eq('is_active', true)
+        .in('role', ['admin', 'provider']);
+
+      // Generate simple available slots (10am, 11am, 1pm, 2pm, 3pm for next 7 days)
+      const slotHours = [10, 11, 13, 14, 15];
+      const availableSlots: Date[] = [];
+      for (let d = 1; d <= 7 && availableSlots.length < 2; d++) {
+        const day = addDays(startOfDay(now), d);
+        if (day.getDay() === 0) continue; // skip Sunday
+        for (const h of slotHours) {
+          if (availableSlots.length >= 2) break;
+          const slot = new Date(day);
+          slot.setHours(h, 0, 0, 0);
+          // Check if at least one staff member is free at this time
+          const isBooked = (bookedSlots || []).some(b => {
+            const bStart = new Date(b.scheduled_at).getTime();
+            const bEnd = bStart + (b.duration_minutes || 60) * 60000;
+            const sStart = slot.getTime();
+            const sEnd = sStart + service.duration_minutes * 60000;
+            return sStart < bEnd && sEnd > bStart;
+          });
+          if (!isBooked) availableSlots.push(slot);
+        }
+      }
+
+      return {
+        duration: service.duration_minutes,
+        price: service.price,
+        slots: availableSlots,
+      };
+    },
+    enabled: !!recommendation,
+  });
+
   const daysSinceLastSession = lastCompleted?.completed_at
     ? differenceInDays(new Date(), new Date((lastCompleted as any).completed_at))
     : null;
