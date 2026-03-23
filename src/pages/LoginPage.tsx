@@ -71,8 +71,8 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-hero">
       {/* Logo */}
-      <div className="pt-16 pb-10 flex justify-center">
-        <img src={elitaLogo} alt="Elita Medical Spa" className="h-16 w-auto object-contain" />
+      <div className="pt-14 pb-8 flex justify-center">
+        <img src={elitaLogo} alt="Elita Medical Spa" className="h-14 w-auto object-contain" />
       </div>
 
       {/* Login Card */}
@@ -80,12 +80,12 @@ export function LoginPage() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
           className="w-full max-w-sm"
         >
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-heading font-semibold text-foreground">Staff Login</h1>
-            <p className="text-sm text-muted-foreground mt-2">Sign in to access the dashboard</p>
+          <div className="text-center mb-6">
+            <h1 className="text-xl font-heading font-semibold text-foreground">Staff Login</h1>
+            <p className="text-sm text-muted-foreground mt-1.5">Sign in to access the dashboard</p>
           </div>
 
           <Card>
