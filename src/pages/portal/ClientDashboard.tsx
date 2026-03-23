@@ -219,8 +219,8 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ QUICK ACTIONS — asymmetric layout ═══ */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-14 relative z-10">
+      {/* ═══ QUICK ACTIONS — offset left ═══ */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-16 relative z-10 sm:-ml-1">
         <SectionLabel>Quick Actions</SectionLabel>
         <div className="grid grid-cols-3 gap-3">
           {[
