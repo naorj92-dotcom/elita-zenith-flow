@@ -118,13 +118,12 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="p-6 sm:p-10 md:p-12 max-w-5xl mx-auto page-atmosphere">
+    <div className="p-6 sm:p-10 md:p-14 max-w-5xl mx-auto page-atmosphere">
       <OnboardingTour />
 
       {/* ═══ HERO HEADER ═══ */}
-      <motion.div {...fadeUp} className="card-hero glow-accent relative mb-16 mt-2 sm:mt-4">
+      <motion.div {...fadeUp} className="card-hero glow-accent relative mb-20 mt-2 sm:mt-4">
         <div className="accent-line" />
-        {/* Ambient glow behind hero — directional */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[1.25rem]">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[160%] h-[75%] bg-[radial-gradient(ellipse_65%_55%_at_50%_0%,hsl(34_48%_60%/0.12)_0%,transparent_55%)]" />
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] h-[40%] bg-[radial-gradient(ellipse_70%_50%_at_50%_100%,hsl(22_20%_18%/0.04)_0%,transparent_60%)]" />
@@ -134,14 +133,14 @@ export function Dashboard() {
             transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
           />
         </div>
-        <div className="relative p-8 sm:p-12 md:p-14">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+        <div className="relative p-10 sm:p-14 md:p-16">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8">
             <div className="max-w-[75%]">
-              <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.55em] mb-5">
+              <p className="text-[10px] font-semibold text-elita-camel uppercase tracking-[0.4em] mb-5">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
               <h1 className="font-heading font-semibold text-foreground tracking-[-0.04em] leading-[0.88]"
-                  style={{ fontSize: 'clamp(1.75rem, 4.5vw, 3.25rem)' }}>
+                  style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
                 Welcome back,
                 <br />
                 <span className="italic font-normal">{firstName}</span>
@@ -152,7 +151,7 @@ export function Dashboard() {
               disabled={isLoading} 
               variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
               size="default" 
-              className="gap-2 shrink-0 rounded-2xl h-13 px-7 btn-glow"
+              className="gap-2 shrink-0 rounded-2xl btn-glow"
             >
               {clockStatus?.is_clocked_in ? (
                 <><Square className="w-4 h-4" /> Clock Out</>
@@ -160,9 +159,9 @@ export function Dashboard() {
             </Button>
           </div>
 
-          <div className="divider-luxe mt-10 mb-10" />
+          <div className="divider-luxe mt-12 mb-12" />
 
-          {/* KPI Cards — asymmetric sizing */}
+          {/* KPI Cards */}
           <div className="grid grid-cols-3 gap-5">
             {kpiCards.map((stat, i) => (
               <motion.div
@@ -170,11 +169,11 @@ export function Dashboard() {
                 whileHover={{ y: -4, scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="glass p-5 sm:p-6 rounded-2xl"
+                className="glass p-6 sm:p-7 rounded-2xl"
                 style={i === 1 ? { transform: 'translateY(-4px)' } : undefined}
               >
-                <p className="text-3xl sm:text-4xl font-heading font-bold text-foreground leading-none tracking-tight">{stat.value}</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-3.5 flex items-center gap-1 font-light">
+                <p className="text-3xl sm:text-[2.5rem] font-heading font-bold text-foreground leading-none tracking-tight">{stat.value}</p>
+                <p className="text-[11px] text-muted-foreground/60 mt-4 flex items-center gap-1 font-light">
                   {stat.change !== null && stat.change !== 0 && (
                     stat.change > 0
                       ? <ArrowUpRight className="w-3 h-3 text-success" />
@@ -182,7 +181,7 @@ export function Dashboard() {
                   )}
                   {stat.sub}
                 </p>
-                <p className="text-[8px] font-bold text-muted-foreground/35 uppercase tracking-[0.4em] mt-3">{stat.label}</p>
+                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-[0.3em] mt-3">{stat.label}</p>
               </motion.div>
             ))}
           </div>
