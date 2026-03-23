@@ -229,7 +229,9 @@ export function ClientPortalLayout() {
         {/* Mobile Bottom Nav */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border px-1 py-1.5 flex justify-around">
           {CLIENT_MOBILE_NAV.map((item) => {
-            const isActive = location.pathname === item.href;
+            const isActive = item.href === '/portal'
+              ? location.pathname === '/portal'
+              : location.pathname.startsWith(item.href);
             const Icon = item.icon;
             const badge = getBadgeCount(item.href);
             return (
