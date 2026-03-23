@@ -139,10 +139,10 @@ export function Dashboard() {
               <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.5em] mb-4">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
-              <h1 className="text-4xl sm:text-[3.5rem] font-heading font-semibold text-foreground tracking-[-0.04em] leading-[0.9]">
+              <h1 className="text-[1.85rem] sm:text-[3.15rem] font-heading font-semibold text-foreground tracking-[-0.04em] leading-[0.9]">
                 Welcome back,
                 <br />
-                <span className="italic font-normal text-[1.15em]">{firstName}</span>
+                <span className="italic font-normal">{firstName}</span>
               </h1>
             </div>
             <Button 
