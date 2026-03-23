@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar, Clock, DollarSign, Users, ChevronRight,
-  Play, Square, ArrowUpRight, ArrowDownRight,
+  Play, Square, ArrowUpRight, ArrowDownRight, Target, Flame, Trophy,
 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
