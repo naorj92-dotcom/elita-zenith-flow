@@ -245,9 +245,12 @@ export function ClientDashboard() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.45em] mb-5">
-      {children}
-    </p>
+    <div className="mb-6">
+      <div className="divider-luxe mb-5" />
+      <p className="text-[9px] font-bold text-muted-foreground/45 uppercase tracking-[0.5em]">
+        {children}
+      </p>
+    </div>
   );
 }
 
