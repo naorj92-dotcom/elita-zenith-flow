@@ -105,51 +105,118 @@ export function ClientDashboard() {
   };
   const urgency = getUrgencyMessage();
 
+  // Build quick-book link with recommendation pre-fill if available
+  const bookingHref = recommendation
+    ? `/portal/book?category=${recommendation.category}`
+    : '/portal/book';
+
   return (
     <div className="space-y-10 max-w-xl mx-auto pb-28">
-      {/* Hero — dominant section */}
-      <motion.div {...fadeUp} className="pt-10 sm:pt-14">
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-4">
-          Welcome back, {firstName}
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
-          Your Elita Journey
-        </h1>
 
-        {/* Inline next visit — visually dominant */}
-        {nextAppointment ? (
-          <div className="mt-8 p-6 rounded-2xl bg-card border border-border">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mb-3">Your Next Visit</p>
-            <p className="text-lg font-heading font-semibold text-foreground leading-snug">
-              {(nextAppointment as any).services?.name}
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d · h:mm a')}
-            </p>
-            {(nextAppointment as any).staff && (
-              <p className="text-xs text-muted-foreground mt-1">
-                with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
+      {/* ═══ UNIFIED HERO BLOCK ═══ */}
+      <motion.div {...fadeUp}>
+        <Card className="overflow-hidden border-elita-camel/10 mt-6 sm:mt-10">
+          <div className="h-0.5 bg-gradient-to-r from-elita-camel/50 via-elita-gold/20 to-transparent" />
+          <CardContent className="p-6 sm:p-7 space-y-6">
+
+            {/* Title */}
+            <div>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-2">
+                Welcome back, {firstName}
               </p>
+              <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
+                Your Elita Journey
+              </h1>
+            </div>
+
+            {/* Next Visit — prominent */}
+            {nextAppointment ? (
+              <div className="p-5 rounded-xl bg-accent/40 border border-border/50">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mb-2.5">Your Next Visit</p>
+                <p className="text-lg font-heading font-semibold text-foreground leading-snug">
+                  {(nextAppointment as any).services?.name}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1.5">
+                  {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d · h:mm a')}
+                </p>
+                {(nextAppointment as any).staff && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="p-5 rounded-xl bg-muted/40 text-center">
+                <Clock className="w-5 h-5 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">No upcoming visits</p>
+              </div>
             )}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground mt-4">No upcoming visits — book your next session below.</p>
-        )}
+
+            {/* Progress + Urgency (only when goals exist) */}
+            {hasGoals && totalTarget > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-foreground">Your Progress</p>
+                  <p className="text-lg font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-elita-camel rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${overallPct}%` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1.5">
+                  {totalCompleted} of {totalTarget} sessions completed
+                </p>
+
+                {urgency && (
+                  <div className={cn(
+                    'flex items-center gap-2 mt-4 px-3.5 py-2.5 rounded-xl text-xs font-medium',
+                    urgency.tone === 'success' && 'bg-success/10 text-success',
+                    urgency.tone === 'info' && 'bg-elita-camel/10 text-elita-camel',
+                    urgency.tone === 'warning' && 'bg-warning/10 text-warning',
+                  )}>
+                    <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                    {urgency.text}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Recommended Next Step (inline) */}
+            {recommendation && (
+              <div className="bg-card rounded-xl p-4 border border-border/50">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mb-2.5">Recommended Next Step</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{CATEGORIES[recommendation.category].emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-heading font-semibold text-foreground leading-snug">
+                      {recommendation.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      {recommendation.subtitle}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Primary CTA — inside hero for focus */}
+            <Button asChild size="lg" className="w-full h-13 text-sm font-semibold gap-2.5 rounded-2xl">
+              <Link to={bookingHref}>
+                <CalendarPlus className="h-4 w-4" />
+                {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </motion.div>
 
-      {/* Single dominant CTA */}
-      <motion.div {...fadeUp} transition={{ delay: 0.06 }}>
-        <Button asChild size="lg" className="w-full h-14 text-sm font-semibold gap-2.5 rounded-2xl">
-          <Link to="/portal/book">
-            <CalendarPlus className="h-4.5 w-4.5" />
-            Book Your Next Session
-          </Link>
-        </Button>
-      </motion.div>
-
-      {/* Goal Selection (onboarding) */}
+      {/* ═══ GOAL SELECTION (onboarding only) ═══ */}
       {!hasGoals && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
+        <motion.div {...fadeUp} transition={{ delay: 0.08 }}>
           <SectionLabel>What's Your Goal?</SectionLabel>
           <Card>
             <CardContent className="p-6">
@@ -162,7 +229,7 @@ export function ClientDashboard() {
                     key={goal.key}
                     onClick={() => saveGoalMutation.mutate(goal.key)}
                     disabled={saveGoalMutation.isPending}
-                    className="flex items-center gap-4 w-full p-4 rounded-xl border border-border hover:border-elita-camel/25 hover:bg-accent/40 transition-all duration-300 text-left group"
+                    className="flex items-center gap-4 w-full p-4 rounded-xl border border-border hover:border-elita-camel/25 hover:bg-accent/40 transition-all duration-300 text-left"
                   >
                     <span className="text-2xl">{goal.emoji}</span>
                     <div className="min-w-0">
@@ -177,105 +244,40 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* Personalized Plan — visually highlighted */}
-      {recommendation && (
+      {/* ═══ CATEGORY PROGRESS (compact) ═══ */}
+      {treatmentProgress.length > 0 && (
         <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
           <SectionLabel>Your Personalized Plan</SectionLabel>
-          <Card className="overflow-hidden border-elita-camel/15">
-            <div className="h-0.5 bg-gradient-to-r from-elita-camel/40 via-elita-gold/20 to-transparent" />
-            <CardContent className="p-6 space-y-6">
-              {/* Focus + Progress */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-elita-camel/10 flex items-center justify-center">
-                    <Target className="w-4.5 h-4.5 text-elita-camel" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em]">Focus</p>
-                    <p className="text-sm font-semibold text-foreground mt-0.5">{GOALS.find(g => g.key === clientGoals[0])?.label}</p>
-                  </div>
-                </div>
-                {totalTarget > 0 && (
-                  <div className="text-right">
-                    <p className="text-2xl font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">Complete</p>
-                  </div>
-                )}
+          <Card>
+            <CardContent className="p-5 space-y-3">
+              <div className="flex items-center gap-2.5 mb-1">
+                <Target className="w-4 h-4 text-elita-camel" />
+                <p className="text-xs font-semibold text-foreground">
+                  {GOALS.find(g => g.key === clientGoals[0])?.label}
+                </p>
               </div>
-
-              {/* Progress bar */}
-              {totalTarget > 0 && (
-                <div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-elita-camel rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${overallPct}%` }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                    />
+              {treatmentProgress.map((p) => {
+                const cat = CATEGORIES[p.category as TreatmentCategory];
+                const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
+                return (
+                  <div key={p.category} className="flex items-center gap-2.5">
+                    <span className="text-sm w-5 text-center">{cat?.emoji}</span>
+                    <span className="text-xs text-muted-foreground w-12">{cat?.label}</span>
+                    <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-elita-camel/60 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {totalCompleted} of {totalTarget} sessions completed
-                  </p>
-                </div>
-              )}
-
-              {/* Urgency */}
-              {urgency && (
-                <div className={cn(
-                  'flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-medium',
-                  urgency.tone === 'success' && 'bg-success/10 text-success',
-                  urgency.tone === 'info' && 'bg-elita-camel/10 text-elita-camel',
-                  urgency.tone === 'warning' && 'bg-warning/10 text-warning',
-                )}>
-                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                  {urgency.text}
-                </div>
-              )}
-
-              {/* Recommended Next Step */}
-              <div className="bg-accent/50 rounded-xl p-5">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mb-3">Recommended Next Step</p>
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl mt-0.5">{CATEGORIES[recommendation.category].emoji}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-base font-heading font-semibold text-foreground leading-snug">
-                      {recommendation.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                      {recommendation.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category breakdown — reduced weight */}
-              {treatmentProgress.length > 0 && (
-                <div className="pt-4 border-t border-border/30 space-y-2.5">
-                  {treatmentProgress.map((p) => {
-                    const cat = CATEGORIES[p.category as TreatmentCategory];
-                    const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
-                    return (
-                      <div key={p.category} className="flex items-center gap-2.5">
-                        <span className="text-sm">{cat?.emoji}</span>
-                        <span className="text-xs text-muted-foreground w-12">{cat?.label}</span>
-                        <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                          <motion.div className="h-full bg-elita-camel/60 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.2 }} />
-                        </div>
-                        <span className="text-[10px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                );
+              })}
             </CardContent>
           </Card>
         </motion.div>
       )}
 
-      {/* Package Progress — only if active */}
+      {/* ═══ PACKAGE PROGRESS ═══ */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
+        <motion.div {...fadeUp} transition={{ delay: 0.14 }}>
           <SectionLabel>Session Progress</SectionLabel>
           <div className="space-y-3">
             {activePackages.map((pkg: any) => {
@@ -299,8 +301,8 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* Quick Actions — minimal, secondary */}
-      <motion.div {...fadeUp} transition={{ delay: 0.22 }}>
+      {/* ═══ QUICK ACTIONS ═══ */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
         <SectionLabel>Quick Actions</SectionLabel>
         <div className="grid grid-cols-2 gap-3">
           {[
@@ -309,7 +311,7 @@ export function ClientDashboard() {
             { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨' },
             { label: 'Visit History', href: '/portal/history', icon: '📋' },
           ].map((item) => (
-            <Link key={item.href} to={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-elita-camel/20 transition-all duration-300">
+            <Link key={item.href} to={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-premium-md transition-all duration-300">
               <span className="text-base">{item.icon}</span>
               <span className="text-sm font-medium text-foreground">{item.label}</span>
             </Link>

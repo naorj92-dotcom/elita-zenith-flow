@@ -147,7 +147,7 @@ export function Dashboard() {
       {/* KPI Cards */}
       <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-3 gap-4">
         {kpiCards.map((stat) => (
-          <Card key={stat.label}>
+          <Card key={stat.label} className="hover:shadow-premium-md transition-shadow duration-300">
             <CardContent className="p-5">
               <p className="text-2xl sm:text-3xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
               <p className="text-[11px] text-muted-foreground mt-2.5 flex items-center gap-1">
@@ -164,7 +164,7 @@ export function Dashboard() {
         ))}
       </motion.div>
 
-      {/* Today's Focus — actionable insights */}
+      {/* Today's Action Items — PROMINENT */}
       <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
         <TodaysFocusWidget />
       </motion.div>
@@ -183,7 +183,7 @@ export function Dashboard() {
               <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
             ) : (
               appointments.slice(0, 5).map((apt) => (
-                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors duration-200">
+                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 hover:shadow-sm transition-all duration-200">
                   <div className="text-center min-w-[48px]">
                     <p className="text-sm font-semibold text-foreground">{apt.time}</p>
                     <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
@@ -205,7 +205,7 @@ export function Dashboard() {
         <TodayOpsWidget />
       </motion.div>
 
-      {/* Quick Actions — secondary weight */}
+      {/* Quick Actions */}
       <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-4">Quick Actions</p>
         <div className="grid grid-cols-2 gap-3">
@@ -215,7 +215,7 @@ export function Dashboard() {
             { label: 'View Schedule', href: '/schedule', icon: Clock },
             { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
           ].map((action) => (
-            <Link key={action.label} to={action.href} className="flex items-center gap-4 p-5 rounded-xl bg-card border border-border hover:border-elita-camel/20 transition-all duration-300">
+            <Link key={action.label} to={action.href} className="flex items-center gap-4 p-5 rounded-xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-premium-md transition-all duration-300">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
               </div>
