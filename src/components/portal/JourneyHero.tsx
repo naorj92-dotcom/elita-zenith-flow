@@ -221,16 +221,16 @@ export function JourneyHero({
           )}
 
           {/* ─── Divider ─── */}
-          <div className="divider-luxe mb-8" />
+          <div className="divider-luxe mb-10" />
 
           {/* ─── Primary CTA ─── */}
           <Button
             asChild
             size="lg"
-            className="w-full h-14 text-[13px] font-semibold gap-3 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-lg transition-all duration-400 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] btn-glow"
+            className="w-full h-16 text-[14px] font-semibold gap-3 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-xl transition-all duration-400 hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:scale-[0.99] btn-glow"
           >
             <Link to={bookingHref}>
-              <CalendarPlus className="h-4.5 w-4.5" />
+              <CalendarPlus className="h-5 w-5" />
               {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
             </Link>
           </Button>
