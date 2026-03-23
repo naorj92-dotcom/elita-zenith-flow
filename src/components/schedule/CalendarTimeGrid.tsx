@@ -440,11 +440,12 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       colWidth={staffColWidth}
                       onAptClick={handleAptClick}
                       onGoogleEventClick={handleGoogleEventClick}
-                      onDragStart={handleDragStart}
+                     onDragStart={handleDragStart}
                       draggingApt={draggingApt}
                       dragGhostTop={dragGhostTop}
                       isDropTarget={!!draggingApt && dragTargetStaffId === s.id && dragOriginStaffId !== s.id}
                       dropShadow={computeDropShadow(s.id)}
+                      formStatusMap={formStatusMap}
                     />
                   ))}
                 </div>
