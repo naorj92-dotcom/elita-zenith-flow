@@ -271,9 +271,8 @@ export function Dashboard() {
 
           {/* Daily Revenue Goal */}
           {(() => {
-            const dailyGoal = 2000;
             const todayRev = allMetrics.today.revenue;
-            const progress = Math.min((todayRev / dailyGoal) * 100, 100);
+            const progress = dailyGoal > 0 ? Math.min((todayRev / dailyGoal) * 100, 100) : 0;
             const remaining = Math.max(dailyGoal - todayRev, 0);
             const goalHit = todayRev >= dailyGoal;
             return (
@@ -281,33 +280,33 @@ export function Dashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
                     <Target className="w-4.5 h-4.5 text-primary" />
-                    <span className="text-xs font-bold text-muted-foreground/60 uppercase tracking-[0.25em]">Daily Revenue Goal</span>
+                    <span className="text-xs font-bold text-muted-foreground/60 uppercase tracking-[0.25em]">Today's Goal</span>
                   </div>
-                  {goalHit && (
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400 }}
-                      className="flex items-center gap-1 text-[10px] font-semibold text-success bg-success/10 px-2.5 py-1 rounded-full">
-                      <Trophy className="w-3 h-3" /> Goal Hit!
-                    </motion.div>
-                  )}
+                  <span className="text-xs font-semibold text-muted-foreground/50">
+                    {Math.round(progress)}% to goal
+                  </span>
                 </div>
                 <div className="flex items-end justify-between mb-3">
                   <p className="text-2xl sm:text-3xl font-heading font-bold text-foreground tracking-tight">
                     ${todayRev.toLocaleString(undefined, { minimumFractionDigits: 0 })}
-                  </p>
-                  <p className="text-xs text-muted-foreground/50 font-medium">
-                    of ${dailyGoal.toLocaleString()} goal
+                    <span className="text-base font-normal text-muted-foreground/40 ml-1">
+                      of ${dailyGoal.toLocaleString()}
+                    </span>
                   </p>
                 </div>
-                <Progress value={progress} className="h-2.5 bg-muted/30" />
-                {!goalHit && remaining > 0 && (
+                <Progress value={progress} className={cn("h-2.5", goalHit ? "[&>div]:bg-success" : "")} />
+                {goalHit ? (
                   <motion.p
-                    animate={{ opacity: [0.6, 1, 0.6] }}
-                    transition={{ repeat: Infinity, duration: 3 }}
-                    className="flex items-center gap-1.5 text-[11px] text-primary font-medium mt-3"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-1.5 text-[12px] text-success font-semibold mt-3"
                   >
-                    <Flame className="w-3.5 h-3.5" />
-                    ${remaining.toLocaleString()} to go
+                    🎯 Goal reached! Great work today.
                   </motion.p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground/60 font-medium mt-3">
+                    You're <span className="text-foreground font-semibold">${remaining.toLocaleString()}</span> away from today's goal
+                  </p>
                 )}
               </div>
             );
