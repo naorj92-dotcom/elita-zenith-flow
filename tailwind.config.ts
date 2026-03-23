@@ -93,6 +93,7 @@ export default {
         "2xl": "calc(var(--radius) + 8px)",
       },
       spacing: {
+        '13': '3.25rem',
         '18': '4.5rem',
       },
       boxShadow: {

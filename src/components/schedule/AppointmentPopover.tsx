@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, X, CheckCircle, XCircle, Undo2, UserRoundPen, Search, Loader2, Package, Target, ArrowRight, FileText } from 'lucide-react';
+import { Phone, X, CheckCircle, XCircle, UserRoundPen, Search, Loader2, Package, Target, ArrowRight, FileText, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { matchServiceToCategory, CATEGORIES, type TreatmentCategory } from '@/lib/elitaMethod';
 import type { ScheduleAppointment } from '@/pages/SchedulePage';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AppointmentPopoverProps {
   appointment: ScheduleAppointment;
@@ -72,6 +73,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [showCompleteFlow, setShowCompleteFlow] = useState(false);
   const [sessionNotes, setSessionNotes] = useState('');
   const [isCompleting, setIsCompleting] = useState(false);
+  const [completionStep, setCompletionStep] = useState<'notes' | 'done'>('notes');
 
   const isGoogleEvent = appointment.id.startsWith('gcal-');
 
@@ -115,11 +117,11 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
 
   const handleAcceptSuggestion = () => { setSuggestionAccepted(true); toast.success('Recommendation saved'); };
 
-  // Complete & Plan Next Step — combined flow
+  // Complete & Plan Next Step — smooth combined flow
   const handleCompleteAndPlan = async () => {
     setIsCompleting(true);
 
-    // 1. Add notes if provided
+    // 1. Save notes
     if (sessionNotes.trim()) {
       await supabase.from('appointment_soap_notes').upsert({
         appointment_id: appointment.id,
@@ -130,66 +132,88 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
     // 2. Mark as completed
     onStatusChange?.(appointment.id, 'completed');
 
-    toast.success('Session completed! Recommendation saved.', {
-      action: protocolSuggestion ? {
-        label: 'Rebook Now',
-        onClick: () => window.location.href = `/schedule/new?client=${appointment.client_id}`,
-      } : undefined,
-    });
-
+    // 3. Show success step
+    setCompletionStep('done');
     setIsCompleting(false);
-    setShowCompleteFlow(false);
+
+    toast.success('Session completed successfully');
   };
 
-  // Show "Complete & Plan" flow for in_progress appointments
+  // Complete & Plan flow with confirmation
   if (showCompleteFlow && appointment.status === 'in_progress') {
     return (
       <div data-appointment-popover className="w-80 bg-popover border border-border rounded-2xl shadow-2xl p-5 z-50" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-heading font-semibold text-foreground">Complete & Plan Next</h3>
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowCompleteFlow(false)}>
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+        <AnimatePresence mode="wait">
+          {completionStep === 'notes' ? (
+            <motion.div key="notes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading font-semibold text-foreground">Complete & Plan Next</h3>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowCompleteFlow(false)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
 
-        <p className="text-xs text-muted-foreground mb-3">
-          {appointment.client_name} · {appointment.service_name}
-        </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {appointment.client_name} · {appointment.service_name}
+              </p>
 
-        {/* Session Notes */}
-        <div className="mb-4">
-          <label className="text-xs font-semibold text-foreground mb-1.5 block">Session Notes</label>
-          <Textarea
-            placeholder="Quick notes about this session..."
-            value={sessionNotes}
-            onChange={(e) => setSessionNotes(e.target.value)}
-            className="h-20 text-sm resize-none rounded-xl"
-          />
-        </div>
+              {/* Session Notes */}
+              <div className="mb-4">
+                <label className="text-xs font-semibold text-foreground mb-1.5 block">Session Notes</label>
+                <Textarea
+                  placeholder="Quick notes about this session..."
+                  value={sessionNotes}
+                  onChange={(e) => setSessionNotes(e.target.value)}
+                  className="h-20 text-sm resize-none rounded-xl"
+                />
+              </div>
 
-        {/* Protocol Suggestion */}
-        {protocolSuggestion && (
-          <div className="bg-accent/50 rounded-xl px-4 py-3 mb-4">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Suggested Next Treatment</p>
-            <p className="text-sm font-semibold text-foreground">
-              {CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label}
-            </p>
-          </div>
-        )}
+              {/* Protocol Suggestion */}
+              {protocolSuggestion && (
+                <div className="bg-accent/50 rounded-xl px-4 py-3 mb-4">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Recommended Next</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label}
+                  </p>
+                </div>
+              )}
 
-        {/* Actions */}
-        <div className="space-y-2">
-          <Button className="w-full h-11 gap-2 rounded-xl font-semibold" onClick={handleCompleteAndPlan} disabled={isCompleting}>
-            <CheckCircle className="w-4 h-4" />
-            Complete Session
-          </Button>
-          <Link to={`/schedule/new?client=${appointment.client_id}`} className="block">
-            <Button variant="outline" className="w-full h-10 gap-2 rounded-xl text-sm">
-              <ArrowRight className="w-3.5 h-3.5" />
-              Rebook Next Appointment
-            </Button>
-          </Link>
-        </div>
+              <Button className="w-full h-11 gap-2 rounded-xl font-semibold" onClick={handleCompleteAndPlan} disabled={isCompleting}>
+                {isCompleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                Complete Session
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
+              {/* Success confirmation */}
+              <div className="text-center py-4">
+                <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+                  <Check className="w-6 h-6 text-success" />
+                </div>
+                <h3 className="font-heading font-semibold text-foreground text-lg mb-1">Session Complete</h3>
+                <p className="text-xs text-muted-foreground mb-1">Notes saved · Recommendation recorded</p>
+
+                {protocolSuggestion && (
+                  <p className="text-xs text-elita-camel font-medium mt-2">
+                    Next: {CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2 mt-2">
+                <Link to={`/schedule/new?client=${appointment.client_id}`} className="block">
+                  <Button className="w-full h-11 gap-2 rounded-xl font-semibold">
+                    <ArrowRight className="w-4 h-4" />
+                    Rebook Next Appointment
+                  </Button>
+                </Link>
+                <Button variant="ghost" className="w-full h-9 text-xs text-muted-foreground" onClick={onClose}>
+                  Done
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -316,13 +340,13 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Quick Actions</p>
           <div className="grid grid-cols-3 gap-2">
             <Link to={`/clients/${appointment.client_id}?tab=forms`}>
-              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-shadow">📝 Notes</Button>
+              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-all">📝 Notes</Button>
             </Link>
             <Link to={`/clients/${appointment.client_id}?tab=products`}>
-              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-shadow">💡 Recommend</Button>
+              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-all">💡 Recommend</Button>
             </Link>
             <Link to={`/schedule/new?client=${appointment.client_id}`}>
-              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-shadow">🔄 Rebook</Button>
+              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-all">🔄 Rebook</Button>
             </Link>
           </div>
         </div>
