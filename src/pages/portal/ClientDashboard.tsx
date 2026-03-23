@@ -109,6 +109,11 @@ export function ClientDashboard() {
   return (
     <div className="max-w-xl mx-auto pb-36 page-atmosphere">
 
+      {/* ═══ PENDING FORMS BANNER ═══ */}
+      <div className="mt-4 sm:mt-6 px-1">
+        <PendingFormsBanner />
+      </div>
+
       {/* ═══ HERO — LUXURY JOURNEY SECTION ═══ */}
       <div className="mt-4 sm:mt-8 mb-24">
         <JourneyHero
