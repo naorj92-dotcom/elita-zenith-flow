@@ -70,15 +70,15 @@
     --elita-champagne: 32 36% 85%;
     --elita-warm-beige: 28 28% 74%;
 
-    --shadow-xs: 0 1px 2px hsl(22 24% 22% / 0.02);
-    --shadow-sm: 0 1px 4px hsl(22 24% 22% / 0.03), 0 0 0 1px hsl(33 18% 90% / 0.5);
-    --shadow-md: 0 4px 24px hsl(22 24% 22% / 0.04), 0 1px 3px hsl(22 24% 22% / 0.02);
-    --shadow-lg: 0 12px 48px hsl(22 24% 22% / 0.06), 0 4px 12px hsl(22 24% 22% / 0.025);
-    --shadow-xl: 0 20px 64px hsl(22 24% 22% / 0.07), 0 8px 20px hsl(22 24% 22% / 0.03);
-    --shadow-2xl: 0 32px 80px hsl(22 24% 22% / 0.1), 0 12px 28px hsl(22 24% 22% / 0.04);
+    --shadow-xs: 0 1px 2px hsl(22 24% 22% / 0.03);
+    --shadow-sm: 0 2px 6px hsl(22 24% 22% / 0.04), 0 0 0 1px hsl(33 18% 90% / 0.5);
+    --shadow-md: 0 4px 24px hsl(22 24% 22% / 0.055), 0 1px 4px hsl(22 24% 22% / 0.03);
+    --shadow-lg: 0 12px 48px hsl(22 24% 22% / 0.07), 0 4px 14px hsl(22 24% 22% / 0.03);
+    --shadow-xl: 0 20px 64px hsl(22 24% 22% / 0.08), 0 8px 22px hsl(22 24% 22% / 0.035);
+    --shadow-2xl: 0 32px 80px hsl(22 24% 22% / 0.11), 0 12px 28px hsl(22 24% 22% / 0.045);
     --shadow-glow: 0 0 40px hsl(34 48% 60% / 0.12), 0 0 80px hsl(30 40% 52% / 0.06);
     --shadow-glow-strong: 0 0 60px hsl(34 48% 60% / 0.2), 0 0 120px hsl(30 40% 52% / 0.1), 0 0 20px hsl(34 48% 60% / 0.08);
-    --shadow-premium-sm: 0 1px 4px hsl(22 24% 22% / 0.025), 0 0 0 1px hsl(33 16% 89% / 0.4);
+    --shadow-premium-sm: 0 2px 8px hsl(22 24% 22% / 0.04), 0 0 0 1px hsl(33 16% 89% / 0.45);
 
     --font-heading: 'Playfair Display', Georgia, serif;
     --font-body: 'Inter', system-ui, sans-serif;
