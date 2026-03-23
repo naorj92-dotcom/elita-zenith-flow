@@ -197,8 +197,7 @@ export function Dashboard() {
           />
         </div>
         <div className="relative p-10 sm:p-14 md:p-16">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8">
-            <div className="max-w-[75%]">
+           <div>
               <p className="text-[10px] font-semibold text-elita-camel uppercase tracking-[0.4em] mb-5">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
@@ -209,18 +208,14 @@ export function Dashboard() {
                 <span className="italic font-normal">{firstName}</span>
               </h1>
             </div>
-            <Button 
-              onClick={handleClockAction} 
-              disabled={isLoading} 
-              variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
-              size="default" 
-              className="gap-2 shrink-0 rounded-2xl btn-glow"
-            >
-              {clockStatus?.is_clocked_in ? (
-                <><Square className="w-4 h-4" /> Clock Out</>
-              ) : (<><Play className="w-4 h-4" /> Clock In</>)}
-            </Button>
-          </div>
+
+            {/* Clock Status Row */}
+            <ClockStatusRow
+              clockStatus={clockStatus}
+              isLoading={isLoading}
+              onClockIn={async () => { const ok = await clockIn(); if (ok) toast({ title: "Clocked In", description: "Welcome. Have a productive day." }); }}
+              onClockOut={async () => { const ok = await clockOut(); if (ok) toast({ title: "Clocked Out", description: "Have a great rest of your day." }); }}
+            />
 
           <div className="divider-luxe mt-12 mb-10" />
 
