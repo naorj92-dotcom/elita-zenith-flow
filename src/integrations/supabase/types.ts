@@ -1030,6 +1030,39 @@ export type Database = {
         }
         Relationships: []
       }
+      journey_stage_configs: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          service_ids: string[] | null
+          sessions_target: number
+          stage: string
+          timeline_estimate: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          service_ids?: string[] | null
+          sessions_target?: number
+          stage: string
+          timeline_estimate?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          service_ids?: string[] | null
+          sessions_target?: number
+          stage?: string
+          timeline_estimate?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       loyalty_points: {
         Row: {
           client_id: string

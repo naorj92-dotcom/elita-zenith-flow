@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Target, Sparkles, ChevronRight, Star } from 'lucide-react';
 import { addDays, startOfDay } from 'date-fns';
+import { matchServiceToCategory } from '@/lib/elitaMethod';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { differenceInDays, format } from 'date-fns';
@@ -102,6 +103,30 @@ export function ClientDashboard() {
       const { data } = await supabase.from('appointments').select('completed_at, services(name)')
         .eq('client_id', client.id).eq('status', 'completed').order('completed_at', { ascending: false }).limit(1);
       return data?.[0] || null;
+    },
+    enabled: !!client?.id,
+  });
+
+  // Fetch all client appointments for stage session tracking
+  const { data: stageAppointments = {} } = useQuery({
+    queryKey: ['client-stage-appointments', client?.id],
+    queryFn: async () => {
+      if (!client?.id) return {};
+      const { data } = await supabase.from('appointments')
+        .select('scheduled_at, status, services(name)')
+        .eq('client_id', client.id)
+        .in('status', ['completed', 'scheduled', 'confirmed']);
+      if (!data) return {};
+      const grouped: Record<string, { scheduled_at: string; status: string }[]> = {};
+      for (const apt of data) {
+        const serviceName = (apt as any).services?.name || '';
+        const category = matchServiceToCategory(serviceName);
+        if (category) {
+          if (!grouped[category]) grouped[category] = [];
+          grouped[category].push({ scheduled_at: apt.scheduled_at, status: apt.status });
+        }
+      }
+      return grouped;
     },
     enabled: !!client?.id,
   });
@@ -209,6 +234,7 @@ export function ClientDashboard() {
           recommendation={recommendation}
           recommendedServiceInfo={recommendedServiceInfo || undefined}
           bookingHref={bookingHref}
+          stageAppointments={stageAppointments}
         />
       </div>
 

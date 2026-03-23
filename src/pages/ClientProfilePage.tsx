@@ -27,6 +27,7 @@ import { format, isValid } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { JourneyPlanTab } from '@/components/admin/JourneyPlanTab';
 
 export default function ClientProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -235,6 +236,7 @@ export default function ClientProfilePage() {
               <TabsList className="bg-transparent h-auto p-0 gap-0 rounded-none">
                 {[
                   { value: 'overview', label: 'Overview' },
+                  { value: 'journey', label: 'Journey Plan' },
                   { value: 'accommodations', label: 'Accommodations' },
                   { value: 'messages', label: 'Messages', count: messages.filter(m => m.sender_type === 'client' && !m.is_read).length },
                   { value: 'history', label: 'History' },
@@ -317,6 +319,11 @@ export default function ClientProfilePage() {
               {/* PRODUCTS */}
               <TabsContent value="products" className="mt-0">
                 <EmptyState icon={ShoppingCart} title="No product history" description="Product purchases and recommendations will appear here." compact />
+              </TabsContent>
+
+              {/* JOURNEY PLAN */}
+              <TabsContent value="journey" className="mt-0">
+                <JourneyPlanTab clientId={id!} />
               </TabsContent>
 
               {/* FILES */}
