@@ -471,7 +471,7 @@ export function ClientBookingPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-xl mx-auto py-4">
       <CelebrationOverlay show={showCelebration} onComplete={() => setShowCelebration(false)} />
 
       {/* Stepper */}
