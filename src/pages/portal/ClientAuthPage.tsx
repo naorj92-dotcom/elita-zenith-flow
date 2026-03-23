@@ -99,7 +99,7 @@ export function ClientAuthPage() {
           <p className="text-xs text-muted-foreground uppercase tracking-[0.15em]">Client Portal</p>
         </div>
 
-        <Card>
+        <Card className="shadow-xl border-border/50" style={{ boxShadow: 'var(--shadow-xl), inset 0 1px 0 hsl(36 30% 100% / 0.5)' }}>
           <CardHeader className="text-center pb-3">
             <CardTitle className="text-2xl font-heading">Welcome</CardTitle>
             <CardDescription className="mt-2">
