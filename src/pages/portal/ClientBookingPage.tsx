@@ -413,8 +413,8 @@ export function ClientBookingPage() {
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Review & Confirm</h2>
-              <p className="text-sm text-muted-foreground mt-1">Double-check your appointment details</p>
+              <h2 className="text-2xl font-heading font-semibold text-foreground">Review & Confirm</h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Everything looks perfect?</p>
             </div>
 
             <Card className="border-border overflow-hidden">
