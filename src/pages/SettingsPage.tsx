@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Settings, CreditCard, Shield, Building, Clock, Bell, Paintbrush } from 'lucide-react';
+import { Settings, CreditCard, Shield, Building, Clock, Bell, Paintbrush, Target } from 'lucide-react';
 import { BrandingSettings } from '@/components/settings/BrandingSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 export function SettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,7 +31,7 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-lg grid-cols-4">
+        <TabsList className="grid w-full max-w-2xl grid-cols-5">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             General
@@ -38,6 +39,10 @@ export function SettingsPage() {
           <TabsTrigger value="branding" className="flex items-center gap-2">
             <Paintbrush className="w-4 h-4" />
             Branding
+          </TabsTrigger>
+          <TabsTrigger value="goals" className="flex items-center gap-2">
+            <Target className="w-4 h-4" />
+            Goals
           </TabsTrigger>
           <TabsTrigger value="payments" className="flex items-center gap-2">
             <CreditCard className="w-4 h-4" />
@@ -48,6 +53,11 @@ export function SettingsPage() {
             Policies
           </TabsTrigger>
         </TabsList>
+
+        {/* Goals Settings */}
+        <TabsContent value="goals" className="space-y-6 mt-6">
+          <GoalsSettings />
+        </TabsContent>
 
         {/* General Settings */}
         <TabsContent value="general" className="space-y-6 mt-6">
@@ -379,6 +389,72 @@ export function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function GoalsSettings() {
+  const [dailyGoal, setDailyGoal] = useState('2000');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('business_settings')
+      .select('value')
+      .eq('key', 'daily_revenue_goal')
+      .single()
+      .then(({ data }) => {
+        if (data) setDailyGoal(String(data.value));
+        setLoading(false);
+      });
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from('business_settings')
+      .update({ value: Number(dailyGoal), updated_at: new Date().toISOString() })
+      .eq('key', 'daily_revenue_goal');
+    setSaving(false);
+    if (error) {
+      toast.error('Failed to save goal');
+    } else {
+      toast.success('Daily revenue goal updated');
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Target className="w-5 h-5" />
+          Revenue Goals
+        </CardTitle>
+        <CardDescription>
+          Set daily revenue targets for your team. This goal is displayed on the staff dashboard.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2 max-w-xs">
+          <Label htmlFor="dailyGoal">Daily Revenue Goal ($)</Label>
+          <Input
+            id="dailyGoal"
+            type="number"
+            min="0"
+            step="100"
+            value={dailyGoal}
+            onChange={(e) => setDailyGoal(e.target.value)}
+            disabled={loading}
+          />
+          <p className="text-xs text-muted-foreground">
+            This applies to all staff members and is shown on the dashboard progress bar.
+          </p>
+        </div>
+        <Button onClick={handleSave} disabled={saving || loading}>
+          {saving ? 'Saving...' : 'Save Goal'}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
