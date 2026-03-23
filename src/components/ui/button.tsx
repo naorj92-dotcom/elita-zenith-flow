@@ -9,15 +9,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-premium-sm hover:shadow-premium-md active:scale-[0.98]",
+        default: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-premium-sm active:scale-[0.98]",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        outline: "border border-border bg-card hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-muted",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-elita-camel underline-offset-4 hover:underline",
         success: "bg-success text-success-foreground hover:bg-success/90",
         warning: "bg-warning text-warning-foreground hover:bg-warning/90",
-        premium: "bg-elita-camel text-white hover:bg-elita-camel/90 shadow-premium-sm hover:shadow-premium-md active:scale-[0.98]",
+        premium: "bg-elita-camel text-white hover:bg-elita-gold shadow-premium-sm active:scale-[0.98]",
       },
       size: {
         default: "h-12 px-6 py-2.5 rounded-xl",
