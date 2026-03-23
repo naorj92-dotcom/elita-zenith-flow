@@ -33,7 +33,7 @@ interface ChartNoteFormProps {
 }
 
 export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOpenChange }: ChartNoteFormProps) {
-  const { staff } = useAuth();
+  const { staff } = useUnifiedAuth();
   const queryClient = useQueryClient();
 
   const [servicePerformed, setServicePerformed] = useState(serviceName);
