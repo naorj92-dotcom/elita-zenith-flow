@@ -7,28 +7,28 @@
 
 @layer base {
   :root {
-    --background: 32 22% 95%;
-    --foreground: 24 18% 18%;
+    --background: 33 22% 95%;
+    --foreground: 18 12% 28%;
 
-    --card: 33 18% 98%;
-    --card-foreground: 24 18% 18%;
+    --card: 34 18% 98%;
+    --card-foreground: 18 12% 28%;
 
-    --popover: 33 18% 98%;
-    --popover-foreground: 24 18% 18%;
+    --popover: 34 18% 98%;
+    --popover-foreground: 18 12% 28%;
 
-    --primary: 24 22% 24%;
-    --primary-foreground: 34 20% 97%;
-    --primary-hover: 24 18% 32%;
-    --primary-muted: 24 12% 44%;
+    --primary: 18 14% 32%;
+    --primary-foreground: 35 20% 97%;
+    --primary-hover: 18 12% 40%;
+    --primary-muted: 18 10% 48%;
 
     --secondary: 30 18% 93%;
-    --secondary-foreground: 24 18% 26%;
+    --secondary-foreground: 18 12% 30%;
 
     --muted: 30 16% 91%;
-    --muted-foreground: 24 12% 44%;
+    --muted-foreground: 18 10% 48%;
 
     --accent: 30 20% 90%;
-    --accent-foreground: 24 18% 18%;
+    --accent-foreground: 18 12% 28%;
 
     --destructive: 4 42% 48%;
     --destructive-foreground: 0 0% 100%;
@@ -36,40 +36,42 @@
     --success: 148 26% 42%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 34 50% 50%;
-    --warning-foreground: 24 18% 18%;
+    --warning: 36 50% 50%;
+    --warning-foreground: 18 12% 28%;
 
     --info: 200 30% 50%;
     --info-foreground: 0 0% 100%;
 
     --border: 30 16% 88%;
     --input: 30 14% 86%;
-    --ring: 30 30% 56%;
+    --ring: 36 40% 54%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 30 18% 96%;
-    --sidebar-foreground: 24 18% 26%;
-    --sidebar-primary: 24 22% 24%;
-    --sidebar-primary-foreground: 32 22% 97%;
+    --sidebar-background: 31 18% 96%;
+    --sidebar-foreground: 18 12% 30%;
+    --sidebar-primary: 18 14% 32%;
+    --sidebar-primary-foreground: 33 22% 97%;
     --sidebar-accent: 30 18% 92%;
-    --sidebar-accent-foreground: 24 18% 18%;
+    --sidebar-accent-foreground: 18 12% 28%;
     --sidebar-border: 30 14% 90%;
-    --sidebar-ring: 30 30% 56%;
+    --sidebar-ring: 36 40% 54%;
 
-    --elita-camel: 30 36% 58%;
-    --elita-gold: 34 46% 52%;
-    --elita-cream: 32 22% 95%;
+    --elita-camel: 32 38% 56%;
+    --elita-gold: 36 52% 50%;
+    --elita-cream: 33 22% 95%;
     --elita-cream-dark: 30 16% 91%;
-    --elita-charcoal: 24 18% 18%;
-    --elita-gray: 24 12% 44%;
+    --elita-charcoal: 18 12% 28%;
+    --elita-gray: 18 10% 48%;
     --elita-light-gray: 30 16% 88%;
+    --elita-taupe: 18 14% 32%;
+    --elita-heading: 36 52% 50%;
 
-    --shadow-sm: 0 1px 3px hsl(24 18% 18% / 0.025);
-    --shadow-md: 0 4px 20px hsl(24 18% 18% / 0.035);
-    --shadow-lg: 0 12px 44px hsl(24 18% 18% / 0.05);
-    --shadow-glow: 0 0 28px hsl(30 36% 58% / 0.09);
-    --shadow-premium-sm: 0 1px 4px hsl(24 18% 18% / 0.025), 0 0 0 1px hsl(32 14% 89% / 0.5);
+    --shadow-sm: 0 1px 3px hsl(18 12% 28% / 0.025);
+    --shadow-md: 0 4px 20px hsl(18 12% 28% / 0.035);
+    --shadow-lg: 0 12px 44px hsl(18 12% 28% / 0.05);
+    --shadow-glow: 0 0 28px hsl(36 52% 50% / 0.1);
+    --shadow-premium-sm: 0 1px 4px hsl(18 12% 28% / 0.025), 0 0 0 1px hsl(32 14% 89% / 0.5);
 
     --font-heading: 'Playfair Display', Georgia, serif;
     --font-body: 'Inter', system-ui, sans-serif;
