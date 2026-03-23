@@ -57,6 +57,16 @@ export function Dashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!staff) return;
+
+      // Fetch admin-configured daily goal
+      const { data: goalSetting } = await supabase
+        .from('business_settings')
+        .select('value')
+        .eq('key', 'daily_revenue_goal')
+        .single();
+      if (goalSetting) setDailyGoal(Number(goalSetting.value) || 2000);
+
+      const now = new Date();
       const now = new Date();
       const today = new Date(now); today.setHours(0, 0, 0, 0);
       const todayEnd = new Date(today); todayEnd.setHours(23, 59, 59, 999);
