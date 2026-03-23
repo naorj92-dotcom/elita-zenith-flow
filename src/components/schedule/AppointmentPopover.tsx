@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, X, CheckCircle, XCircle, Undo2, UserRoundPen, Search, Loader2, Sparkles, Package } from 'lucide-react';
+import { Phone, X, CheckCircle, XCircle, Undo2, UserRoundPen, Search, Loader2, Sparkles, Package, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { matchServiceToCategory, CATEGORIES, type TreatmentCategory } from '@/lib/elitaMethod';
 import type { ScheduleAppointment } from '@/pages/SchedulePage';
 
 interface AppointmentPopoverProps {
@@ -43,15 +44,24 @@ interface ClientOption {
   phone: string | null;
 }
 
-const recommendationMap: Record<string, string> = {
-  'Hydrafacial': 'Chemical Peel',
-  'Chemical Peel': 'Microneedling',
-  'Microneedling': 'PRP Facial',
-  'PRP Facial': 'Skin Tightening',
-  'Botox': 'Dermal Fillers',
-  'Dermal Fillers': 'Skin Tightening',
-  'Laser Hair Removal': 'Skin Rejuvenation',
-};
+// Protocol-based next step mapping using Elita Method categories
+function getProtocolSuggestion(serviceName: string): { label: string; category: TreatmentCategory } | null {
+  const cat = matchServiceToCategory(serviceName);
+  if (!cat) return null;
+
+  const nextMap: Record<TreatmentCategory, TreatmentCategory> = {
+    freeze: 'tight',
+    tone: 'freeze',
+    tight: 'glow',
+    glow: 'glow',
+  };
+
+  const nextCat = nextMap[cat];
+  return {
+    label: CATEGORIES[nextCat].label,
+    category: nextCat,
+  };
+}
 
 export function AppointmentPopover({ appointment, clientDetails, onClose, onStatusChange, onClientChanged }: AppointmentPopoverProps) {
   const start = new Date(appointment.scheduled_at);
@@ -64,10 +74,11 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [searchResults, setSearchResults] = useState<ClientOption[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
+  const [suggestionAccepted, setSuggestionAccepted] = useState<boolean | null>(null);
 
   const isGoogleEvent = appointment.id.startsWith('gcal-');
 
-  // Fetch client's active packages for session tracking
+  // Client's active package
   const { data: clientPackage } = useQuery({
     queryKey: ['apt-client-package', appointment.client_id],
     queryFn: async () => {
@@ -83,8 +94,9 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
     enabled: !!appointment.client_id && !isGoogleEvent,
   });
 
-  // Get suggested next treatment
-  const suggestedNext = recommendationMap[appointment.service_name] || null;
+  // Protocol-based suggestion
+  const protocolSuggestion = getProtocolSuggestion(appointment.service_name);
+  const currentCategory = matchServiceToCategory(appointment.service_name);
 
   useEffect(() => {
     if (!showClientSearch || searchQuery.length < 2) {
@@ -120,6 +132,11 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
     setIsChanging(false);
   };
 
+  const handleAcceptSuggestion = () => {
+    setSuggestionAccepted(true);
+    toast.success('Recommendation saved');
+  };
+
   return (
     <div data-appointment-popover className="w-80 bg-popover border border-border rounded-xl shadow-xl p-4 z-50" onClick={(e) => e.stopPropagation()}>
       {/* Header */}
@@ -150,38 +167,59 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
 
       <Separator className="my-2" />
 
-      {/* Appointment */}
+      {/* Appointment info */}
       <div className="mb-2">
-        <p className="font-semibold text-foreground text-sm">{appointment.service_name}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-semibold text-foreground text-sm flex-1">{appointment.service_name}</p>
+          {currentCategory && (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-accent text-muted-foreground">
+              {CATEGORIES[currentCategory].emoji} {CATEGORIES[currentCategory].label}
+            </span>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground">{timeStr} · {appointment.staff_name}</p>
         <p className="text-sm font-semibold text-foreground mt-1">${Number(appointment.total_amount).toFixed(2)}</p>
       </div>
 
-      {/* Session progress (inline) */}
+      {/* Session progress */}
       {clientPackage && (
         <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2 mb-2">
           <Package className="w-3.5 h-3.5 text-primary shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-medium text-foreground truncate">{(clientPackage as any).packages?.name || 'Package'}</p>
-          </div>
+          <p className="text-[11px] font-medium text-foreground truncate flex-1">{(clientPackage as any).packages?.name || 'Package'}</p>
           <span className="text-xs font-semibold text-primary whitespace-nowrap">
             {(clientPackage as any).sessions_used}/{(clientPackage as any).sessions_total}
           </span>
         </div>
       )}
 
-      {/* Suggested next treatment */}
-      {suggestedNext && !isGoogleEvent && (
-        <div className="flex items-center gap-2 bg-accent/40 rounded-lg px-3 py-2 mb-2">
-          <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
-          <p className="text-[11px] text-foreground">
-            <span className="text-muted-foreground">Suggested next:</span>{' '}
-            <span className="font-medium">{suggestedNext}</span>
+      {/* Protocol suggestion */}
+      {protocolSuggestion && !isGoogleEvent && suggestionAccepted === null && (
+        <div className="bg-accent/40 rounded-lg px-3 py-2.5 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Target className="w-3.5 h-3.5 text-primary shrink-0" />
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Protocol Suggestion</p>
+          </div>
+          <p className="text-xs text-foreground mb-2">
+            Suggested next: <span className="font-semibold">{CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label}</span>
           </p>
+          <div className="flex gap-1.5">
+            <Button size="sm" className="h-6 text-[10px] px-2.5" onClick={handleAcceptSuggestion}>
+              ✓ Accept
+            </Button>
+            <Button variant="outline" size="sm" className="h-6 text-[10px] px-2.5" onClick={() => setSuggestionAccepted(false)}>
+              Modify
+            </Button>
+          </div>
+        </div>
+      )}
+      {suggestionAccepted === true && protocolSuggestion && (
+        <div className="flex items-center gap-2 bg-success/10 rounded-lg px-3 py-2 mb-2 text-[11px] text-success font-medium">
+          <CheckCircle className="w-3.5 h-3.5" />
+          Next: {CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label} — saved
         </div>
       )}
 
-      {/* Status badge */}
+      {/* Status */}
       <Badge variant="outline" className="text-[10px] capitalize mb-2">
         {appointment.status.replace('_', ' ')}
       </Badge>

@@ -437,6 +437,41 @@ export type Database = {
           },
         ]
       }
+      client_goals: {
+        Row: {
+          client_id: string
+          created_at: string
+          goal: Database["public"]["Enums"]["client_goal"]
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          goal: Database["public"]["Enums"]["client_goal"]
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          goal?: Database["public"]["Enums"]["client_goal"]
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_goals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_memberships: {
         Row: {
           cancelled_at: string | null
@@ -631,6 +666,47 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_treatment_progress: {
+        Row: {
+          category: Database["public"]["Enums"]["treatment_category"]
+          client_id: string
+          created_at: string
+          id: string
+          last_session_date: string | null
+          sessions_completed: number
+          sessions_target: number
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["treatment_category"]
+          client_id: string
+          created_at?: string
+          id?: string
+          last_session_date?: string | null
+          sessions_completed?: number
+          sessions_target?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["treatment_category"]
+          client_id?: string
+          created_at?: string
+          id?: string
+          last_session_date?: string | null
+          sessions_completed?: number
+          sessions_target?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_treatment_progress_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
@@ -2324,11 +2400,18 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "no_show"
+      client_goal:
+        | "fat_loss"
+        | "body_sculpting"
+        | "skin_tightening"
+        | "face_glow"
+        | "post_weight_loss"
       employee_type: "front_desk" | "provider"
       form_status: "draft" | "pending" | "completed" | "expired"
       form_type: "intake" | "consent" | "contract" | "custom"
       staff_role: "admin" | "provider" | "front_desk"
       transaction_type: "service" | "retail" | "refund"
+      treatment_category: "freeze" | "tone" | "tight" | "glow"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2466,11 +2549,19 @@ export const Constants = {
         "cancelled",
         "no_show",
       ],
+      client_goal: [
+        "fat_loss",
+        "body_sculpting",
+        "skin_tightening",
+        "face_glow",
+        "post_weight_loss",
+      ],
       employee_type: ["front_desk", "provider"],
       form_status: ["draft", "pending", "completed", "expired"],
       form_type: ["intake", "consent", "contract", "custom"],
       staff_role: ["admin", "provider", "front_desk"],
       transaction_type: ["service", "retail", "refund"],
+      treatment_category: ["freeze", "tone", "tight", "glow"],
     },
   },
 } as const
