@@ -23,10 +23,12 @@ import {
   Loader2,
 } from 'lucide-react';
 import { FormFieldRenderer, FormField } from '@/components/forms/FormFieldRenderer';
-import { SignaturePad } from '@/components/forms/SignaturePad';
 import { CelebrationOverlay } from '@/components/shared/CelebrationOverlay';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 type FormType = 'intake' | 'consent' | 'contract' | 'custom';
 type FormStatus = 'pending' | 'completed' | 'expired' | 'draft';
