@@ -304,16 +304,16 @@ export function ClientDashboard() {
       {/* ═══ QUICK ACTIONS ═══ */}
       <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
         <SectionLabel>Quick Actions</SectionLabel>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬' },
             { label: 'My Photos', href: '/portal/photos', icon: '📸' },
             { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨' },
             { label: 'Visit History', href: '/portal/history', icon: '📋' },
           ].map((item) => (
-            <Link key={item.href} to={item.href} className="flex items-center gap-3.5 p-5 rounded-2xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-md transition-all duration-300">
-              <span className="text-lg">{item.icon}</span>
-              <span className="text-sm font-medium text-foreground">{item.label}</span>
+            <Link key={item.href} to={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-elita-camel/15 hover:shadow-sm transition-all duration-300">
+              <span className="text-base">{item.icon}</span>
+              <span className="text-[13px] font-medium text-muted-foreground">{item.label}</span>
             </Link>
           ))}
         </div>
