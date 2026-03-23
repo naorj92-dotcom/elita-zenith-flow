@@ -17,6 +17,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         success: "bg-success text-success-foreground hover:bg-success/90",
         warning: "bg-warning text-warning-foreground hover:bg-warning/90",
+        premium: "bg-elita-camel text-white hover:bg-elita-camel/90 shadow-premium-sm hover:shadow-premium-md active:scale-[0.98]",
       },
       size: {
         default: "h-12 px-6 py-2.5 rounded-xl",
