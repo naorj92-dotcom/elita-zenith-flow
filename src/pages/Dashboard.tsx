@@ -129,16 +129,26 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="p-6 sm:p-8 md:p-12 max-w-6xl mx-auto space-y-10">
+    <div className="p-6 sm:p-8 md:p-12 max-w-6xl mx-auto space-y-12">
       <OnboardingTour />
 
       {/* Header */}
-      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-heading font-semibold text-foreground tracking-tight">Welcome back, {firstName}</h1>
-          <p className="text-sm text-muted-foreground mt-2">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em] mb-3">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+          <h1 className="text-3xl md:text-4xl font-heading font-semibold text-foreground tracking-tight">
+            Welcome back, {firstName}
+          </h1>
         </div>
-        <Button onClick={handleClockAction} disabled={isLoading} variant={clockStatus?.is_clocked_in ? "destructive" : "default"} size="lg" className="gap-2.5 shrink-0">
+        <Button 
+          onClick={handleClockAction} 
+          disabled={isLoading} 
+          variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
+          size="lg" 
+          className="gap-2.5 shrink-0"
+        >
           {clockStatus?.is_clocked_in ? (
             <><Square className="w-4 h-4" /> Clock Out
               {clockStatus.clock_entry && <span className="text-xs opacity-80 ml-1">· Since {new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
@@ -150,12 +160,12 @@ export function Dashboard() {
       {/* KPI Cards */}
       <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="grid grid-cols-2 lg:grid-cols-5 gap-5">
         {kpiCards.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="p-6">
+          <Card key={stat.label} className="hover:shadow-premium-lg transition-shadow duration-400">
+            <CardContent className="p-7">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-3xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1">
                     {stat.change !== null && stat.change !== 0 && (
                       stat.change > 0
                         ? <ArrowUpRight className="w-3.5 h-3.5 text-success" />
@@ -168,6 +178,7 @@ export function Dashboard() {
                   <stat.icon className="w-5 h-5 text-muted-foreground" />
                 </div>
               </div>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mt-4">{stat.label}</p>
             </CardContent>
           </Card>
         ))}
@@ -183,7 +194,7 @@ export function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle>Today's Schedule</CardTitle>
-            <Link to="/schedule" className="text-sm text-primary hover:text-primary/80 flex items-center gap-1 transition-colors font-medium">
+            <Link to="/schedule" className="text-sm text-elita-camel hover:text-elita-camel/80 flex items-center gap-1 transition-colors font-medium">
               View All <ChevronRight className="w-4 h-4" />
             </Link>
           </CardHeader>
@@ -230,20 +241,23 @@ export function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <motion.div {...fadeUp} transition={{ delay: 0.36 }} className="grid grid-cols-2 gap-5">
-        {[
-          { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
-          { label: 'Add Client', href: '/clients/new', icon: Users },
-          { label: 'View Schedule', href: '/schedule', icon: Clock },
-          { label: 'Quick Checkout', href: '/pos', icon: Zap },
-        ].map((action) => (
-          <Link key={action.label} to={action.href} className="flex items-center gap-5 p-6 rounded-2xl bg-card border border-border hover:border-primary/20 hover:shadow-premium-md transition-all duration-300 group">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors duration-300">
-              <action.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
-            </div>
-            <span className="text-sm font-semibold text-foreground">{action.label}</span>
-          </Link>
-        ))}
+      <motion.div {...fadeUp} transition={{ delay: 0.36 }}>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-5">Quick Actions</p>
+        <div className="grid grid-cols-2 gap-5">
+          {[
+            { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
+            { label: 'Add Client', href: '/clients/new', icon: Users },
+            { label: 'View Schedule', href: '/schedule', icon: Clock },
+            { label: 'Quick Checkout', href: '/pos', icon: Zap },
+          ].map((action) => (
+            <Link key={action.label} to={action.href} className="flex items-center gap-5 p-7 rounded-2xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-premium-md transition-all duration-400 group">
+              <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center group-hover:bg-elita-camel/10 transition-colors duration-400">
+                <action.icon className="w-5 h-5 text-muted-foreground group-hover:text-elita-camel transition-colors duration-400" />
+              </div>
+              <span className="text-sm font-semibold text-foreground">{action.label}</span>
+            </Link>
+          ))}
+        </div>
       </motion.div>
     </div>
   );

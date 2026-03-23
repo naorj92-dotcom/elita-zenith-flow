@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Eye, EyeOff, ArrowLeft, UserPlus } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import elitaLogo from '@/assets/elita-logo.png';
@@ -25,30 +25,23 @@ export function LoginPage() {
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
 
   if (isAuthenticated) {
-    if (role === 'client') {
-      return <Navigate to="/portal" replace />;
-    }
+    if (role === 'client') return <Navigate to="/portal" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Check lockout
     if (lockoutUntil && Date.now() < lockoutUntil) {
       const secondsLeft = Math.ceil((lockoutUntil - Date.now()) / 1000);
       setError(`Too many failed attempts. Try again in ${secondsLeft}s.`);
       return;
     }
-
     setSubmitting(true);
-    
     const result = await signIn(email, password);
     if (result.error) {
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
-      
       if (newAttempts >= 5) {
         const lockDuration = Math.min(30, 5 * Math.pow(2, Math.floor(newAttempts / 5) - 1));
         setLockoutUntil(Date.now() + lockDuration * 1000);
@@ -71,23 +64,15 @@ export function LoginPage() {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setForgotSending(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Password reset email sent! Check your inbox.');
-      setShowForgotPassword(false);
-    }
+    if (error) toast.error(error.message);
+    else { toast.success('Password reset email sent! Check your inbox.'); setShowForgotPassword(false); }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-gradient-hero">
       {/* Logo */}
-      <div className="pt-12 pb-8 flex justify-center">
-        <img 
-          src={elitaLogo} 
-          alt="Elita Medical Spa" 
-          className="h-14 w-auto object-contain"
-        />
+      <div className="pt-16 pb-10 flex justify-center">
+        <img src={elitaLogo} alt="Elita Medical Spa" className="h-16 w-auto object-contain" />
       </div>
 
       {/* Login Card */}
@@ -95,27 +80,23 @@ export function LoginPage() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="w-full max-w-sm"
         >
-          <div className="text-center mb-6">
+          <div className="text-center mb-8">
             <h1 className="text-2xl font-heading font-semibold text-foreground">Staff Login</h1>
-            <p className="text-sm text-muted-foreground mt-1">Sign in to access the dashboard</p>
+            <p className="text-sm text-muted-foreground mt-2">Sign in to access the dashboard</p>
           </div>
 
-          <Card className="border-border">
-            <CardContent className="pt-6">
-              <form onSubmit={handleEmailLogin} className="space-y-4">
+          <Card>
+            <CardContent className="pt-7">
+              <form onSubmit={handleEmailLogin} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@elitamedspa.com"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setError(null); }}
-                    required
-                    autoComplete="email"
+                    id="email" type="email" placeholder="you@elitamedspa.com"
+                    value={email} onChange={(e) => { setEmail(e.target.value); setError(null); }}
+                    required autoComplete="email"
                   />
                 </div>
 
@@ -123,43 +104,25 @@ export function LoginPage() {
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => { setPassword(e.target.value); setError(null); }}
-                      required
-                      autoComplete="current-password"
-                      className="pr-10"
+                      id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                      value={password} onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                      required autoComplete="current-password" className="pr-10"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <button type="button" onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
 
-                {error && (
-                  <p className="text-sm text-destructive">{error}</p>
-                )}
+                {error && <p className="text-sm text-destructive">{error}</p>}
 
                 <Button type="submit" className="w-full" disabled={submitting || isLoading}>
-                  {submitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : 'Sign In'}
+                  {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Signing in...</> : 'Sign In'}
                 </Button>
 
-                <button
-                  type="button"
-                  onClick={() => { setShowForgotPassword(true); setForgotEmail(email); }}
-                  className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
+                <button type="button" onClick={() => { setShowForgotPassword(true); setForgotEmail(email); }}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Forgot password?
                 </button>
               </form>
@@ -170,35 +133,23 @@ export function LoginPage() {
 
       {/* Forgot Password Modal */}
       {showForgotPassword && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-sm"
-          >
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-sm">
             <Card>
-              <CardContent className="pt-6 space-y-4">
-                <button
-                  onClick={() => setShowForgotPassword(false)}
-                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
+              <CardContent className="pt-7 space-y-5">
+                <button onClick={() => setShowForgotPassword(false)}
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
                   <ArrowLeft className="h-4 w-4" /> Back to login
                 </button>
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">Reset Password</h2>
-                  <p className="text-sm text-muted-foreground mt-1">We'll send you a link to reset your password.</p>
+                  <h2 className="text-lg font-heading font-semibold text-foreground">Reset Password</h2>
+                  <p className="text-sm text-muted-foreground mt-1.5">We'll send you a link to reset your password.</p>
                 </div>
                 <form onSubmit={handleForgotPassword} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="forgot-email">Email</Label>
-                    <Input
-                      id="forgot-email"
-                      type="email"
-                      value={forgotEmail}
-                      onChange={(e) => setForgotEmail(e.target.value)}
-                      placeholder="you@elitamedspa.com"
-                      required
-                    />
+                    <Input id="forgot-email" type="email" value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)} placeholder="you@elitamedspa.com" required />
                   </div>
                   <Button type="submit" className="w-full" disabled={forgotSending}>
                     {forgotSending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
@@ -212,10 +163,10 @@ export function LoginPage() {
       )}
 
       {/* Client Portal Link */}
-      <div className="text-center pb-8">
+      <div className="text-center pb-10">
         <p className="text-sm text-muted-foreground">
           Client?{' '}
-          <Link to="/portal/auth" className="text-primary hover:text-primary-hover transition-colors">
+          <Link to="/portal/auth" className="text-elita-camel hover:text-elita-camel/80 font-medium transition-colors">
             Access Client Portal
           </Link>
         </p>

@@ -76,20 +76,20 @@ export function TodaysFocusWidget() {
 
   const typeStyles = {
     alert: 'border-l-warning bg-warning/5',
-    insight: 'border-l-primary bg-primary/5',
+    insight: 'border-l-elita-camel bg-elita-camel/5',
     action: 'border-l-success bg-success/5',
   };
 
   return (
     <Card className="overflow-hidden">
-      <CardContent className="p-7">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <Lightbulb className="w-5 h-5 text-primary" />
+      <CardContent className="p-8">
+        <div className="flex items-center gap-3 mb-7">
+          <div className="w-10 h-10 rounded-2xl bg-elita-camel/10 flex items-center justify-center">
+            <Lightbulb className="w-5 h-5 text-elita-camel" />
           </div>
           <div>
             <h2 className="text-lg font-heading font-semibold text-foreground">Today's Focus</h2>
-            <p className="text-xs text-muted-foreground">What needs your attention right now</p>
+            <p className="text-xs text-muted-foreground mt-0.5">What needs your attention right now</p>
           </div>
         </div>
 
@@ -107,14 +107,14 @@ export function TodaysFocusWidget() {
             >
               <item.icon className={cn(
                 'w-5 h-5 shrink-0 mt-0.5',
-                item.type === 'alert' ? 'text-warning' : item.type === 'insight' ? 'text-primary' : 'text-success'
+                item.type === 'alert' ? 'text-warning' : item.type === 'insight' ? 'text-elita-camel' : 'text-success'
               )} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.description}</p>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{item.description}</p>
                 {item.actionLabel && item.actionHref && (
                   <Link to={item.actionHref}>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs px-0 mt-2 gap-1 text-primary hover:text-primary/80 hover:bg-transparent">
+                    <Button variant="ghost" size="sm" className="h-7 text-xs px-0 mt-2.5 gap-1 text-elita-camel hover:text-elita-camel/80 hover:bg-transparent">
                       {item.actionLabel} <ArrowRight className="w-3 h-3" />
                     </Button>
                   </Link>
