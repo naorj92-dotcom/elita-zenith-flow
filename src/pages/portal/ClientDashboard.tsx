@@ -117,14 +117,14 @@ export function ClientDashboard() {
       <motion.div {...fadeUp}>
         <Card className="card-hero overflow-hidden border-elita-camel/10 mt-8 sm:mt-12">
           <div className="h-1 bg-gradient-to-r from-elita-camel/40 via-elita-camel/15 to-transparent" />
-          <CardContent className="p-7 sm:p-9 space-y-7">
+          <CardContent className="p-8 sm:p-10 space-y-8">
 
             {/* Title */}
             <div>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.3em] mb-3">
+              <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-[0.35em] mb-3">
                 Welcome back, {firstName}
               </p>
-              <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground tracking-tight leading-[1.05]">
+              <h1 className="text-4xl sm:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1]">
                 Your Elita Journey
               </h1>
             </div>
