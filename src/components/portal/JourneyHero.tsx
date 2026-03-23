@@ -137,31 +137,31 @@ export function JourneyHero({
                   style={{ background: 'linear-gradient(90deg, transparent, hsl(34 48% 60% / 0.3), transparent)' }}
                 />
 
-                <div className="relative">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.45em] mb-4"
-                     style={{ color: 'hsl(34 48% 65%)' }}>
+                <div className="relative z-10">
+                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.5em] mb-5"
+                     style={{ color: 'hsl(34 48% 68%)' }}>
                     Your Next Visit
                   </p>
 
-                  <p className="text-2xl sm:text-[1.85rem] font-heading font-semibold leading-snug tracking-tight"
-                     style={{ color: 'hsl(36 30% 95%)' }}>
+                  <p className="text-[1.75rem] sm:text-[2.15rem] font-heading font-semibold leading-snug tracking-tight"
+                     style={{ color: 'hsl(36 30% 96%)' }}>
                     {nextAppointment.services?.name}
                   </p>
 
-                  <div className="divider-luxe my-5 opacity-30" />
+                  <div className="divider-luxe my-6 opacity-25" />
 
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                         style={{ background: 'hsl(34 48% 60% / 0.12)', border: '1px solid hsl(34 48% 60% / 0.15)' }}>
-                      <Clock className="w-4 h-4" style={{ color: 'hsl(34 48% 65%)' }} />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                         style={{ background: 'hsl(34 48% 60% / 0.14)', border: '1px solid hsl(34 48% 60% / 0.18)', boxShadow: '0 0 20px hsl(34 48% 60% / 0.08)' }}>
+                      <Clock className="w-[18px] h-[18px]" style={{ color: 'hsl(34 48% 68%)' }} />
                     </div>
                     <div>
-                      <p className="text-[13px] font-medium"
-                         style={{ color: 'hsl(36 26% 88%)' }}>
+                      <p className="text-[14px] font-medium"
+                         style={{ color: 'hsl(36 26% 90%)' }}>
                         {format(new Date(nextAppointment.scheduled_at), 'EEEE, MMMM d')}
                       </p>
-                      <p className="text-[11px] mt-0.5"
-                         style={{ color: 'hsl(34 18% 60%)' }}>
+                      <p className="text-[11px] mt-1"
+                         style={{ color: 'hsl(34 18% 58%)' }}>
                         {format(new Date(nextAppointment.scheduled_at), 'h:mm a')}
                         {nextAppointment.staff && (
                           <span> · with {nextAppointment.staff.first_name} {nextAppointment.staff.last_name}</span>
