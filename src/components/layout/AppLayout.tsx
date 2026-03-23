@@ -113,14 +113,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar - Clean, minimal, no visual noise */}
-      <aside className="hidden md:flex flex-col w-60 bg-card border-r border-border">
+      <aside className="hidden md:flex flex-col w-[15.5rem] bg-card border-r border-border/60">
         {/* Logo */}
-        <div className="p-5 border-b border-border flex justify-center">
+        <div className="px-6 py-6 border-b border-border/40 flex justify-center">
           <Link to={role === 'client' ? '/portal' : '/dashboard'} className="block">
             <img 
               src={elitaLogo} 
               alt="Elita Medical Spa" 
-              className="h-14 w-auto object-contain"
+              className="h-16 w-auto object-contain"
             />
           </Link>
         </div>
