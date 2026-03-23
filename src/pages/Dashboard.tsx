@@ -378,3 +378,67 @@ export function Dashboard() {
     </div>
   );
 }
+
+function ClockStatusRow({ clockStatus, isLoading, onClockIn, onClockOut }: {
+  clockStatus: { is_clocked_in: boolean; clock_entry?: { clock_in: string } } | null;
+  isLoading: boolean;
+  onClockIn: () => void;
+  onClockOut: () => void;
+}) {
+  const [elapsed, setElapsed] = useState('');
+
+  useEffect(() => {
+    if (!clockStatus?.is_clocked_in || !clockStatus.clock_entry?.clock_in) {
+      setElapsed('');
+      return;
+    }
+    const update = () => {
+      const diff = Date.now() - new Date(clockStatus.clock_entry!.clock_in).getTime();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setElapsed(`${h}h ${m}m`);
+    };
+    update();
+    const id = setInterval(update, 60000);
+    return () => clearInterval(id);
+  }, [clockStatus?.is_clocked_in, clockStatus?.clock_entry?.clock_in]);
+
+  if (!clockStatus?.is_clocked_in) {
+    return (
+      <div className="mt-8">
+        <Button
+          onClick={onClockIn}
+          disabled={isLoading}
+          size="default"
+          className="gap-2 rounded-2xl btn-glow w-full sm:w-auto"
+        >
+          <Play className="w-4 h-4" /> Clock In
+        </Button>
+      </div>
+    );
+  }
+
+  const clockInTime = clockStatus.clock_entry?.clock_in
+    ? new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : '';
+
+  return (
+    <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" />
+        <span>Clocked in at <span className="font-semibold text-foreground">{clockInTime}</span></span>
+        <span className="text-muted-foreground/40">•</span>
+        <span className="font-medium text-foreground">{elapsed}</span> elapsed
+      </div>
+      <Button
+        onClick={onClockOut}
+        disabled={isLoading}
+        variant="outline"
+        size="sm"
+        className="gap-2 rounded-2xl w-full sm:w-auto"
+      >
+        <Square className="w-3.5 h-3.5" /> Clock Out
+      </Button>
+    </div>
+  );
+}
