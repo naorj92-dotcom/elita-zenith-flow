@@ -69,34 +69,49 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-hero">
+    <div className="min-h-screen flex flex-col bg-gradient-hero relative overflow-hidden">
+      {/* Ambient glow layers */}
+      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full"
+          style={{ background: 'radial-gradient(circle, hsl(32 38% 56% / 0.06) 0%, hsl(34 24% 90% / 0.03) 40%, transparent 65%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[40vh]"
+          style={{ background: 'linear-gradient(0deg, hsl(34 20% 93% / 0.4) 0%, transparent 100%)' }} />
+      </div>
+
       {/* Logo */}
-      <div className="pt-14 pb-8 flex justify-center">
-        <img src={elitaLogo} alt="Elita Medical Spa" className="h-14 w-auto object-contain" />
+      <div className="pt-16 pb-10 flex justify-center relative z-10">
+        <motion.img 
+          src={elitaLogo} 
+          alt="Elita Medical Spa" 
+          className="h-16 w-auto object-contain"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+        />
       </div>
 
       {/* Login Card */}
-      <div className="flex-1 flex flex-col items-center px-4">
+      <div className="flex-1 flex flex-col items-center px-4 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          className="w-full max-w-sm"
+          transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
+          className="w-full max-w-[400px] login-glow"
         >
-          <div className="text-center mb-6">
-            <h1 className="text-xl font-heading font-semibold text-foreground">Staff Login</h1>
-            <p className="text-sm text-muted-foreground mt-1.5">Sign in to access the dashboard</p>
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-heading font-semibold text-foreground">Staff Login</h1>
+            <p className="text-sm text-muted-foreground mt-2">Sign in to access the dashboard</p>
           </div>
 
-          <Card>
-            <CardContent className="pt-7">
-              <form onSubmit={handleEmailLogin} className="space-y-5">
+          <Card className="shadow-xl border-border/50" style={{ boxShadow: 'var(--shadow-xl), inset 0 1px 0 hsl(36 30% 100% / 0.5)' }}>
+            <CardContent className="pt-8 pb-8 px-8">
+              <form onSubmit={handleEmailLogin} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email" type="email" placeholder="you@elitamedspa.com"
                     value={email} onChange={(e) => { setEmail(e.target.value); setError(null); }}
-                    required autoComplete="email"
+                    required autoComplete="email" className="h-12"
                   />
                 </div>
 
@@ -106,7 +121,7 @@ export function LoginPage() {
                     <Input
                       id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
                       value={password} onChange={(e) => { setPassword(e.target.value); setError(null); }}
-                      required autoComplete="current-password" className="pr-10"
+                      required autoComplete="current-password" className="pr-10 h-12"
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
@@ -117,7 +132,7 @@ export function LoginPage() {
 
                 {error && <p className="text-sm text-destructive">{error}</p>}
 
-                <Button type="submit" className="w-full" disabled={submitting || isLoading}>
+                <Button type="submit" className="w-full h-[3.25rem] text-[13px] font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-300" disabled={submitting || isLoading}>
                   {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Signing in...</> : 'Sign In'}
                 </Button>
 
@@ -163,7 +178,7 @@ export function LoginPage() {
       )}
 
       {/* Client Portal Link */}
-      <div className="text-center pb-10">
+      <div className="text-center pb-12 relative z-10">
         <p className="text-sm text-muted-foreground">
           Client?{' '}
           <Link to="/portal/auth" className="text-elita-camel hover:text-elita-camel/80 font-medium transition-colors">
