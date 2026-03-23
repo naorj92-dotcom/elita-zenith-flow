@@ -15,6 +15,8 @@ import type { ScheduleAppointment } from '@/pages/SchedulePage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRole } from '@/contexts/UnifiedAuthContext';
 import { ChartNoteForm } from '@/components/charts/ChartNoteForm';
+import { AlertTriangle } from 'lucide-react';
+
 interface AppointmentPopoverProps {
   appointment: ScheduleAppointment;
   clientDetails?: {
