@@ -3,7 +3,7 @@ import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Target, Sparkles } from 'lucide-react';
+import { Target, Sparkles, ChevronRight, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { differenceInDays, format } from 'date-fns';
@@ -75,6 +75,25 @@ export function ClientDashboard() {
     enabled: !!client?.id,
   });
 
+  // Loyalty points
+  const { data: loyaltyBalance = 0 } = useQuery({
+    queryKey: ['client-loyalty-balance', client?.id],
+    queryFn: async () => {
+      if (!client?.id) return 0;
+      const { data } = await supabase.rpc('get_client_loyalty_balance', { p_client_id: client.id });
+      return data || 0;
+    },
+    enabled: !!client?.id,
+  });
+
+  const { data: lowestRewardCost = null } = useQuery({
+    queryKey: ['lowest-reward-cost'],
+    queryFn: async () => {
+      const { data } = await supabase.from('loyalty_rewards').select('points_cost').eq('is_active', true).order('points_cost', { ascending: true }).limit(1);
+      return data?.[0]?.points_cost || null;
+    },
+  });
+
   const { data: lastCompleted } = useQuery({
     queryKey: ['client-last-completed', client?.id],
     queryFn: async () => {
@@ -125,6 +144,58 @@ export function ClientDashboard() {
           bookingHref={bookingHref}
         />
       </div>
+
+      {/* ═══ LOYALTY POINTS CARD ═══ */}
+      <motion.div {...fadeUp} transition={{ delay: 0.07 }} className="mt-8 relative z-10 px-1">
+        {(() => {
+          const canRedeem = lowestRewardCost !== null && loyaltyBalance >= lowestRewardCost;
+          const pointsToNext = lowestRewardCost !== null ? Math.max(lowestRewardCost - loyaltyBalance, 0) : null;
+
+          return (
+            <Link to="/portal/rewards" className="block">
+              <div className={cn(
+                'flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 hover:scale-[1.01]',
+                canRedeem
+                  ? 'bg-gradient-to-r from-amber-500/15 to-amber-400/10 border border-amber-500/30'
+                  : 'glass'
+              )}>
+                <div className={cn(
+                  'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
+                  canRedeem ? 'bg-amber-500/20' : 'bg-elita-camel/10'
+                )}>
+                  <Star className={cn('w-4.5 h-4.5', canRedeem ? 'text-amber-500 fill-amber-500' : 'text-elita-camel')} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  {loyaltyBalance === 0 ? (
+                    <p className="text-sm font-medium text-foreground">Earn points with every visit</p>
+                  ) : canRedeem ? (
+                    <>
+                      <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                        You have enough points to redeem a reward!
+                      </p>
+                      <p className="text-[11px] text-amber-600/70 dark:text-amber-400/60 font-medium mt-0.5">
+                        {loyaltyBalance.toLocaleString()} Elita Points
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-semibold text-foreground">
+                        You have {loyaltyBalance.toLocaleString()} Elita Points
+                      </p>
+                      {pointsToNext !== null && (
+                        <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
+                          {pointsToNext.toLocaleString()} points until your next reward
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </div>
+            </Link>
+          );
+        })()}
+      </motion.div>
 
       {/* ═══ URGENCY MESSAGE ═══ */}
       {urgency && hasGoals && (
