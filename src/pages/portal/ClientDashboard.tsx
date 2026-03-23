@@ -155,9 +155,9 @@ export function ClientDashboard() {
             {/* Progress + Urgency (only when goals exist) */}
             {hasGoals && totalTarget > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-foreground tracking-wide uppercase">Your Progress</p>
-                  <p className="text-2xl font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
+                <div className="flex items-center justify-between mb-3.5">
+                  <p className="text-[10px] font-semibold text-foreground tracking-widest uppercase">Your Progress</p>
+                  <p className="text-3xl font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <motion.div
