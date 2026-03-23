@@ -166,14 +166,14 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ TREATMENT PLAN — offset left for editorial feel ═══ */}
+      {/* ═══ TREATMENT PLAN — elevated with more presence ═══ */}
       {treatmentProgress.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-16 relative z-10 sm:-ml-2">
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-20 relative z-10 sm:-ml-2">
           <SectionLabel>Your Personalized Plan</SectionLabel>
-          <div className="card-minimal p-5 space-y-3">
-            <div className="flex items-center gap-2.5 mb-1">
-              <Target className="w-3.5 h-3.5 text-elita-camel" />
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="card-elevated p-6 sm:p-7 space-y-3.5">
+            <div className="flex items-center gap-2.5 mb-2">
+              <Target className="w-4 h-4 text-elita-camel" />
+              <p className="text-[11px] font-semibold text-foreground/70 uppercase tracking-wider">
                 {GOALS.find(g => g.key === clientGoals[0])?.label}
               </p>
             </div>
@@ -181,13 +181,13 @@ export function ClientDashboard() {
               const cat = CATEGORIES[p.category as TreatmentCategory];
               const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
               return (
-                <div key={p.category} className="flex items-center gap-2.5">
-                  <span className="text-xs w-4 text-center">{cat?.emoji}</span>
-                  <span className="text-[11px] text-muted-foreground w-12">{cat?.label}</span>
-                  <div className="flex-1 h-1.5 bg-muted/40 rounded-full overflow-hidden">
-                    <motion.div className="h-full bg-elita-camel/40 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
+                <div key={p.category} className="flex items-center gap-3">
+                  <span className="text-sm w-5 text-center">{cat?.emoji}</span>
+                  <span className="text-[12px] text-muted-foreground font-medium w-14">{cat?.label}</span>
+                  <div className="flex-1 h-2 bg-muted/50 rounded-full overflow-hidden">
+                    <motion.div className="h-full progress-glow rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
                   </div>
-                  <span className="text-[9px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
+                  <span className="text-[10px] text-muted-foreground font-medium w-8 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                 </div>
               );
             })}
