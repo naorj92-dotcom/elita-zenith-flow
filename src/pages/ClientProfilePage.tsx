@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { JourneyPlanTab } from '@/components/admin/JourneyPlanTab';
+import { ChartHistoryTab } from '@/components/charts/ChartHistoryTab';
 
 export default function ClientProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -245,6 +246,7 @@ export default function ClientProfilePage() {
                   { value: 'packages', label: 'Packages' },
                   { value: 'products', label: 'Products' },
                   { value: 'forms', label: 'Forms & Charts' },
+                  { value: 'chart-history', label: 'Chart History' },
                   { value: 'gallery', label: 'Gallery' },
                   { value: 'files', label: 'Files' },
                 ].map((tab) => (
@@ -324,6 +326,11 @@ export default function ClientProfilePage() {
               {/* JOURNEY PLAN */}
               <TabsContent value="journey" className="mt-0">
                 <JourneyPlanTab clientId={id!} />
+              </TabsContent>
+
+              {/* CHART HISTORY */}
+              <TabsContent value="chart-history" className="mt-0">
+                <ChartHistoryTab clientId={id!} />
               </TabsContent>
 
               {/* FILES */}

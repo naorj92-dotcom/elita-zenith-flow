@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, X, CheckCircle, XCircle, UserRoundPen, Search, Loader2, Package, Target, ArrowRight, FileText, Check } from 'lucide-react';
+import { Phone, X, CheckCircle, XCircle, UserRoundPen, Search, Loader2, Package, Target, ArrowRight, FileText, Check, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,8 @@ import { useQuery } from '@tanstack/react-query';
 import { matchServiceToCategory, CATEGORIES, type TreatmentCategory } from '@/lib/elitaMethod';
 import type { ScheduleAppointment } from '@/pages/SchedulePage';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { useRole } from '@/contexts/UnifiedAuthContext';
+import { ChartNoteForm } from '@/components/charts/ChartNoteForm';
 interface AppointmentPopoverProps {
   appointment: ScheduleAppointment;
   clientDetails?: {
@@ -61,6 +62,8 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const end = new Date(start.getTime() + appointment.duration_minutes * 60000);
   const timeStr = `${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
   const age = calculateAge(clientDetails?.date_of_birth);
+  const { isOwner, isProvider } = useRole();
+  const canChart = isOwner || isProvider;
 
   const [showClientSearch, setShowClientSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,6 +71,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [isSearching, setIsSearching] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
   const [suggestionAccepted, setSuggestionAccepted] = useState<boolean | null>(null);
+  const [showChartNote, setShowChartNote] = useState(false);
 
   // Complete & Plan flow state
   const [showCompleteFlow, setShowCompleteFlow] = useState(false);
@@ -349,6 +353,17 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
               <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-all">🔄 Rebook</Button>
             </Link>
           </div>
+          {canChart && appointment.client_id && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mt-2 h-9 text-[10px] gap-1.5 rounded-xl hover:shadow-sm transition-all"
+              onClick={() => setShowChartNote(true)}
+            >
+              <ClipboardList className="w-3.5 h-3.5" />
+              Add Chart Note
+            </Button>
+          )}
         </div>
       )}
 
@@ -390,6 +405,17 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
           )}
         </div>
       </div>
+
+      {/* Chart Note Dialog */}
+      {canChart && appointment.client_id && (
+        <ChartNoteForm
+          appointmentId={appointment.id}
+          clientId={appointment.client_id}
+          serviceName={appointment.service_name}
+          open={showChartNote}
+          onOpenChange={setShowChartNote}
+        />
+      )}
     </div>
   );
 }
