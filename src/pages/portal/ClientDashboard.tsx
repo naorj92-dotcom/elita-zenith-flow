@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Target, Sparkles, ChevronRight, Star } from 'lucide-react';
 import { addDays, startOfDay } from 'date-fns';
+import { matchServiceToCategory } from '@/lib/elitaMethod';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { differenceInDays, format } from 'date-fns';
