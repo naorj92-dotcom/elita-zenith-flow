@@ -280,7 +280,6 @@ function JourneyStepper({
                         boxShadow: isCurrent
                           ? '0 0 16px hsl(34 48% 60% / 0.4), 0 0 6px hsl(30 40% 52% / 0.25)'
                           : '0 0 8px hsl(34 48% 60% / 0.15)',
-                        ringColor: isCurrent ? 'hsl(34 48% 60% / 0.3)' : undefined,
                       }
                     : undefined
                 }
