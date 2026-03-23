@@ -207,6 +207,9 @@ export function ClientDashboard() {
           <div className="space-y-5">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
+              const expiryDate = pkg.expiry_date ? new Date(pkg.expiry_date) : null;
+              const daysUntilExpiry = expiryDate ? differenceInDays(expiryDate, new Date()) : null;
+              const isExpiringSoon = daysUntilExpiry !== null && daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
               return (
                 <motion.div
                   key={pkg.id}
@@ -214,17 +217,20 @@ export function ClientDashboard() {
                   transition={{ duration: 0.4 }}
                   className="card-premium p-7 sm:p-8"
                 >
-                  <div className="flex items-center justify-between mb-5">
-                    <p className="text-[14px] font-heading font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                    <span className="text-2xl font-heading font-bold text-elita-camel"
-                          style={{ textShadow: '0 0 20px hsl(34 48% 60% / 0.15)' }}>
-                      {pct}%
-                    </span>
-                  </div>
+                  <p className="text-[14px] font-heading font-semibold text-foreground mb-4">
+                    {pkg.sessions_used} of {pkg.sessions_total} sessions completed
+                  </p>
                   <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden">
                     <motion.div className="h-full rounded-full progress-glow" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1 }} />
                   </div>
-                  <p className="text-[12px] text-muted-foreground mt-3.5">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
+                  <div className="mt-3.5 space-y-1">
+                    {expiryDate && (
+                      <p className={cn('text-[12px] font-medium', isExpiringSoon ? 'text-destructive' : 'text-muted-foreground')}>
+                        Expires {format(expiryDate, 'MMM d, yyyy')}
+                      </p>
+                    )}
+                    <p className="text-[12px] text-muted-foreground/70">{pkg.packages?.name || 'Treatment Package'}</p>
+                  </div>
                 </motion.div>
               );
             })}
