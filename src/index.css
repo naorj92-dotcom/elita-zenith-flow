@@ -173,6 +173,23 @@
 }
 
 @layer components {
+  /* ═══ JOURNEY HERO — full-width luxury section ═══ */
+  .journey-hero {
+    background: linear-gradient(172deg,
+      hsl(36 36% 99%) 0%,
+      hsl(34 32% 97%) 20%,
+      hsl(32 28% 95%) 50%,
+      hsl(30 24% 93.5%) 80%,
+      hsl(33 28% 96%) 100%);
+    box-shadow:
+      0 24px 80px hsl(22 24% 22% / 0.07),
+      0 8px 24px hsl(22 24% 22% / 0.03),
+      0 0 0 1px hsl(32 26% 89% / 0.35),
+      inset 0 1px 0 hsl(38 44% 100% / 0.85),
+      inset 0 -1px 0 hsl(30 18% 85% / 0.2);
+  }
+
+  /* ═══ CARD TIER 1 — Hero (glowing, immersive) ═══ */
   /* ═══ CARD TIER 1 — Hero (glowing, immersive) ═══ */
   .card-hero {
     @apply rounded-[1.25rem] overflow-hidden relative;
