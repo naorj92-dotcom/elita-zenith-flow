@@ -97,11 +97,13 @@ export default {
       spacing: {
         '13': '3.25rem',
         '18': '4.5rem',
+        '4.5': '1.125rem',
       },
       boxShadow: {
         'premium-sm': 'var(--shadow-premium-sm, var(--shadow-sm))',
         'premium-md': 'var(--shadow-md)',
         'premium-lg': 'var(--shadow-lg)',
+        'premium-xl': 'var(--shadow-xl)',
         'glow': 'var(--shadow-glow)',
       },
       keyframes: {
