@@ -224,11 +224,11 @@ export function AppLayout({ children }: AppLayoutProps) {
         </nav>
 
         {/* User Section */}
-        <div className="p-3 border-t border-border">
+        <div className="px-4 py-4 border-t border-border/40">
           {/* Clock Status */}
           {(role === 'owner' || role === 'employee') && clockStatus && (
             <div className={cn(
-              "mb-3 px-3 py-2.5 rounded-lg text-sm",
+              "mb-3 px-3.5 py-2.5 rounded-xl text-sm",
               clockStatus.is_clocked_in 
                 ? "bg-success/10 text-success"
                 : "bg-muted text-muted-foreground"
@@ -253,7 +253,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm text-foreground truncate">
+              <p className="font-semibold text-[13px] text-foreground truncate">
                 {staff?.first_name} {staff?.last_name}
               </p>
               <p className="text-xs text-muted-foreground capitalize">
