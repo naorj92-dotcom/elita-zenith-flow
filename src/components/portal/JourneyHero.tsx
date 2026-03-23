@@ -239,15 +239,16 @@ export function JourneyHero({
           <Button
             asChild
             size="lg"
-            className="w-full h-[4.5rem] text-[15px] font-semibold gap-3 rounded-[1.5rem] bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-500 hover:-translate-y-2 active:translate-y-0 active:scale-[0.99] btn-glow"
+            className="w-full h-[4.75rem] text-[15px] font-semibold gap-3 rounded-[1.5rem] text-primary-foreground transition-all duration-600 hover:-translate-y-2.5 active:translate-y-0 active:scale-[0.98] btn-glow"
             style={{
-              boxShadow: '0 16px 48px hsl(22 24% 18% / 0.2), 0 0 40px hsl(34 48% 60% / 0.08), inset 0 1px 0 hsl(34 30% 45% / 0.25)',
+              background: 'linear-gradient(165deg, hsl(22 20% 38%) 0%, hsl(24 22% 32%) 40%, hsl(28 28% 36%) 100%)',
+              boxShadow: '0 20px 56px hsl(22 24% 18% / 0.25), 0 0 50px hsl(34 48% 60% / 0.1), inset 0 1px 0 hsl(34 30% 48% / 0.3), inset 0 -1px 0 hsl(22 20% 24% / 0.3)',
             }}
           >
             <Link to={bookingHref}>
               <CalendarPlus className="h-5 w-5" />
               {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
-              <ArrowRight className="h-4 w-4 ml-1 opacity-60" />
+              <ArrowRight className="h-4 w-4 ml-1 opacity-50" />
             </Link>
           </Button>
         </div>

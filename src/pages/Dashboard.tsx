@@ -189,7 +189,7 @@ export function Dashboard() {
         </div>
       </motion.div>
 
-      <div className="space-y-14 relative z-10">
+      <div className="space-y-16 relative z-10">
         {/* Today's Action Items */}
         <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
           <TodaysFocusWidget />
