@@ -123,11 +123,18 @@ export function ClientFormsPage() {
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!selectedForm) return;
+      const signatureRecord = typedSignatureName
+        ? `Electronically signed by ${typedSignatureName} on ${new Date().toLocaleString()}`
+        : signatureData;
       const { error } = await supabase
         .from('client_forms')
         .update({
-          responses,
-          signature_data: signatureData,
+          responses: {
+            ...responses,
+            __typed_signature_name: typedSignatureName || undefined,
+            __signature_confirmed: signatureConfirmed || undefined,
+          },
+          signature_data: signatureRecord,
           signed_at: new Date().toISOString(),
           status: 'completed' as any,
         })
