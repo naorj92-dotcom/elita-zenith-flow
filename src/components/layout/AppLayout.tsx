@@ -159,23 +159,22 @@ export function AppLayout({ children }: AppLayoutProps) {
               );
             }
 
-            // Multi-item categories are expandable
             return (
               <div key={category.label}>
                 <button
                   onClick={() => toggleCategory(category.label)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
+                    "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200",
                     isActive
                       ? "bg-accent text-foreground"
-                      : "text-foreground hover:bg-accent"
+                      : "text-foreground/70 hover:bg-accent hover:text-foreground"
                   )}
                 >
                   <Icon className={cn(
-                    "w-[18px] h-[18px]",
+                    "w-[19px] h-[19px]",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )} />
-                  <span className="text-sm font-medium">{category.label}</span>
+                  <span className="text-[13px] font-medium">{category.label}</span>
                   <motion.div
                     animate={{ rotate: isExpanded ? 180 : 0 }}
                     transition={{ duration: 0.15 }}
@@ -194,7 +193,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                       transition={{ duration: 0.15 }}
                       className="overflow-hidden"
                     >
-                      <div className="pl-3 pt-0.5 space-y-0.5">
+                      <div className="pl-4 pt-1 space-y-0.5">
                         {visibleItems.map((item) => {
                           const SubIcon = item.icon;
                           const itemActive = isItemActive(item.href);
@@ -204,14 +203,14 @@ export function AppLayout({ children }: AppLayoutProps) {
                               key={item.href}
                               to={item.href}
                               className={cn(
-                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150",
+                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
                                 itemActive
-                                  ? "bg-primary/10 text-primary"
+                                  ? "bg-primary/10 text-primary font-semibold"
                                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
                               )}
                             >
-                              <SubIcon className="w-4 h-4" />
-                              <span className="text-sm">{item.label}</span>
+                              <SubIcon className="w-[16px] h-[16px]" />
+                              <span className="text-[13px]">{item.label}</span>
                             </Link>
                           );
                         })}
