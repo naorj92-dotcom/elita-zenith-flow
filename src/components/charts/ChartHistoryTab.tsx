@@ -132,7 +132,7 @@ export function ChartHistoryTab({ clientId }: { clientId: string }) {
                           {note.before_photo_url && (
                             <div>
                               <p className="text-[9px] text-muted-foreground mb-1">Before</p>
-                              <SignedImage bucket="treatment-photos" path={note.before_photo_url} alt="Before" className="rounded-lg w-full aspect-square object-cover" />
+                            <SignedImage src={note.before_photo_url} alt="Before" className="rounded-lg w-full aspect-square object-cover" />
                             </div>
                           )}
                           {note.after_photo_url && (
