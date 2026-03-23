@@ -116,38 +116,64 @@ export function JourneyHero({
           >
             {nextAppointment ? (
               <div
-                className="relative p-6 sm:p-8 rounded-2xl border border-border/15"
+                className="relative p-8 sm:p-10 rounded-[1.25rem] overflow-hidden grain-overlay"
                 style={{
-                  background: 'linear-gradient(165deg, hsl(36 28% 99%) 0%, hsl(34 22% 97%) 100%)',
-                  boxShadow: 'inset 0 1px 0 hsl(36 34% 100% / 0.7), 0 4px 20px hsl(22 24% 22% / 0.04)',
+                  background: 'linear-gradient(165deg, hsl(26 22% 28%) 0%, hsl(24 20% 24%) 40%, hsl(22 18% 22%) 100%)',
+                  boxShadow: '0 16px 56px hsl(22 24% 12% / 0.25), 0 6px 20px hsl(22 24% 12% / 0.12), inset 0 1px 0 hsl(34 30% 40% / 0.2)',
                 }}
               >
-                <p className="text-[8px] font-bold text-elita-camel/60 uppercase tracking-[0.4em] mb-3">
-                  Next Visit
-                </p>
-                <p className="text-xl sm:text-2xl font-heading font-semibold text-foreground leading-snug tracking-tight">
-                  {nextAppointment.services?.name}
-                </p>
-                <p className="text-[13px] text-muted-foreground mt-2 leading-relaxed">
-                  {format(new Date(nextAppointment.scheduled_at), 'EEEE, MMMM d')}
-                  <span className="mx-1.5 text-border">·</span>
-                  {format(new Date(nextAppointment.scheduled_at), 'h:mm a')}
-                </p>
-                {nextAppointment.staff && (
-                  <p className="text-xs text-muted-foreground/60 mt-1.5">
-                    with {nextAppointment.staff.first_name} {nextAppointment.staff.last_name}
+                {/* Subtle gold glow overlay */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(ellipse 70% 60% at 80% 20%, hsl(34 48% 60% / 0.12) 0%, transparent 60%)',
+                  }}
+                />
+
+                <div className="relative">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.45em] mb-4"
+                     style={{ color: 'hsl(34 48% 65%)' }}>
+                    Your Next Visit
                   </p>
-                )}
+
+                  <p className="text-2xl sm:text-[1.85rem] font-heading font-semibold leading-snug tracking-tight"
+                     style={{ color: 'hsl(36 30% 95%)' }}>
+                    {nextAppointment.services?.name}
+                  </p>
+
+                  <div className="divider-luxe my-5 opacity-30" />
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                         style={{ background: 'hsl(34 48% 60% / 0.12)', border: '1px solid hsl(34 48% 60% / 0.15)' }}>
+                      <Clock className="w-4 h-4" style={{ color: 'hsl(34 48% 65%)' }} />
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-medium"
+                         style={{ color: 'hsl(36 26% 88%)' }}>
+                        {format(new Date(nextAppointment.scheduled_at), 'EEEE, MMMM d')}
+                      </p>
+                      <p className="text-[11px] mt-0.5"
+                         style={{ color: 'hsl(34 18% 60%)' }}>
+                        {format(new Date(nextAppointment.scheduled_at), 'h:mm a')}
+                        {nextAppointment.staff && (
+                          <span> · with {nextAppointment.staff.first_name} {nextAppointment.staff.last_name}</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div
-                className="p-8 rounded-2xl text-center border border-border/10"
+                className="p-8 sm:p-10 rounded-[1.25rem] text-center overflow-hidden grain-overlay"
                 style={{
-                  background: 'linear-gradient(165deg, hsl(36 24% 99%) 0%, hsl(34 18% 97.5%) 100%)',
+                  background: 'linear-gradient(165deg, hsl(26 22% 28%) 0%, hsl(22 18% 22%) 100%)',
+                  boxShadow: '0 12px 40px hsl(22 24% 12% / 0.2), inset 0 1px 0 hsl(34 30% 40% / 0.15)',
                 }}
               >
-                <Clock className="w-5 h-5 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground/60">No upcoming visits</p>
+                <Clock className="w-5 h-5 mx-auto mb-3" style={{ color: 'hsl(34 40% 55%)' }} />
+                <p className="text-sm" style={{ color: 'hsl(34 18% 55%)' }}>No upcoming visits</p>
               </div>
             )}
           </motion.div>
