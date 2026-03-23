@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { JourneyPlanTab } from '@/components/admin/JourneyPlanTab';
+import { ChartHistoryTab } from '@/components/charts/ChartHistoryTab';
 
 export default function ClientProfilePage() {
   const { id } = useParams<{ id: string }>();
