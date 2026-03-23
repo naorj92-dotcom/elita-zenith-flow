@@ -1,15 +1,15 @@
 import React from 'react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CalendarPlus, ArrowRight, Clock, Target, Sparkles } from 'lucide-react';
+import { Target, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { format, differenceInDays } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type ProgressData, type TreatmentCategory } from '@/lib/elitaMethod';
 import { cn } from '@/lib/utils';
+import { JourneyHero } from '@/components/portal/JourneyHero';
 
 const fadeUp = {
   initial: { opacity: 0, y: 12 },
@@ -89,10 +89,6 @@ export function ClientDashboard() {
   const hasGoals = clientGoals.length > 0;
   const recommendation = hasGoals ? getSimpleRecommendation(clientGoals, treatmentProgress) : null;
 
-  const totalCompleted = treatmentProgress.reduce((s, p) => s + p.sessions_completed, 0);
-  const totalTarget = treatmentProgress.reduce((s, p) => s + p.sessions_target, 0);
-  const overallPct = totalTarget > 0 ? Math.round((totalCompleted / totalTarget) * 100) : 0;
-
   const daysSinceLastSession = lastCompleted?.completed_at
     ? differenceInDays(new Date(), new Date((lastCompleted as any).completed_at))
     : null;
@@ -112,123 +108,32 @@ export function ClientDashboard() {
   return (
     <div className="max-w-xl mx-auto pb-32 page-atmosphere">
 
-      {/* ═══ HERO — IMMERSIVE BRAND MOMENT ═══ */}
-      <motion.div {...fadeUp} className="mt-6 sm:mt-10 relative z-10">
-        <div className="card-hero glow-accent relative">
-          {/* Decorative accent line */}
-          <div className="accent-line" />
+      {/* ═══ HERO — LUXURY JOURNEY SECTION ═══ */}
+      <div className="mt-4 sm:mt-8">
+        <JourneyHero
+          firstName={firstName}
+          hasGoals={hasGoals}
+          treatmentProgress={treatmentProgress}
+          nextAppointment={nextAppointment}
+          recommendation={recommendation}
+          bookingHref={bookingHref}
+        />
+      </div>
 
-          <div className="relative p-8 sm:p-12 space-y-10">
-
-            {/* Title — editorial luxury */}
-            <div className="space-y-3">
-              <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.45em]">
-                Welcome back, {firstName}
-              </p>
-              <h1 className="text-[2.5rem] sm:text-[3.25rem] font-heading font-semibold text-foreground leading-[0.95] tracking-[-0.03em]">
-                Your Elita
-                <br />
-                <span className="italic font-normal">Journey</span>
-              </h1>
-            </div>
-
-            {/* Next Visit — inner card with depth */}
-            {nextAppointment ? (
-              <div className="relative p-7 sm:p-8 rounded-2xl border border-border/20"
-                   style={{ background: 'linear-gradient(165deg, hsl(36 24% 99%) 0%, hsl(34 18% 97.5%) 100%)', boxShadow: 'inset 0 1px 0 hsl(36 30% 100% / 0.6), 0 2px 8px hsl(20 18% 24% / 0.03)' }}>
-                <div className="divider-luxe absolute top-0 left-6 right-6" />
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <p className="text-[8px] font-bold text-elita-camel/50 uppercase tracking-[0.4em] mb-3">Next Visit</p>
-                    <p className="text-2xl sm:text-[1.75rem] font-heading font-semibold text-foreground leading-snug tracking-tight">
-                      {(nextAppointment as any).services?.name}
-                    </p>
-                    <p className="text-[13px] text-muted-foreground mt-2.5 leading-relaxed">
-                      {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d')}
-                      <span className="mx-1.5 text-border">·</span>
-                      {format(new Date((nextAppointment as any).scheduled_at), 'h:mm a')}
-                    </p>
-                    {(nextAppointment as any).staff && (
-                      <p className="text-xs text-muted-foreground/60 mt-1.5">
-                        with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="p-8 rounded-2xl text-center border border-border/15" style={{ background: 'linear-gradient(165deg, hsl(36 20% 99%) 0%, hsl(34 16% 97.5%) 100%)' }}>
-                <Clock className="w-5 h-5 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground/70">No upcoming visits</p>
-              </div>
-            )}
-
-            {/* Progress — signature element with glow */}
-            {hasGoals && totalTarget > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.4em]">Progress</p>
-                    <p className="text-xs text-muted-foreground mt-1">{totalCompleted} of {totalTarget} sessions</p>
-                  </div>
-                  <p className="text-4xl font-heading font-bold text-elita-camel leading-none tracking-tight">{overallPct}<span className="text-lg">%</span></p>
-                </div>
-                <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full progress-glow"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${overallPct}%` }}
-                    transition={{ duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  />
-                </div>
-
-                {urgency && (
-                  <div className={cn(
-                    'flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-medium',
-                    urgency.tone === 'success' && 'bg-success/6 text-success',
-                    urgency.tone === 'info' && 'bg-elita-camel/6 text-elita-camel',
-                    urgency.tone === 'warning' && 'bg-warning/6 text-warning',
-                  )}>
-                    <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                    {urgency.text}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Recommended Next Step */}
-            {recommendation && (
-              <div className="relative rounded-2xl p-6 border border-border/20"
-                   style={{ background: 'linear-gradient(165deg, hsl(36 22% 99%) 0%, hsl(34 16% 97.5%) 100%)', boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.5)' }}>
-                <p className="text-[8px] font-bold text-elita-camel/50 uppercase tracking-[0.4em] mb-3.5">Recommended</p>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-accent/50 flex items-center justify-center text-xl">
-                    {CATEGORIES[recommendation.category].emoji}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-heading font-semibold text-foreground leading-snug">
-                      {recommendation.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground/70 mt-1 leading-relaxed">
-                      {recommendation.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="divider-luxe" />
-
-            {/* Primary CTA */}
-            <Button asChild size="lg" className="w-full h-[3.5rem] text-[13px] font-semibold gap-3 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-lg transition-all duration-400 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]">
-              <Link to={bookingHref}>
-                <CalendarPlus className="h-4.5 w-4.5" />
-                {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
-              </Link>
-            </Button>
+      {/* ═══ URGENCY MESSAGE ═══ */}
+      {urgency && hasGoals && (
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-6 relative z-10">
+          <div className={cn(
+            'flex items-center gap-2.5 px-5 py-3.5 rounded-2xl text-xs font-medium',
+            urgency.tone === 'success' && 'bg-success/6 text-success',
+            urgency.tone === 'info' && 'bg-elita-camel/6 text-elita-camel',
+            urgency.tone === 'warning' && 'bg-warning/6 text-warning',
+          )}>
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            {urgency.text}
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* ═══ GOAL SELECTION (onboarding) ═══ */}
       {!hasGoals && (
