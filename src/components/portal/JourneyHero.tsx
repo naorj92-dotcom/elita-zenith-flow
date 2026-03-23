@@ -44,6 +44,7 @@ export function JourneyHero({
   treatmentProgress,
   nextAppointment,
   recommendation,
+  recommendedServiceInfo,
   bookingHref,
 }: JourneyHeroProps) {
   const currentStage = hasGoals ? getCurrentStageIndex(treatmentProgress) : 0;
