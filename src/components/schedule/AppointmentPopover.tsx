@@ -101,7 +101,6 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [isCompleting, setIsCompleting] = useState(false);
   const [completionStep, setCompletionStep] = useState<'notes' | 'done'>('notes');
 
-  const isGoogleEvent = appointment.id.startsWith('gcal-');
 
   const { data: clientPackage } = useQuery({
     queryKey: ['apt-client-package', appointment.client_id],

@@ -168,6 +168,55 @@ export function FormsManagementPage() {
     setShowAssignDialog(true);
   };
 
+  // Service linking state
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [linkFormId, setLinkFormId] = useState<string | null>(null);
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['services-for-link'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('services').select('id, name, category').eq('is_active', true).order('name');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: showLinkDialog,
+  });
+
+  const { data: serviceFormLinks = [] } = useQuery({
+    queryKey: ['service-form-links'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('service_form_links').select('*');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const linkedServiceIds = linkFormId
+    ? serviceFormLinks.filter((l: any) => l.form_id === linkFormId).map((l: any) => l.service_id)
+    : [];
+
+  const toggleServiceLink = useMutation({
+    mutationFn: async ({ formId, serviceId, linked }: { formId: string; serviceId: string; linked: boolean }) => {
+      if (linked) {
+        const { error } = await supabase.from('service_form_links').delete().eq('form_id', formId).eq('service_id', serviceId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('service_form_links').insert({ form_id: formId, service_id: serviceId });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service-form-links'] });
+      toast.success('Service link updated');
+    },
+    onError: (error: any) => toast.error(error.message || 'Failed to update link'),
+  });
+
+  const openLinkDialog = (formId: string) => {
+    setLinkFormId(formId);
+    setShowLinkDialog(true);
+  };
+
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
