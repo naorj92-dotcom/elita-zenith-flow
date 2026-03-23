@@ -10,6 +10,7 @@ import { differenceInDays, format } from 'date-fns';
 import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type ProgressData, type TreatmentCategory } from '@/lib/elitaMethod';
 import { cn } from '@/lib/utils';
 import { JourneyHero } from '@/components/portal/JourneyHero';
+import { PendingFormsBanner } from '@/components/portal/PendingFormsBanner';
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -107,6 +108,11 @@ export function ClientDashboard() {
 
   return (
     <div className="max-w-xl mx-auto pb-36 page-atmosphere">
+
+      {/* ═══ PENDING FORMS BANNER ═══ */}
+      <div className="mt-4 sm:mt-6 px-1">
+        <PendingFormsBanner />
+      </div>
 
       {/* ═══ HERO — LUXURY JOURNEY SECTION ═══ */}
       <div className="mt-4 sm:mt-8 mb-24">
