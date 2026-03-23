@@ -188,22 +188,22 @@ export function Dashboard() {
         </div>
       </motion.div>
 
-      <div className="space-y-16 relative z-10">
+      <div className="space-y-20 relative z-10">
         {/* Today's Action Items */}
         <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
           <TodaysFocusWidget />
         </motion.div>
 
-        {/* Today's Schedule */}
+        {/* Today's Schedule — DOMINANT */}
         <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
-          <Card className="card-elevated">
-            <CardHeader className="flex flex-row items-center justify-between px-7 pt-7">
-              <CardTitle>Today's Schedule</CardTitle>
+          <Card className="card-premium">
+            <CardHeader className="flex flex-row items-center justify-between px-8 pt-8 pb-2">
+              <CardTitle className="text-xl">Today's Schedule</CardTitle>
               <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
                 View All <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </CardHeader>
-            <CardContent className="space-y-2.5 px-7 pb-7">
+            <CardContent className="space-y-3 px-8 pb-8">
               {appointments.length === 0 ? (
                 <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
               ) : (
@@ -212,14 +212,14 @@ export function Dashboard() {
                     <motion.div
                       whileHover={{ y: -2 }}
                       transition={{ duration: 0.3 }}
-                      className="flex items-center gap-4 p-4 rounded-2xl bg-muted/15 hover:bg-muted/30 hover:shadow-sm transition-all duration-400"
+                      className="flex items-center gap-4 p-5 rounded-2xl bg-muted/15 hover:bg-muted/30 hover:shadow-sm transition-all duration-400"
                     >
                       <div className="text-center min-w-[52px]">
                         <p className="text-sm font-semibold text-foreground">{apt.time}</p>
                         <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
+                        <p className="font-semibold text-foreground text-sm truncate">{apt.client_name}</p>
                         <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
                       </div>
                       <StatusBadge status={apt.status} />
@@ -236,9 +236,9 @@ export function Dashboard() {
           <TodayOpsWidget />
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions — subdued */}
         <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
-          <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.5em] mb-6">Quick Actions</p>
+          <p className="text-[9px] font-semibold text-muted-foreground/45 uppercase tracking-[0.35em] mb-6">Quick Actions</p>
           <div className="grid grid-cols-2 gap-4">
             {[
               { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
@@ -251,7 +251,7 @@ export function Dashboard() {
                   whileHover={{ y: -3, scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.4 }}
-                  className="flex items-center gap-4 p-6 rounded-2xl glass hover:shadow-md"
+                  className="flex items-center gap-4 p-6 rounded-2xl card-minimal hover:shadow-sm"
                 >
                   <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center"
                        style={{ boxShadow: '0 0 16px hsl(34 48% 60% / 0.06)' }}>
