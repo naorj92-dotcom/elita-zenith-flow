@@ -12,9 +12,9 @@ import { cn } from '@/lib/utils';
 import { JourneyHero } from '@/components/portal/JourneyHero';
 
 const fadeUp = {
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: 14 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] },
+  transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
 };
 
 export function ClientDashboard() {
@@ -106,10 +106,10 @@ export function ClientDashboard() {
     : '/portal/book';
 
   return (
-    <div className="max-w-xl mx-auto pb-32 page-atmosphere">
+    <div className="max-w-xl mx-auto pb-36 page-atmosphere">
 
       {/* ═══ HERO — LUXURY JOURNEY SECTION ═══ */}
-      <div className="mt-4 sm:mt-8 mb-20">
+      <div className="mt-4 sm:mt-8 mb-24">
         <JourneyHero
           firstName={firstName}
           hasGoals={hasGoals}
@@ -122,12 +122,12 @@ export function ClientDashboard() {
 
       {/* ═══ URGENCY MESSAGE ═══ */}
       {urgency && hasGoals && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-6 relative z-10">
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-8 relative z-10 sm:ml-2">
           <div className={cn(
-            'flex items-center gap-2.5 px-5 py-3.5 rounded-2xl text-xs font-medium',
-            urgency.tone === 'success' && 'bg-success/6 text-success',
-            urgency.tone === 'info' && 'bg-elita-camel/6 text-elita-camel',
-            urgency.tone === 'warning' && 'bg-warning/6 text-warning',
+            'glass flex items-center gap-3 px-6 py-4 rounded-2xl text-xs font-medium',
+            urgency.tone === 'success' && 'text-success',
+            urgency.tone === 'info' && 'text-elita-camel',
+            urgency.tone === 'warning' && 'text-warning',
           )}>
             <Sparkles className="w-3.5 h-3.5 shrink-0" />
             {urgency.text}
@@ -137,42 +137,47 @@ export function ClientDashboard() {
 
       {/* ═══ GOAL SELECTION (onboarding) ═══ */}
       {!hasGoals && (
-        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-16 relative z-10">
+        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-20 relative z-10">
           <SectionLabel>What's Your Goal?</SectionLabel>
-          <div className="card-elevated p-7 sm:p-8">
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+          <div className="card-elevated p-7 sm:p-9">
+            <p className="text-sm text-muted-foreground mb-7 leading-relaxed">
               Select your primary goal and we'll create your personalized plan.
             </p>
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               {GOALS.map((goal) => (
-                <button
+                <motion.button
                   key={goal.key}
                   onClick={() => saveGoalMutation.mutate(goal.key)}
                   disabled={saveGoalMutation.isPending}
-                  className="flex items-center gap-4 w-full p-5 rounded-2xl border border-border/50 hover:border-elita-camel/20 hover:bg-accent/30 hover:shadow-sm transition-all duration-300 text-left active:scale-[0.98]"
-                  style={{ boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.3)' }}
+                  whileHover={{ y: -2, scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-4 w-full p-5 rounded-2xl border border-border/40 hover:border-elita-camel/20 hover:bg-accent/30 transition-all duration-400 text-left glass"
                 >
-                  <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center text-xl shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-accent/50 flex items-center justify-center text-xl shrink-0"
+                       style={{ boxShadow: '0 0 20px hsl(34 48% 60% / 0.06)' }}>
                     {goal.emoji}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-foreground">{goal.label}</p>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{goal.description}</p>
                   </div>
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
         </motion.div>
       )}
 
-      {/* ═══ TREATMENT PLAN — elevated with more presence ═══ */}
+      {/* ═══ TREATMENT PLAN — offset left, elevated ═══ */}
       {treatmentProgress.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-20 relative z-10 sm:-ml-2">
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-24 relative z-10 sm:-ml-3">
           <SectionLabel>Your Personalized Plan</SectionLabel>
-          <div className="card-elevated p-6 sm:p-7 space-y-3.5">
-            <div className="flex items-center gap-2.5 mb-2">
-              <Target className="w-4 h-4 text-elita-camel" />
+          <div className="card-premium p-7 sm:p-8 space-y-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-xl bg-elita-camel/10 flex items-center justify-center"
+                   style={{ boxShadow: '0 0 16px hsl(34 48% 60% / 0.08)' }}>
+                <Target className="w-4 h-4 text-elita-camel" />
+              </div>
               <p className="text-[11px] font-semibold text-foreground/70 uppercase tracking-wider">
                 {GOALS.find(g => g.key === clientGoals[0])?.label}
               </p>
@@ -181,11 +186,11 @@ export function ClientDashboard() {
               const cat = CATEGORIES[p.category as TreatmentCategory];
               const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
               return (
-                <div key={p.category} className="flex items-center gap-3">
+                <div key={p.category} className="flex items-center gap-3.5">
                   <span className="text-sm w-5 text-center">{cat?.emoji}</span>
                   <span className="text-[12px] text-muted-foreground font-medium w-14">{cat?.label}</span>
-                  <div className="flex-1 h-2 bg-muted/50 rounded-full overflow-hidden">
-                    <motion.div className="h-full progress-glow rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
+                  <div className="flex-1 h-2.5 bg-muted/40 rounded-full overflow-hidden">
+                    <motion.div className="h-full progress-glow rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1, delay: 0.2 }} />
                   </div>
                   <span className="text-[10px] text-muted-foreground font-medium w-8 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                 </div>
@@ -195,34 +200,42 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGES — stronger cards ═══ */}
+      {/* ═══ PACKAGES — offset right, stronger cards ═══ */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-20 relative z-10 sm:ml-4">
+        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-24 relative z-10 sm:ml-5">
           <SectionLabel>Session Progress</SectionLabel>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
-                <div key={pkg.id} className="card-premium p-7 hover:-translate-y-1">
-                  <div className="flex items-center justify-between mb-4">
+                <motion.div
+                  key={pkg.id}
+                  whileHover={{ y: -3, scale: 1.008 }}
+                  transition={{ duration: 0.4 }}
+                  className="card-premium p-7 sm:p-8"
+                >
+                  <div className="flex items-center justify-between mb-5">
                     <p className="text-[14px] font-heading font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                    <span className="text-xl font-heading font-bold text-elita-camel">{pct}%</span>
+                    <span className="text-2xl font-heading font-bold text-elita-camel"
+                          style={{ textShadow: '0 0 20px hsl(34 48% 60% / 0.15)' }}>
+                      {pct}%
+                    </span>
                   </div>
-                  <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
-                    <motion.div className="h-full rounded-full progress-glow" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+                  <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden">
+                    <motion.div className="h-full rounded-full progress-glow" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1 }} />
                   </div>
-                  <p className="text-[12px] text-muted-foreground mt-3">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
-                </div>
+                  <p className="text-[12px] text-muted-foreground mt-3.5">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
+                </motion.div>
               );
             })}
           </div>
         </motion.div>
       )}
 
-      {/* ═══ QUICK ACTIONS — subdued, smaller ═══ */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-20 relative z-10 sm:-ml-1">
+      {/* ═══ QUICK ACTIONS — subdued, asymmetric grid ═══ */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-24 relative z-10 sm:-ml-1">
         <SectionLabel>Quick Actions</SectionLabel>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-3">
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬', span: 'col-span-2' },
             { label: 'Photos', href: '/portal/photos', icon: '📸', span: '' },
@@ -230,7 +243,7 @@ export function ClientDashboard() {
             { label: 'Visit History', href: '/portal/history', icon: '📋', span: 'col-span-2' },
           ].map((item) => (
             <Link key={item.href} to={item.href} className={cn(
-              'flex items-center gap-2.5 p-3.5 rounded-xl bg-card/60 border border-border/30 hover:border-elita-camel/15 hover:bg-card hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]',
+              'flex items-center gap-3 p-4 rounded-xl card-minimal hover:shadow-sm transition-all duration-400 active:scale-[0.98]',
               item.span
             )}>
               <span className="text-sm">{item.icon}</span>
@@ -245,9 +258,9 @@ export function ClientDashboard() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-6">
+    <div className="mb-7">
       <div className="divider-luxe mb-5" />
-      <p className="text-[9px] font-bold text-muted-foreground/45 uppercase tracking-[0.5em]">
+      <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-[0.55em]">
         {children}
       </p>
     </div>
