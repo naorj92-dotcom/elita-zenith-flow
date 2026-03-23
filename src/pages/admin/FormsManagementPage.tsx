@@ -378,15 +378,28 @@ export function FormsManagementPage() {
                           <span className="flex items-center gap-1"><FileSignature className="w-3 h-3" />Signature required</span>
                         )}
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs"
-                        onClick={(e) => { e.stopPropagation(); openAssignDialog(form.id); }}
-                      >
-                        <Send className="w-3 h-3" />
-                        Assign
-                      </Button>
+                      <div className="flex gap-1.5">
+                        {form.form_type === 'consent' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={(e) => { e.stopPropagation(); openLinkDialog(form.id); }}
+                          >
+                            <Link2 className="w-3 h-3" />
+                            Link
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={(e) => { e.stopPropagation(); openAssignDialog(form.id); }}
+                        >
+                          <Send className="w-3 h-3" />
+                          Assign
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
