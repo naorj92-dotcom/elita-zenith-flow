@@ -137,7 +137,7 @@ export function ClientDashboard() {
 
       {/* ═══ GOAL SELECTION (onboarding) ═══ */}
       {!hasGoals && (
-        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-14 relative z-10">
+        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-16 relative z-10">
           <SectionLabel>What's Your Goal?</SectionLabel>
           <div className="card-elevated p-7 sm:p-8">
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
@@ -166,9 +166,9 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ TREATMENT PLAN — minimal tier ═══ */}
+      {/* ═══ TREATMENT PLAN — offset left for editorial feel ═══ */}
       {treatmentProgress.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-14 relative z-10">
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-16 relative z-10 sm:-ml-2">
           <SectionLabel>Your Personalized Plan</SectionLabel>
           <div className="card-minimal p-5 space-y-3">
             <div className="flex items-center gap-2.5 mb-1">
@@ -195,9 +195,9 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGES — premium tier ═══ */}
+      {/* ═══ PACKAGES — offset right ═══ */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-14 relative z-10">
+        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-16 relative z-10 sm:mr-[-4px] sm:ml-4">
           <SectionLabel>Session Progress</SectionLabel>
           <div className="space-y-3">
             {activePackages.map((pkg: any) => {
@@ -219,8 +219,8 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ QUICK ACTIONS — asymmetric layout ═══ */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-14 relative z-10">
+      {/* ═══ QUICK ACTIONS — offset left ═══ */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-16 relative z-10 sm:-ml-1">
         <SectionLabel>Quick Actions</SectionLabel>
         <div className="grid grid-cols-3 gap-3">
           {[
