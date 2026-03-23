@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, X, CheckCircle, XCircle, Undo2, UserRoundPen, Search, Loader2, Sparkles, Package, Target } from 'lucide-react';
+import { Phone, X, CheckCircle, XCircle, Undo2, UserRoundPen, Search, Loader2, Package, Target, ArrowRight, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -44,23 +45,14 @@ interface ClientOption {
   phone: string | null;
 }
 
-// Protocol-based next step mapping using Elita Method categories
 function getProtocolSuggestion(serviceName: string): { label: string; category: TreatmentCategory } | null {
   const cat = matchServiceToCategory(serviceName);
   if (!cat) return null;
-
   const nextMap: Record<TreatmentCategory, TreatmentCategory> = {
-    freeze: 'tight',
-    tone: 'freeze',
-    tight: 'glow',
-    glow: 'glow',
+    freeze: 'tight', tone: 'freeze', tight: 'glow', glow: 'glow',
   };
-
   const nextCat = nextMap[cat];
-  return {
-    label: CATEGORIES[nextCat].label,
-    category: nextCat,
-  };
+  return { label: CATEGORIES[nextCat].label, category: nextCat };
 }
 
 export function AppointmentPopover({ appointment, clientDetails, onClose, onStatusChange, onClientChanged }: AppointmentPopoverProps) {
@@ -76,9 +68,13 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [isChanging, setIsChanging] = useState(false);
   const [suggestionAccepted, setSuggestionAccepted] = useState<boolean | null>(null);
 
+  // Complete & Plan flow state
+  const [showCompleteFlow, setShowCompleteFlow] = useState(false);
+  const [sessionNotes, setSessionNotes] = useState('');
+  const [isCompleting, setIsCompleting] = useState(false);
+
   const isGoogleEvent = appointment.id.startsWith('gcal-');
 
-  // Client's active package
   const { data: clientPackage } = useQuery({
     queryKey: ['apt-client-package', appointment.client_id],
     queryFn: async () => {
@@ -94,22 +90,15 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
     enabled: !!appointment.client_id && !isGoogleEvent,
   });
 
-  // Protocol-based suggestion
   const protocolSuggestion = getProtocolSuggestion(appointment.service_name);
   const currentCategory = matchServiceToCategory(appointment.service_name);
 
   useEffect(() => {
-    if (!showClientSearch || searchQuery.length < 2) {
-      setSearchResults([]);
-      return;
-    }
+    if (!showClientSearch || searchQuery.length < 2) { setSearchResults([]); return; }
     const timer = setTimeout(async () => {
       setIsSearching(true);
-      const { data } = await supabase
-        .from('clients')
-        .select('id, first_name, last_name, phone')
-        .or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%`)
-        .limit(6);
+      const { data } = await supabase.from('clients').select('id, first_name, last_name, phone')
+        .or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%`).limit(6);
       setSearchResults(data || []);
       setIsSearching(false);
     }, 300);
@@ -118,75 +107,143 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
 
   const handleChangeClient = async (client: ClientOption) => {
     setIsChanging(true);
-    const { error } = await supabase
-      .from('appointments')
-      .update({ client_id: client.id })
-      .eq('id', appointment.id);
-    if (error) {
-      toast.error('Failed to change client');
-    } else {
-      toast.success(`Client changed to ${client.first_name} ${client.last_name}`);
-      onClientChanged?.();
-      onClose();
-    }
+    const { error } = await supabase.from('appointments').update({ client_id: client.id }).eq('id', appointment.id);
+    if (error) { toast.error('Failed to change client'); }
+    else { toast.success(`Client changed to ${client.first_name} ${client.last_name}`); onClientChanged?.(); onClose(); }
     setIsChanging(false);
   };
 
-  const handleAcceptSuggestion = () => {
-    setSuggestionAccepted(true);
-    toast.success('Recommendation saved');
+  const handleAcceptSuggestion = () => { setSuggestionAccepted(true); toast.success('Recommendation saved'); };
+
+  // Complete & Plan Next Step — combined flow
+  const handleCompleteAndPlan = async () => {
+    setIsCompleting(true);
+
+    // 1. Add notes if provided
+    if (sessionNotes.trim()) {
+      await supabase.from('appointment_soap_notes').upsert({
+        appointment_id: appointment.id,
+        assessment: sessionNotes.trim(),
+      }, { onConflict: 'appointment_id' });
+    }
+
+    // 2. Mark as completed
+    onStatusChange?.(appointment.id, 'completed');
+
+    toast.success('Session completed! Recommendation saved.', {
+      action: protocolSuggestion ? {
+        label: 'Rebook Now',
+        onClick: () => window.location.href = `/schedule/new?client=${appointment.client_id}`,
+      } : undefined,
+    });
+
+    setIsCompleting(false);
+    setShowCompleteFlow(false);
   };
 
+  // Show "Complete & Plan" flow for in_progress appointments
+  if (showCompleteFlow && appointment.status === 'in_progress') {
+    return (
+      <div data-appointment-popover className="w-80 bg-popover border border-border rounded-2xl shadow-2xl p-5 z-50" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-heading font-semibold text-foreground">Complete & Plan Next</h3>
+          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowCompleteFlow(false)}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground mb-3">
+          {appointment.client_name} · {appointment.service_name}
+        </p>
+
+        {/* Session Notes */}
+        <div className="mb-4">
+          <label className="text-xs font-semibold text-foreground mb-1.5 block">Session Notes</label>
+          <Textarea
+            placeholder="Quick notes about this session..."
+            value={sessionNotes}
+            onChange={(e) => setSessionNotes(e.target.value)}
+            className="h-20 text-sm resize-none rounded-xl"
+          />
+        </div>
+
+        {/* Protocol Suggestion */}
+        {protocolSuggestion && (
+          <div className="bg-accent/50 rounded-xl px-4 py-3 mb-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Suggested Next Treatment</p>
+            <p className="text-sm font-semibold text-foreground">
+              {CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label}
+            </p>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="space-y-2">
+          <Button className="w-full h-11 gap-2 rounded-xl font-semibold" onClick={handleCompleteAndPlan} disabled={isCompleting}>
+            <CheckCircle className="w-4 h-4" />
+            Complete Session
+          </Button>
+          <Link to={`/schedule/new?client=${appointment.client_id}`} className="block">
+            <Button variant="outline" className="w-full h-10 gap-2 rounded-xl text-sm">
+              <ArrowRight className="w-3.5 h-3.5" />
+              Rebook Next Appointment
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div data-appointment-popover className="w-80 bg-popover border border-border rounded-xl shadow-xl p-4 z-50" onClick={(e) => e.stopPropagation()}>
+    <div data-appointment-popover className="w-80 bg-popover border border-border rounded-2xl shadow-2xl p-5 z-50" onClick={(e) => e.stopPropagation()}>
       {/* Header */}
-      <div className="flex items-start justify-between mb-2">
+      <div className="flex items-start justify-between mb-3">
         <div>
-          <Link to={`/clients/${appointment.client_id}`} className="text-base font-bold text-foreground hover:text-primary transition-colors">
+          <Link to={`/clients/${appointment.client_id}`} className="text-base font-heading font-bold text-foreground hover:text-primary transition-colors">
             {appointment.client_name}
           </Link>
           {clientDetails?.phone && (
-            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
               <Phone className="w-3 h-3" />
               {clientDetails.phone}
             </div>
           )}
         </div>
-        <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 -mr-1" onClick={onClose}>
+        <Button variant="ghost" size="icon" className="h-7 w-7 -mt-1 -mr-1" onClick={onClose}>
           <X className="w-4 h-4" />
         </Button>
       </div>
 
       {/* Compact stats */}
-      <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-2">
+      <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
         <span>{clientDetails?.visit_count ?? 0} visits</span>
         <span>·</span>
         <span>${((clientDetails?.total_spent || 0) / Math.max(clientDetails?.visit_count || 1, 1)).toFixed(0)} avg</span>
         {age !== null && <><span>·</span><span>Age {age}</span></>}
       </div>
 
-      <Separator className="my-2" />
+      <Separator className="my-3" />
 
       {/* Appointment info */}
-      <div className="mb-2">
+      <div className="mb-3">
         <div className="flex items-center gap-2">
-          <p className="font-semibold text-foreground text-sm flex-1">{appointment.service_name}</p>
+          <p className="font-heading font-semibold text-foreground text-sm flex-1">{appointment.service_name}</p>
           {currentCategory && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-accent text-muted-foreground">
+            <span className="text-xs px-2 py-0.5 rounded-lg bg-accent text-muted-foreground font-medium">
               {CATEGORIES[currentCategory].emoji} {CATEGORIES[currentCategory].label}
             </span>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">{timeStr} · {appointment.staff_name}</p>
-        <p className="text-sm font-semibold text-foreground mt-1">${Number(appointment.total_amount).toFixed(2)}</p>
+        <p className="text-xs text-muted-foreground mt-1">{timeStr} · {appointment.staff_name}</p>
+        <p className="text-sm font-semibold text-foreground mt-1.5">${Number(appointment.total_amount).toFixed(2)}</p>
       </div>
 
       {/* Session progress */}
       {clientPackage && (
-        <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2 mb-2">
-          <Package className="w-3.5 h-3.5 text-primary shrink-0" />
-          <p className="text-[11px] font-medium text-foreground truncate flex-1">{(clientPackage as any).packages?.name || 'Package'}</p>
-          <span className="text-xs font-semibold text-primary whitespace-nowrap">
+        <div className="flex items-center gap-2.5 bg-muted/50 rounded-xl px-4 py-2.5 mb-3">
+          <Package className="w-4 h-4 text-primary shrink-0" />
+          <p className="text-xs font-medium text-foreground truncate flex-1">{(clientPackage as any).packages?.name || 'Package'}</p>
+          <span className="text-sm font-bold text-primary whitespace-nowrap">
             {(clientPackage as any).sessions_used}/{(clientPackage as any).sessions_total}
           </span>
         </div>
@@ -194,82 +251,78 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
 
       {/* Protocol suggestion */}
       {protocolSuggestion && !isGoogleEvent && suggestionAccepted === null && (
-        <div className="bg-accent/40 rounded-lg px-3 py-2.5 mb-2">
-          <div className="flex items-center gap-2 mb-1.5">
+        <div className="bg-accent/40 rounded-xl px-4 py-3 mb-3">
+          <div className="flex items-center gap-2 mb-2">
             <Target className="w-3.5 h-3.5 text-primary shrink-0" />
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Protocol Suggestion</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Protocol Suggestion</p>
           </div>
-          <p className="text-xs text-foreground mb-2">
-            Suggested next: <span className="font-semibold">{CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label}</span>
+          <p className="text-xs text-foreground mb-2.5">
+            Suggested next: <span className="font-bold">{CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label}</span>
           </p>
-          <div className="flex gap-1.5">
-            <Button size="sm" className="h-6 text-[10px] px-2.5" onClick={handleAcceptSuggestion}>
-              ✓ Accept
-            </Button>
-            <Button variant="outline" size="sm" className="h-6 text-[10px] px-2.5" onClick={() => setSuggestionAccepted(false)}>
-              Modify
-            </Button>
+          <div className="flex gap-2">
+            <Button size="sm" className="h-7 text-xs px-3 rounded-lg" onClick={handleAcceptSuggestion}>✓ Accept</Button>
+            <Button variant="outline" size="sm" className="h-7 text-xs px-3 rounded-lg" onClick={() => setSuggestionAccepted(false)}>Modify</Button>
           </div>
         </div>
       )}
       {suggestionAccepted === true && protocolSuggestion && (
-        <div className="flex items-center gap-2 bg-success/10 rounded-lg px-3 py-2 mb-2 text-[11px] text-success font-medium">
+        <div className="flex items-center gap-2 bg-success/10 rounded-xl px-4 py-2.5 mb-3 text-xs text-success font-semibold">
           <CheckCircle className="w-3.5 h-3.5" />
           Next: {CATEGORIES[protocolSuggestion.category].emoji} {protocolSuggestion.label} — saved
         </div>
       )}
 
-      {/* Status */}
-      <Badge variant="outline" className="text-[10px] capitalize mb-2">
+      {/* Status badge */}
+      <Badge variant="outline" className="text-[10px] capitalize mb-3 rounded-lg">
         {appointment.status.replace('_', ' ')}
       </Badge>
 
       {/* Change Client */}
       {!isGoogleEvent && (
         <>
-          <Separator className="my-2" />
+          <Separator className="my-3" />
           {!showClientSearch ? (
-            <Button variant="outline" size="sm" className="w-full gap-2 text-xs h-7" onClick={() => setShowClientSearch(true)}>
+            <Button variant="outline" size="sm" className="w-full gap-2 text-xs h-8 rounded-xl" onClick={() => setShowClientSearch(true)}>
               <UserRoundPen className="w-3.5 h-3.5" /> Change Client
             </Button>
           ) : (
             <div className="space-y-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input placeholder="Search client..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="h-7 text-xs pl-8" autoFocus />
+                <Input placeholder="Search client..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="h-8 text-xs pl-8 rounded-xl" autoFocus />
               </div>
               <div className="max-h-28 overflow-y-auto space-y-0.5">
                 {isSearching && <div className="flex justify-center py-2"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>}
                 {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No clients found</p>}
                 {searchResults.map((c) => (
                   <button key={c.id} disabled={isChanging || c.id === appointment.client_id} onClick={() => handleChangeClient(c)}
-                    className={cn('w-full flex items-center justify-between p-1.5 rounded-md text-xs', c.id === appointment.client_id ? 'bg-primary/10 text-primary' : 'hover:bg-muted cursor-pointer')}>
+                    className={cn('w-full flex items-center justify-between p-2 rounded-lg text-xs', c.id === appointment.client_id ? 'bg-primary/10 text-primary' : 'hover:bg-muted cursor-pointer')}>
                     <span className="font-medium">{c.first_name} {c.last_name}</span>
                     {c.id === appointment.client_id && <Badge variant="outline" className="text-[9px] h-4">Current</Badge>}
                   </button>
                 ))}
               </div>
-              <Button variant="ghost" size="sm" className="w-full text-xs h-6" onClick={() => { setShowClientSearch(false); setSearchQuery(''); setSearchResults([]); }}>Cancel</Button>
+              <Button variant="ghost" size="sm" className="w-full text-xs h-7" onClick={() => { setShowClientSearch(false); setSearchQuery(''); setSearchResults([]); }}>Cancel</Button>
             </div>
           )}
         </>
       )}
 
-      <Separator className="my-2" />
+      <Separator className="my-3" />
 
       {/* Quick Actions */}
       {!isGoogleEvent && (
-        <div className="mb-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Quick Actions</p>
-          <div className="grid grid-cols-3 gap-1.5">
+        <div className="mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Quick Actions</p>
+          <div className="grid grid-cols-3 gap-2">
             <Link to={`/clients/${appointment.client_id}?tab=forms`}>
-              <Button variant="outline" size="sm" className="w-full h-8 text-[10px] gap-1 px-1.5">📝 Notes</Button>
+              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-shadow">📝 Notes</Button>
             </Link>
             <Link to={`/clients/${appointment.client_id}?tab=products`}>
-              <Button variant="outline" size="sm" className="w-full h-8 text-[10px] gap-1 px-1.5">💡 Recommend</Button>
+              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-shadow">💡 Recommend</Button>
             </Link>
             <Link to={`/schedule/new?client=${appointment.client_id}`}>
-              <Button variant="outline" size="sm" className="w-full h-8 text-[10px] gap-1 px-1.5">🔄 Rebook</Button>
+              <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-shadow">🔄 Rebook</Button>
             </Link>
           </div>
         </div>
@@ -278,32 +331,37 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
       {/* Status Actions */}
       <div className="flex items-center justify-between">
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" title="Undo"><Undo2 className="w-3.5 h-3.5" /></Button>
           {!isGoogleEvent && (
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" title="Cancel" onClick={() => onStatusChange?.(appointment.id, 'cancelled')}>
-              <XCircle className="w-3.5 h-3.5" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="Cancel" onClick={() => onStatusChange?.(appointment.id, 'cancelled')}>
+              <XCircle className="w-4 h-4" />
             </Button>
           )}
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           {!isGoogleEvent && (
             <Link to={`/schedule/${appointment.id}`}>
-              <Button variant="outline" size="sm" className="h-7 text-xs">Edit</Button>
+              <Button variant="outline" size="sm" className="h-8 text-xs rounded-xl">Edit</Button>
             </Link>
           )}
           {appointment.status === 'scheduled' && !isGoogleEvent && (
-            <Button size="sm" className="h-7 text-xs" onClick={() => onStatusChange?.(appointment.id, 'confirmed')}>
+            <Button size="sm" className="h-8 text-xs rounded-xl" onClick={() => onStatusChange?.(appointment.id, 'confirmed')}>
               <CheckCircle className="w-3 h-3 mr-1" /> Confirm
             </Button>
           )}
           {(appointment.status === 'confirmed' || appointment.status === 'scheduled') && !isGoogleEvent && (
-            <Button size="sm" className="h-7 text-xs" onClick={() => onStatusChange?.(appointment.id, 'checked_in')}>
+            <Button size="sm" className="h-8 text-xs rounded-xl" onClick={() => onStatusChange?.(appointment.id, 'checked_in')}>
               Check In
             </Button>
           )}
           {appointment.status === 'checked_in' && !isGoogleEvent && (
-            <Button size="sm" className="h-7 text-xs bg-success hover:bg-success/90 text-success-foreground" onClick={() => onStatusChange?.(appointment.id, 'in_progress')}>
-              Start
+            <Button size="sm" className="h-8 text-xs rounded-xl bg-success hover:bg-success/90 text-success-foreground" onClick={() => onStatusChange?.(appointment.id, 'in_progress')}>
+              Start Treatment
+            </Button>
+          )}
+          {appointment.status === 'in_progress' && !isGoogleEvent && (
+            <Button size="sm" className="h-8 text-xs rounded-xl gap-1.5 bg-primary hover:bg-primary/90" onClick={() => setShowCompleteFlow(true)}>
+              <FileText className="w-3 h-3" />
+              Complete & Plan
             </Button>
           )}
         </div>
