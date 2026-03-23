@@ -4,17 +4,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CalendarPlus, ArrowRight, Clock, Target, Zap } from 'lucide-react';
+import { CalendarPlus, ArrowRight, Clock, Target, Zap, Sparkles, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
-import { GOALS, CATEGORIES, getSimpleRecommendation, getRecommendations, type ClientGoal, type ProgressData, type TreatmentCategory } from '@/lib/elitaMethod';
+import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type ProgressData, type TreatmentCategory } from '@/lib/elitaMethod';
 import { cn } from '@/lib/utils';
 
 const fadeUp = {
-  initial: { opacity: 0, y: 20 },
+  initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+  transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
 };
 
 export function ClientDashboard() {
@@ -107,20 +107,23 @@ export function ClientDashboard() {
   const urgency = getUrgencyMessage();
 
   return (
-    <div className="space-y-10 max-w-xl mx-auto pb-20 px-1">
-      {/* Hero — brand statement */}
-      <motion.div {...fadeUp} className="text-center pt-12 pb-4">
-        <h1 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
+    <div className="space-y-12 max-w-xl mx-auto pb-24 px-1">
+      {/* Hero */}
+      <motion.div {...fadeUp} className="text-center pt-14 pb-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em] mb-4">
+          Welcome back, {firstName}
+        </p>
+        <h1 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.08]">
           Your Elita Journey
         </h1>
-        <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-sm mx-auto">
-          Personalized treatments designed for your results, {firstName}.
+        <p className="text-muted-foreground mt-5 text-base leading-relaxed max-w-sm mx-auto">
+          Personalized treatments designed for your results
         </p>
       </motion.div>
 
       {/* Primary CTA */}
       <motion.div {...fadeUp} transition={{ delay: 0.1, duration: 0.5 }}>
-        <Button asChild size="lg" className="w-full h-16 text-base font-semibold gap-3 rounded-2xl">
+        <Button asChild size="lg" className="w-full h-16 text-base font-semibold gap-3 rounded-2xl shadow-premium-md">
           <Link to="/portal/book">
             <CalendarPlus className="h-5 w-5" />
             Book Your Next Session
@@ -131,12 +134,10 @@ export function ClientDashboard() {
       {/* Goal Selection */}
       {!hasGoals && (
         <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.15em] mb-5">
-            What's Your Goal?
-          </p>
+          <SectionLabel>What's Your Goal?</SectionLabel>
           <Card>
-            <CardContent className="p-7">
-              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            <CardContent className="p-8">
+              <p className="text-sm text-muted-foreground mb-7 leading-relaxed">
                 Select your primary goal and we'll create your personalized treatment plan.
               </p>
               <div className="space-y-3">
@@ -145,12 +146,12 @@ export function ClientDashboard() {
                     key={goal.key}
                     onClick={() => saveGoalMutation.mutate(goal.key)}
                     disabled={saveGoalMutation.isPending}
-                    className="flex items-center gap-5 w-full p-5 rounded-2xl border border-border hover:border-primary/30 hover:bg-accent/40 transition-all text-left group"
+                    className="flex items-center gap-5 w-full p-5 rounded-2xl border border-border hover:border-elita-camel/30 hover:bg-accent/50 transition-all duration-300 text-left group"
                   >
                     <span className="text-3xl">{goal.emoji}</span>
                     <div>
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{goal.label}</p>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{goal.description}</p>
+                      <p className="text-sm font-semibold text-foreground group-hover:text-foreground transition-colors">{goal.label}</p>
+                      <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{goal.description}</p>
                     </div>
                   </button>
                 ))}
@@ -163,42 +164,42 @@ export function ClientDashboard() {
       {/* Your Personalized Plan */}
       {recommendation && (
         <motion.div {...fadeUp} transition={{ delay: 0.12 }}>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.15em] mb-5">
-            Your Personalized Plan
-          </p>
-          <Card className="border-primary/15 overflow-hidden">
-            <CardContent className="p-7">
+          <SectionLabel>Your Personalized Plan</SectionLabel>
+          <Card className="overflow-hidden border-elita-camel/15">
+            {/* Subtle gold accent line */}
+            <div className="h-0.5 bg-gradient-to-r from-elita-camel/40 via-elita-gold/30 to-transparent" />
+            <CardContent className="p-8">
               {/* Focus + Progress */}
-              <div className="flex items-center justify-between mb-7">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-primary" />
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-2xl bg-elita-camel/10 flex items-center justify-center">
+                    <Target className="w-5 h-5 text-elita-camel" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em]">Current Focus</p>
-                    <p className="text-sm font-semibold text-foreground mt-0.5">{GOALS.find(g => g.key === clientGoals[0])?.label}</p>
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.18em]">Current Focus</p>
+                    <p className="text-sm font-semibold text-foreground mt-1">{GOALS.find(g => g.key === clientGoals[0])?.label}</p>
                   </div>
                 </div>
                 {totalTarget > 0 && (
                   <div className="text-right">
-                    <p className="text-3xl font-heading font-bold text-primary leading-none">{overallPct}%</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">Complete</p>
+                    <p className="text-3xl font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
+                    <p className="text-[10px] text-muted-foreground mt-1.5">Complete</p>
                   </div>
                 )}
               </div>
 
               {/* Progress bar */}
               {totalTarget > 0 && (
-                <div className="mb-7">
-                  <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                <div className="mb-8">
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-primary rounded-full"
+                      className="h-full bg-elita-camel rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: `${overallPct}%` }}
                       transition={{ duration: 1.2, ease: 'easeOut' }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-xs text-muted-foreground mt-2.5">
                     {totalCompleted} of {totalTarget} sessions completed
                   </p>
                 </div>
@@ -207,9 +208,9 @@ export function ClientDashboard() {
               {/* Urgency */}
               {urgency && (
                 <div className={cn(
-                  'flex items-center gap-3 px-5 py-3.5 rounded-2xl mb-7 text-sm',
+                  'flex items-center gap-3 px-5 py-4 rounded-2xl mb-8 text-sm',
                   urgency.tone === 'success' && 'bg-success/10 text-success',
-                  urgency.tone === 'info' && 'bg-primary/10 text-primary',
+                  urgency.tone === 'info' && 'bg-elita-camel/10 text-elita-camel',
                   urgency.tone === 'warning' && 'bg-warning/10 text-warning',
                 )}>
                   <Zap className="w-4 h-4 shrink-0" />
@@ -218,18 +219,18 @@ export function ClientDashboard() {
               )}
 
               {/* Recommended Next Step */}
-              <div className="bg-accent/50 rounded-2xl p-5 border border-border/50">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mb-3">Recommended Next Step</p>
+              <div className="bg-accent/60 rounded-2xl p-6 border border-border/50">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.18em] mb-4">Recommended Next Step</p>
                 <div className="flex items-start gap-4">
                   <span className="text-3xl mt-0.5">{CATEGORIES[recommendation.category].emoji}</span>
                   <div className="flex-1">
                     <p className="text-lg font-heading font-semibold text-foreground leading-tight">
                       {recommendation.title}
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                       {recommendation.subtitle}
                     </p>
-                    <Button asChild size="sm" className="mt-5 gap-2 rounded-xl h-10 px-5">
+                    <Button asChild size="sm" className="mt-6 gap-2 rounded-xl h-10 px-5">
                       <Link to="/portal/book">
                         Book Treatment <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
@@ -240,7 +241,7 @@ export function ClientDashboard() {
 
               {/* Category breakdown */}
               {treatmentProgress.length > 0 && (
-                <div className="mt-7 pt-7 border-t border-border/40 space-y-4">
+                <div className="mt-8 pt-8 border-t border-border/40 space-y-4">
                   {treatmentProgress.map((p) => {
                     const cat = CATEGORIES[p.category as TreatmentCategory];
                     const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
@@ -248,10 +249,10 @@ export function ClientDashboard() {
                       <div key={p.category} className="flex items-center gap-3">
                         <span className="text-lg">{cat?.emoji}</span>
                         <span className="text-xs font-semibold text-foreground w-16">{cat?.label}</span>
-                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                          <motion.div className="h-full bg-primary rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.3 }} />
+                        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                          <motion.div className="h-full bg-elita-camel rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.3 }} />
                         </div>
-                        <span className="text-xs font-semibold text-primary w-10 text-right">{p.sessions_completed}/{p.sessions_target}</span>
+                        <span className="text-xs font-semibold text-elita-camel w-10 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                       </div>
                     );
                   })}
@@ -264,25 +265,23 @@ export function ClientDashboard() {
 
       {/* Next Visit */}
       <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.15em] mb-5">
-          Your Next Visit
-        </p>
+        <SectionLabel>Your Next Visit</SectionLabel>
         {nextAppointment ? (
           <Card>
-            <CardContent className="p-7">
+            <CardContent className="p-8">
               <div className="flex items-start gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Clock className="h-6 w-6 text-primary" />
+                <div className="w-14 h-14 rounded-2xl bg-elita-camel/10 flex items-center justify-center shrink-0">
+                  <Clock className="h-6 w-6 text-elita-camel" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-heading font-semibold text-foreground text-xl leading-tight">
                     {(nextAppointment as any).services?.name}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-sm text-muted-foreground mt-2.5">
                     {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d · h:mm a')}
                   </p>
                   {(nextAppointment as any).staff && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1.5">
                       with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
                     </p>
                   )}
@@ -292,8 +291,11 @@ export function ClientDashboard() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="p-7 text-center">
-              <p className="text-sm text-muted-foreground mb-4">No upcoming visits scheduled</p>
+            <CardContent className="p-8 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground mb-5">No upcoming visits scheduled</p>
               <Button asChild variant="outline" size="sm" className="gap-2">
                 <Link to="/portal/book">Schedule Now <ArrowRight className="h-3.5 w-3.5" /></Link>
               </Button>
@@ -305,21 +307,21 @@ export function ClientDashboard() {
       {/* My Progress */}
       {activePackages.length > 0 && (
         <motion.div {...fadeUp} transition={{ delay: 0.22 }}>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.15em] mb-5">My Progress</p>
+          <SectionLabel>Your Progress</SectionLabel>
           <div className="space-y-4">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
                 <Card key={pkg.id}>
-                  <CardContent className="p-7">
-                    <div className="flex items-center justify-between mb-4">
+                  <CardContent className="p-8">
+                    <div className="flex items-center justify-between mb-5">
                       <p className="font-semibold text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                      <span className="text-2xl font-heading font-bold text-primary">{pct}%</span>
+                      <span className="text-2xl font-heading font-bold text-elita-camel">{pct}%</span>
                     </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <motion.div className="h-full bg-primary rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-elita-camel rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2.5">{pkg.sessions_used} of {pkg.sessions_total} sessions · {pkg.sessions_total - pkg.sessions_used} remaining</p>
+                    <p className="text-xs text-muted-foreground mt-3">{pkg.sessions_used} of {pkg.sessions_total} sessions · {pkg.sessions_total - pkg.sessions_used} remaining</p>
                   </CardContent>
                 </Card>
               );
@@ -330,22 +332,30 @@ export function ClientDashboard() {
 
       {/* Quick Actions */}
       <motion.div {...fadeUp} transition={{ delay: 0.26 }}>
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.15em] mb-5">Quick Actions</p>
+        <SectionLabel>Quick Actions</SectionLabel>
         <div className="grid grid-cols-2 gap-4">
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬' },
             { label: 'My Photos', href: '/portal/photos', icon: '📸' },
             { label: 'Forms', href: '/portal/forms', icon: '📋' },
-            { label: 'Skin Analysis', href: '/portal/skin-analysis', icon: '✨' },
+            { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨' },
           ].map((item) => (
-            <Link key={item.href} to={item.href} className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border hover:border-primary/20 hover:shadow-premium-md transition-all duration-300 group">
+            <Link key={item.href} to={item.href} className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-premium-md transition-all duration-400 group">
               <span className="text-xl">{item.icon}</span>
-              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{item.label}</span>
+              <span className="text-sm font-semibold text-foreground group-hover:text-foreground transition-colors">{item.label}</span>
             </Link>
           ))}
         </div>
       </motion.div>
     </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-5">
+      {children}
+    </p>
   );
 }
 
