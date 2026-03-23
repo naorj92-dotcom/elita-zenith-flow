@@ -107,6 +107,30 @@ export function ClientDashboard() {
     enabled: !!client?.id,
   });
 
+  // Fetch all client appointments for stage session tracking
+  const { data: stageAppointments = {} } = useQuery({
+    queryKey: ['client-stage-appointments', client?.id],
+    queryFn: async () => {
+      if (!client?.id) return {};
+      const { data } = await supabase.from('appointments')
+        .select('scheduled_at, status, services(name)')
+        .eq('client_id', client.id)
+        .in('status', ['completed', 'scheduled', 'confirmed']);
+      if (!data) return {};
+      const grouped: Record<string, { scheduled_at: string; status: string }[]> = {};
+      for (const apt of data) {
+        const serviceName = (apt as any).services?.name || '';
+        const category = matchServiceToCategory(serviceName);
+        if (category) {
+          if (!grouped[category]) grouped[category] = [];
+          grouped[category].push({ scheduled_at: apt.scheduled_at, status: apt.status });
+        }
+      }
+      return grouped;
+    },
+    enabled: !!client?.id,
+  });
+
   const firstName = client?.first_name || 'there';
   const hasGoals = clientGoals.length > 0;
   const recommendation = hasGoals ? getSimpleRecommendation(clientGoals, treatmentProgress) : null;
