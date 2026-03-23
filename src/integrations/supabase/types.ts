@@ -2250,6 +2250,100 @@ export type Database = {
           },
         ]
       }
+      treatment_chart_notes: {
+        Row: {
+          adverse_reaction: string
+          adverse_reaction_other: string | null
+          after_photo_url: string | null
+          amount_units: string | null
+          appointment_id: string
+          before_photo_url: string | null
+          client_id: string
+          created_at: string
+          expiration_date: string | null
+          followup_instructions: string | null
+          id: string
+          is_locked: boolean
+          lot_number: string | null
+          product_used: string | null
+          provider_id: string
+          provider_notes: string | null
+          provider_signature: string
+          service_performed: string
+          signed_at: string
+          treatment_areas: string | null
+          updated_at: string
+        }
+        Insert: {
+          adverse_reaction?: string
+          adverse_reaction_other?: string | null
+          after_photo_url?: string | null
+          amount_units?: string | null
+          appointment_id: string
+          before_photo_url?: string | null
+          client_id: string
+          created_at?: string
+          expiration_date?: string | null
+          followup_instructions?: string | null
+          id?: string
+          is_locked?: boolean
+          lot_number?: string | null
+          product_used?: string | null
+          provider_id: string
+          provider_notes?: string | null
+          provider_signature: string
+          service_performed: string
+          signed_at?: string
+          treatment_areas?: string | null
+          updated_at?: string
+        }
+        Update: {
+          adverse_reaction?: string
+          adverse_reaction_other?: string | null
+          after_photo_url?: string | null
+          amount_units?: string | null
+          appointment_id?: string
+          before_photo_url?: string | null
+          client_id?: string
+          created_at?: string
+          expiration_date?: string | null
+          followup_instructions?: string | null
+          id?: string
+          is_locked?: boolean
+          lot_number?: string | null
+          product_used?: string | null
+          provider_id?: string
+          provider_notes?: string | null
+          provider_signature?: string
+          service_performed?: string
+          signed_at?: string
+          treatment_areas?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_chart_notes_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_chart_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_chart_notes_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           client_id: string | null
