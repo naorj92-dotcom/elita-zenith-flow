@@ -113,20 +113,20 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar - Clean, minimal, no visual noise */}
-      <aside className="hidden md:flex flex-col w-60 bg-card border-r border-border">
+      <aside className="hidden md:flex flex-col w-[15.5rem] bg-card border-r border-border/60">
         {/* Logo */}
-        <div className="p-5 border-b border-border flex justify-center">
+        <div className="px-6 py-6 border-b border-border/40 flex justify-center">
           <Link to={role === 'client' ? '/portal' : '/dashboard'} className="block">
             <img 
               src={elitaLogo} 
               alt="Elita Medical Spa" 
-              className="h-14 w-auto object-contain"
+              className="h-16 w-auto object-contain"
             />
           </Link>
         </div>
 
         {/* Navigation - Grouped sections */}
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navigation.map((category) => {
             const isExpanded = expandedCategories.has(category.label);
             const isActive = isCategoryActive(category);
@@ -144,38 +144,37 @@ export function AppLayout({ children }: AppLayoutProps) {
                   key={category.label}
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
+                    "flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200",
                     itemActive 
-                      ? "bg-elita-camel/12 text-elita-camel font-medium" 
-                      : "text-foreground hover:bg-accent"
+                      ? "bg-primary/10 text-primary font-semibold shadow-sm" 
+                      : "text-foreground/70 hover:bg-accent hover:text-foreground"
                   )}
                 >
                   <Icon className={cn(
-                    "w-[18px] h-[18px]",
-                    itemActive ? "text-elita-camel" : "text-muted-foreground"
+                    "w-[19px] h-[19px]",
+                    itemActive ? "text-primary" : "text-muted-foreground"
                   )} />
-                  <span className="text-sm font-medium">{category.label}</span>
+                  <span className="text-[13px]">{category.label}</span>
                 </Link>
               );
             }
 
-            // Multi-item categories are expandable
             return (
               <div key={category.label}>
                 <button
                   onClick={() => toggleCategory(category.label)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
+                    "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200",
                     isActive
                       ? "bg-accent text-foreground"
-                      : "text-foreground hover:bg-accent"
+                      : "text-foreground/70 hover:bg-accent hover:text-foreground"
                   )}
                 >
                   <Icon className={cn(
-                    "w-[18px] h-[18px]",
+                    "w-[19px] h-[19px]",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )} />
-                  <span className="text-sm font-medium">{category.label}</span>
+                  <span className="text-[13px] font-medium">{category.label}</span>
                   <motion.div
                     animate={{ rotate: isExpanded ? 180 : 0 }}
                     transition={{ duration: 0.15 }}
@@ -194,7 +193,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                       transition={{ duration: 0.15 }}
                       className="overflow-hidden"
                     >
-                      <div className="pl-3 pt-0.5 space-y-0.5">
+                      <div className="pl-4 pt-1 space-y-0.5">
                         {visibleItems.map((item) => {
                           const SubIcon = item.icon;
                           const itemActive = isItemActive(item.href);
@@ -204,14 +203,14 @@ export function AppLayout({ children }: AppLayoutProps) {
                               key={item.href}
                               to={item.href}
                               className={cn(
-                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150",
+                                "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
                                 itemActive
-                                  ? "bg-primary/10 text-primary"
+                                  ? "bg-primary/10 text-primary font-semibold"
                                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
                               )}
                             >
-                              <SubIcon className="w-4 h-4" />
-                              <span className="text-sm">{item.label}</span>
+                              <SubIcon className="w-[16px] h-[16px]" />
+                              <span className="text-[13px]">{item.label}</span>
                             </Link>
                           );
                         })}
@@ -225,11 +224,11 @@ export function AppLayout({ children }: AppLayoutProps) {
         </nav>
 
         {/* User Section */}
-        <div className="p-3 border-t border-border">
+        <div className="px-4 py-4 border-t border-border/40">
           {/* Clock Status */}
           {(role === 'owner' || role === 'employee') && clockStatus && (
             <div className={cn(
-              "mb-3 px-3 py-2.5 rounded-lg text-sm",
+              "mb-3 px-3.5 py-2.5 rounded-xl text-sm",
               clockStatus.is_clocked_in 
                 ? "bg-success/10 text-success"
                 : "bg-muted text-muted-foreground"
@@ -254,7 +253,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm text-foreground truncate">
+              <p className="font-semibold text-[13px] text-foreground truncate">
                 {staff?.first_name} {staff?.last_name}
               </p>
               <p className="text-xs text-muted-foreground capitalize">

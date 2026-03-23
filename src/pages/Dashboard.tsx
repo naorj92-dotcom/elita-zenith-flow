@@ -118,13 +118,12 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="p-6 sm:p-10 md:p-12 max-w-5xl mx-auto page-atmosphere">
+    <div className="p-6 sm:p-10 md:p-14 max-w-5xl mx-auto page-atmosphere">
       <OnboardingTour />
 
       {/* ═══ HERO HEADER ═══ */}
-      <motion.div {...fadeUp} className="card-hero glow-accent relative mb-16 mt-2 sm:mt-4">
+      <motion.div {...fadeUp} className="card-hero glow-accent relative mb-20 mt-2 sm:mt-4">
         <div className="accent-line" />
-        {/* Ambient glow behind hero — directional */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[1.25rem]">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[160%] h-[75%] bg-[radial-gradient(ellipse_65%_55%_at_50%_0%,hsl(34_48%_60%/0.12)_0%,transparent_55%)]" />
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[130%] h-[40%] bg-[radial-gradient(ellipse_70%_50%_at_50%_100%,hsl(22_20%_18%/0.04)_0%,transparent_60%)]" />
@@ -134,14 +133,14 @@ export function Dashboard() {
             transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
           />
         </div>
-        <div className="relative p-8 sm:p-12 md:p-14">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+        <div className="relative p-10 sm:p-14 md:p-16">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8">
             <div className="max-w-[75%]">
-              <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.55em] mb-5">
+              <p className="text-[10px] font-semibold text-elita-camel uppercase tracking-[0.4em] mb-5">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
               <h1 className="font-heading font-semibold text-foreground tracking-[-0.04em] leading-[0.88]"
-                  style={{ fontSize: 'clamp(1.75rem, 4.5vw, 3.25rem)' }}>
+                  style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
                 Welcome back,
                 <br />
                 <span className="italic font-normal">{firstName}</span>
@@ -152,7 +151,7 @@ export function Dashboard() {
               disabled={isLoading} 
               variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
               size="default" 
-              className="gap-2 shrink-0 rounded-2xl h-13 px-7 btn-glow"
+              className="gap-2 shrink-0 rounded-2xl btn-glow"
             >
               {clockStatus?.is_clocked_in ? (
                 <><Square className="w-4 h-4" /> Clock Out</>
@@ -160,9 +159,9 @@ export function Dashboard() {
             </Button>
           </div>
 
-          <div className="divider-luxe mt-10 mb-10" />
+          <div className="divider-luxe mt-12 mb-12" />
 
-          {/* KPI Cards — asymmetric sizing */}
+          {/* KPI Cards */}
           <div className="grid grid-cols-3 gap-5">
             {kpiCards.map((stat, i) => (
               <motion.div
@@ -170,11 +169,11 @@ export function Dashboard() {
                 whileHover={{ y: -4, scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="glass p-5 sm:p-6 rounded-2xl"
+                className="glass p-6 sm:p-7 rounded-2xl"
                 style={i === 1 ? { transform: 'translateY(-4px)' } : undefined}
               >
-                <p className="text-3xl sm:text-4xl font-heading font-bold text-foreground leading-none tracking-tight">{stat.value}</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-3.5 flex items-center gap-1 font-light">
+                <p className="text-3xl sm:text-[2.5rem] font-heading font-bold text-foreground leading-none tracking-tight">{stat.value}</p>
+                <p className="text-[11px] text-muted-foreground/60 mt-4 flex items-center gap-1 font-light">
                   {stat.change !== null && stat.change !== 0 && (
                     stat.change > 0
                       ? <ArrowUpRight className="w-3 h-3 text-success" />
@@ -182,29 +181,29 @@ export function Dashboard() {
                   )}
                   {stat.sub}
                 </p>
-                <p className="text-[8px] font-bold text-muted-foreground/35 uppercase tracking-[0.4em] mt-3">{stat.label}</p>
+                <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-[0.3em] mt-3">{stat.label}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </motion.div>
 
-      <div className="space-y-16 relative z-10">
+      <div className="space-y-20 relative z-10">
         {/* Today's Action Items */}
         <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
           <TodaysFocusWidget />
         </motion.div>
 
-        {/* Today's Schedule */}
+        {/* Today's Schedule — DOMINANT */}
         <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
-          <Card className="card-elevated">
-            <CardHeader className="flex flex-row items-center justify-between px-7 pt-7">
-              <CardTitle>Today's Schedule</CardTitle>
+          <Card className="card-premium">
+            <CardHeader className="flex flex-row items-center justify-between px-8 pt-8 pb-2">
+              <CardTitle className="text-xl">Today's Schedule</CardTitle>
               <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
                 View All <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </CardHeader>
-            <CardContent className="space-y-2.5 px-7 pb-7">
+            <CardContent className="space-y-3 px-8 pb-8">
               {appointments.length === 0 ? (
                 <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
               ) : (
@@ -213,14 +212,14 @@ export function Dashboard() {
                     <motion.div
                       whileHover={{ y: -2 }}
                       transition={{ duration: 0.3 }}
-                      className="flex items-center gap-4 p-4 rounded-2xl bg-muted/15 hover:bg-muted/30 hover:shadow-sm transition-all duration-400"
+                      className="flex items-center gap-4 p-5 rounded-2xl bg-muted/15 hover:bg-muted/30 hover:shadow-sm transition-all duration-400"
                     >
                       <div className="text-center min-w-[52px]">
                         <p className="text-sm font-semibold text-foreground">{apt.time}</p>
                         <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
+                        <p className="font-semibold text-foreground text-sm truncate">{apt.client_name}</p>
                         <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
                       </div>
                       <StatusBadge status={apt.status} />
@@ -237,9 +236,9 @@ export function Dashboard() {
           <TodayOpsWidget />
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions — subdued */}
         <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
-          <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-[0.5em] mb-6">Quick Actions</p>
+          <p className="text-[9px] font-semibold text-muted-foreground/45 uppercase tracking-[0.35em] mb-6">Quick Actions</p>
           <div className="grid grid-cols-2 gap-4">
             {[
               { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
@@ -252,7 +251,7 @@ export function Dashboard() {
                   whileHover={{ y: -3, scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.4 }}
-                  className="flex items-center gap-4 p-6 rounded-2xl glass hover:shadow-md"
+                  className="flex items-center gap-4 p-6 rounded-2xl card-minimal hover:shadow-sm"
                 >
                   <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center"
                        style={{ boxShadow: '0 0 16px hsl(34 48% 60% / 0.06)' }}>
