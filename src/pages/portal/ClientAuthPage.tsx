@@ -80,17 +80,17 @@ export function ClientAuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+        className="w-full max-w-sm"
       >
         {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="flex justify-center mb-5">
-            <img src={elitaLogo} alt="Elita MedSpa" className="h-16 w-auto" />
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <img src={elitaLogo} alt="Elita MedSpa" className="h-14 w-auto" />
           </div>
-          <p className="text-sm text-muted-foreground">Client Portal</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-[0.15em]">Client Portal</p>
         </div>
 
         <Card>
