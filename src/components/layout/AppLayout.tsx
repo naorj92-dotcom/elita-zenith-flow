@@ -126,7 +126,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
 
         {/* Navigation - Grouped sections */}
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navigation.map((category) => {
             const isExpanded = expandedCategories.has(category.label);
             const isActive = isCategoryActive(category);
@@ -144,17 +144,17 @@ export function AppLayout({ children }: AppLayoutProps) {
                   key={category.label}
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
+                    "flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200",
                     itemActive 
-                      ? "bg-elita-camel/12 text-elita-camel font-medium" 
-                      : "text-foreground hover:bg-accent"
+                      ? "bg-primary/10 text-primary font-semibold shadow-sm" 
+                      : "text-foreground/70 hover:bg-accent hover:text-foreground"
                   )}
                 >
                   <Icon className={cn(
-                    "w-[18px] h-[18px]",
-                    itemActive ? "text-elita-camel" : "text-muted-foreground"
+                    "w-[19px] h-[19px]",
+                    itemActive ? "text-primary" : "text-muted-foreground"
                   )} />
-                  <span className="text-sm font-medium">{category.label}</span>
+                  <span className="text-[13px]">{category.label}</span>
                 </Link>
               );
             }
