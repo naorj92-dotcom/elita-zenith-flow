@@ -392,4 +392,70 @@ export function SettingsPage() {
   );
 }
 
+function GoalsSettings() {
+  const [dailyGoal, setDailyGoal] = useState('2000');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('business_settings')
+      .select('value')
+      .eq('key', 'daily_revenue_goal')
+      .single()
+      .then(({ data }) => {
+        if (data) setDailyGoal(String(data.value));
+        setLoading(false);
+      });
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from('business_settings')
+      .update({ value: Number(dailyGoal), updated_at: new Date().toISOString() })
+      .eq('key', 'daily_revenue_goal');
+    setSaving(false);
+    if (error) {
+      toast.error('Failed to save goal');
+    } else {
+      toast.success('Daily revenue goal updated');
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Target className="w-5 h-5" />
+          Revenue Goals
+        </CardTitle>
+        <CardDescription>
+          Set daily revenue targets for your team. This goal is displayed on the staff dashboard.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2 max-w-xs">
+          <Label htmlFor="dailyGoal">Daily Revenue Goal ($)</Label>
+          <Input
+            id="dailyGoal"
+            type="number"
+            min="0"
+            step="100"
+            value={dailyGoal}
+            onChange={(e) => setDailyGoal(e.target.value)}
+            disabled={loading}
+          />
+          <p className="text-xs text-muted-foreground">
+            This applies to all staff members and is shown on the dashboard progress bar.
+          </p>
+        </div>
+        <Button onClick={handleSave} disabled={saving || loading}>
+          {saving ? 'Saving...' : 'Save Goal'}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default SettingsPage;

@@ -47,6 +47,7 @@ export function Dashboard() {
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<TodayAppointment[]>([]);
   const [metricPeriod, setMetricPeriod] = useState<MetricPeriod>('today');
+  const [dailyGoal, setDailyGoal] = useState(2000);
   const [allMetrics, setAllMetrics] = useState<Record<MetricPeriod, { bookings: number; revenue: number; newClients: number; prevBookings: number; prevRevenue: number; prevClients: number }>>({
     today: { bookings: 0, revenue: 0, newClients: 0, prevBookings: 0, prevRevenue: 0, prevClients: 0 },
     week: { bookings: 0, revenue: 0, newClients: 0, prevBookings: 0, prevRevenue: 0, prevClients: 0 },
