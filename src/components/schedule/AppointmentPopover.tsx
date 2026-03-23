@@ -353,6 +353,17 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
               <Button variant="outline" size="sm" className="w-full h-9 text-[10px] gap-1 px-2 rounded-xl hover:shadow-sm transition-all">🔄 Rebook</Button>
             </Link>
           </div>
+          {canChart && appointment.client_id && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mt-2 h-9 text-[10px] gap-1.5 rounded-xl hover:shadow-sm transition-all"
+              onClick={() => setShowChartNote(true)}
+            >
+              <ClipboardList className="w-3.5 h-3.5" />
+              Add Chart Note
+            </Button>
+          )}
         </div>
       )}
 
