@@ -30,7 +30,7 @@ const TIME_SLOTS = [
 
 type BookingStep = 'service' | 'provider' | 'datetime' | 'confirm';
 const STEPS: BookingStep[] = ['service', 'provider', 'datetime', 'confirm'];
-const STEP_LABELS = ['Service', 'Provider', 'Date & Time', 'Confirm'];
+const STEP_LABELS = ['Treatment', 'Provider', 'Date & Time', 'Confirm'];
 
 const slideVariants = {
   enter: (direction: number) => ({ x: direction > 0 ? 80 : -80, opacity: 0 }),
