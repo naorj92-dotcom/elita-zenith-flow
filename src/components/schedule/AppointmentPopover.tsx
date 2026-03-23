@@ -64,6 +64,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const end = new Date(start.getTime() + appointment.duration_minutes * 60000);
   const timeStr = `${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
   const age = calculateAge(clientDetails?.date_of_birth);
+  const isGoogleEvent = appointment.id.startsWith('gcal-');
   const { isOwner, isProvider } = useRole();
   const canChart = isOwner || isProvider;
 
