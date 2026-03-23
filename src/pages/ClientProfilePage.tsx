@@ -328,6 +328,11 @@ export default function ClientProfilePage() {
                 <JourneyPlanTab clientId={id!} />
               </TabsContent>
 
+              {/* CHART HISTORY */}
+              <TabsContent value="chart-history" className="mt-0">
+                <ChartHistoryTab clientId={id!} />
+              </TabsContent>
+
               {/* FILES */}
               <TabsContent value="files" className="mt-0">
                 <EmptyState icon={FolderOpen} title="No files" description="Uploaded documents and files will appear here." compact />
