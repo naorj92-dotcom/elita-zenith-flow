@@ -22,12 +22,19 @@ function getCurrentStageIndex(progress: ProgressData[]): number {
   return STAGES.length - 1;
 }
 
+interface RecommendedServiceInfo {
+  duration: number;
+  price: number;
+  slots: Date[];
+}
+
 interface JourneyHeroProps {
   firstName: string;
   hasGoals: boolean;
   treatmentProgress: ProgressData[];
   nextAppointment: any;
   recommendation: { title: string; subtitle: string; category: TreatmentCategory } | null;
+  recommendedServiceInfo?: RecommendedServiceInfo;
   bookingHref: string;
 }
 
