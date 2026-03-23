@@ -131,9 +131,9 @@ export function ClientDashboard() {
 
             {/* Next Visit — prominent */}
             {nextAppointment ? (
-              <div className="p-6 rounded-2xl bg-accent/50 border border-border/40">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-3">Your Next Visit</p>
-                <p className="text-xl font-heading font-semibold text-foreground leading-snug">
+              <div className="p-7 rounded-2xl bg-accent/50 border border-border/40">
+                <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-3">Your Next Visit</p>
+                <p className="text-2xl font-heading font-semibold text-foreground leading-snug">
                   {(nextAppointment as any).services?.name}
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
