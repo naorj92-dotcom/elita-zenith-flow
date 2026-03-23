@@ -111,74 +111,88 @@ export function ClientDashboard() {
     : '/portal/book';
 
   return (
-    <div className="space-y-14 max-w-xl mx-auto pb-32">
+    <div className="max-w-xl mx-auto pb-32">
 
-      {/* ═══ HERO — LANDING-PAGE FEEL ═══ */}
-      <motion.div {...fadeUp}>
-        <div className="card-hero glow-accent overflow-hidden mt-8 sm:mt-12">
-          <div className="h-1 bg-gradient-to-r from-elita-camel/50 via-elita-camel/20 to-transparent" />
-          <div className="p-8 sm:p-11 space-y-9">
+      {/* ═══ HERO — IMMERSIVE BRAND MOMENT ═══ */}
+      <motion.div {...fadeUp} className="mt-6 sm:mt-10">
+        <div className="card-hero glow-accent relative">
+          {/* Decorative top accent */}
+          <div className="accent-line" />
+          
+          {/* Subtle radial glow behind content */}
+          <div className="absolute top-12 right-8 w-48 h-48 rounded-full opacity-30 pointer-events-none"
+               style={{ background: 'radial-gradient(circle, hsl(32 38% 56% / 0.08) 0%, transparent 70%)' }} />
 
-            {/* Title — large, brand-like */}
-            <div className="space-y-2">
-              <p className="text-[9px] font-semibold text-elita-camel/70 uppercase tracking-[0.4em]">
+          <div className="relative p-8 sm:p-12 space-y-10">
+
+            {/* Title — editorial feel */}
+            <div className="space-y-3">
+              <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.45em]">
                 Welcome back, {firstName}
               </p>
-              <h1 className="text-4xl sm:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1]">
-                Your Elita Journey
+              <h1 className="text-[2.5rem] sm:text-[3.25rem] font-heading font-semibold text-foreground leading-[0.95] tracking-[-0.03em]">
+                Your Elita
+                <br />
+                <span className="italic font-normal">Journey</span>
               </h1>
             </div>
 
-            {/* Next Visit — dominant inner card */}
+            {/* Next Visit — immersive inner card */}
             {nextAppointment ? (
-              <div className="relative p-7 rounded-2xl bg-card/80 border border-border/30 shadow-sm">
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-elita-camel/15 to-transparent" />
-                <p className="text-[9px] font-semibold text-elita-camel/60 uppercase tracking-[0.3em] mb-3">Your Next Visit</p>
-                <p className="text-2xl font-heading font-semibold text-foreground leading-snug">
-                  {(nextAppointment as any).services?.name}
-                </p>
-                <p className="text-sm text-muted-foreground mt-2.5">
-                  {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d · h:mm a')}
-                </p>
-                {(nextAppointment as any).staff && (
-                  <p className="text-xs text-muted-foreground/70 mt-1.5">
-                    with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
-                  </p>
-                )}
+              <div className="relative p-7 sm:p-8 rounded-2xl border border-border/25"
+                   style={{ background: 'linear-gradient(165deg, hsl(36 24% 99%) 0%, hsl(34 18% 97%) 100%)' }}>
+                <div className="divider-luxe absolute top-0 left-6 right-6" />
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <p className="text-[8px] font-bold text-elita-camel/50 uppercase tracking-[0.4em] mb-3">Next Visit</p>
+                    <p className="text-2xl sm:text-[1.75rem] font-heading font-semibold text-foreground leading-snug tracking-tight">
+                      {(nextAppointment as any).services?.name}
+                    </p>
+                    <p className="text-[13px] text-muted-foreground mt-2.5 leading-relaxed">
+                      {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d')}
+                      <span className="mx-1.5 text-border">·</span>
+                      {format(new Date((nextAppointment as any).scheduled_at), 'h:mm a')}
+                    </p>
+                    {(nextAppointment as any).staff && (
+                      <p className="text-xs text-muted-foreground/60 mt-1.5">
+                        with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="p-7 rounded-2xl bg-card/60 text-center border border-border/20">
-                <Clock className="w-5 h-5 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No upcoming visits</p>
+              <div className="p-8 rounded-2xl bg-card/50 text-center border border-border/15">
+                <Clock className="w-5 h-5 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground/70">No upcoming visits</p>
               </div>
             )}
 
-            {/* Progress */}
+            {/* Progress — signature element */}
             {hasGoals && totalTarget > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-[10px] font-semibold text-foreground/70 tracking-widest uppercase">Your Progress</p>
-                  <p className="text-3xl font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
+              <div className="space-y-4">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.4em]">Progress</p>
+                    <p className="text-xs text-muted-foreground mt-1">{totalCompleted} of {totalTarget} sessions</p>
+                  </div>
+                  <p className="text-4xl font-heading font-bold text-elita-camel leading-none tracking-tight">{overallPct}<span className="text-lg">%</span></p>
                 </div>
-                <div className="h-2.5 bg-muted/60 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-muted/50 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, hsl(32 38% 56%), hsl(36 52% 50%))' }}
+                    className="h-full rounded-full progress-glow"
                     initial={{ width: 0 }}
                     animate={{ width: `${overallPct}%` }}
-                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                    transition={{ duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] }}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mt-2.5">
-                  {totalCompleted} of {totalTarget} sessions completed
-                </p>
 
                 {urgency && (
                   <div className={cn(
-                    'flex items-center gap-2.5 mt-5 px-4 py-3 rounded-2xl text-xs font-medium',
-                    urgency.tone === 'success' && 'bg-success/8 text-success',
-                    urgency.tone === 'info' && 'bg-elita-camel/8 text-elita-camel',
-                    urgency.tone === 'warning' && 'bg-warning/8 text-warning',
+                    'flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-medium',
+                    urgency.tone === 'success' && 'bg-success/6 text-success',
+                    urgency.tone === 'info' && 'bg-elita-camel/6 text-elita-camel',
+                    urgency.tone === 'warning' && 'bg-warning/6 text-warning',
                   )}>
                     <Sparkles className="w-3.5 h-3.5 shrink-0" />
                     {urgency.text}
@@ -189,15 +203,17 @@ export function ClientDashboard() {
 
             {/* Recommended Next Step */}
             {recommendation && (
-              <div className="relative bg-card/60 rounded-2xl p-6 border border-border/25">
-                <p className="text-[9px] font-semibold text-elita-camel/60 uppercase tracking-[0.3em] mb-3">Recommended Next Step</p>
+              <div className="relative bg-card/50 rounded-2xl p-6 border border-border/20">
+                <p className="text-[8px] font-bold text-elita-camel/50 uppercase tracking-[0.4em] mb-3.5">Recommended</p>
                 <div className="flex items-center gap-4">
-                  <span className="text-2xl">{CATEGORIES[recommendation.category].emoji}</span>
+                  <div className="w-12 h-12 rounded-2xl bg-accent/50 flex items-center justify-center text-xl">
+                    {CATEGORIES[recommendation.category].emoji}
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-heading font-semibold text-foreground leading-snug">
+                    <p className="text-[15px] font-heading font-semibold text-foreground leading-snug">
                       {recommendation.title}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    <p className="text-xs text-muted-foreground/70 mt-1 leading-relaxed">
                       {recommendation.subtitle}
                     </p>
                   </div>
@@ -205,8 +221,10 @@ export function ClientDashboard() {
               </div>
             )}
 
+            <div className="divider-luxe" />
+
             {/* Primary CTA */}
-            <Button asChild size="lg" className="w-full h-14 text-sm font-semibold gap-2.5 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]">
+            <Button asChild size="lg" className="w-full h-[3.5rem] text-[13px] font-semibold gap-3 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-lg transition-all duration-400 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]">
               <Link to={bookingHref}>
                 <CalendarPlus className="h-4.5 w-4.5" />
                 {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
@@ -216,42 +234,42 @@ export function ClientDashboard() {
         </div>
       </motion.div>
 
-      {/* ═══ GOAL SELECTION (onboarding only) ═══ */}
+      {/* ═══ GOAL SELECTION (onboarding) ═══ */}
       {!hasGoals && (
-        <motion.div {...fadeUp} transition={{ delay: 0.08 }}>
+        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-14">
           <SectionLabel>What's Your Goal?</SectionLabel>
-          <Card className="card-elevated">
-            <CardContent className="p-7">
-              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                Select your primary goal and we'll create your personalized plan.
-              </p>
-              <div className="space-y-3">
-                {GOALS.map((goal) => (
-                  <button
-                    key={goal.key}
-                    onClick={() => saveGoalMutation.mutate(goal.key)}
-                    disabled={saveGoalMutation.isPending}
-                    className="flex items-center gap-4 w-full p-5 rounded-2xl border border-border hover:border-elita-camel/25 hover:bg-accent/40 hover:shadow-sm transition-all duration-300 text-left active:scale-[0.98]"
-                  >
-                    <span className="text-2xl">{goal.emoji}</span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{goal.label}</p>
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{goal.description}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="card-elevated p-7 sm:p-8">
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              Select your primary goal and we'll create your personalized plan.
+            </p>
+            <div className="space-y-3">
+              {GOALS.map((goal) => (
+                <button
+                  key={goal.key}
+                  onClick={() => saveGoalMutation.mutate(goal.key)}
+                  disabled={saveGoalMutation.isPending}
+                  className="flex items-center gap-4 w-full p-5 rounded-2xl border border-border/60 hover:border-elita-camel/20 hover:bg-accent/30 hover:shadow-sm transition-all duration-300 text-left active:scale-[0.98]"
+                >
+                  <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center text-xl shrink-0">
+                    {goal.emoji}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{goal.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{goal.description}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         </motion.div>
       )}
 
-      {/* ═══ CATEGORY PROGRESS — minimal card ═══ */}
+      {/* ═══ TREATMENT PLAN — minimal ═══ */}
       {treatmentProgress.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-14">
           <SectionLabel>Your Personalized Plan</SectionLabel>
           <div className="card-minimal p-5 space-y-3">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 mb-1">
               <Target className="w-3.5 h-3.5 text-elita-camel" />
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
                 {GOALS.find(g => g.key === clientGoals[0])?.label}
@@ -264,8 +282,8 @@ export function ClientDashboard() {
                 <div key={p.category} className="flex items-center gap-2.5">
                   <span className="text-xs w-4 text-center">{cat?.emoji}</span>
                   <span className="text-[11px] text-muted-foreground w-12">{cat?.label}</span>
-                  <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                    <motion.div className="h-full bg-elita-camel/50 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
+                  <div className="flex-1 h-1 bg-muted/50 rounded-full overflow-hidden">
+                    <motion.div className="h-full bg-elita-camel/40 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
                   </div>
                   <span className="text-[9px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                 </div>
@@ -275,9 +293,9 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGE PROGRESS — standard card ═══ */}
+      {/* ═══ PACKAGES — standard ═══ */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.14 }}>
+        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-14">
           <SectionLabel>Session Progress</SectionLabel>
           <div className="space-y-3">
             {activePackages.map((pkg: any) => {
@@ -289,7 +307,7 @@ export function ClientDashboard() {
                       <p className="text-[13px] font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
                       <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
                     </div>
-                    <div className="h-1 bg-muted rounded-full overflow-hidden">
+                    <div className="h-1 bg-muted/50 rounded-full overflow-hidden">
                       <motion.div className="h-full bg-elita-camel rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-2">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
@@ -301,17 +319,20 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ QUICK ACTIONS — minimal ═══ */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
+      {/* ═══ QUICK ACTIONS — asymmetric layout ═══ */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-14">
         <SectionLabel>Quick Actions</SectionLabel>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Messages', href: '/portal/messages', icon: '💬' },
-            { label: 'My Photos', href: '/portal/photos', icon: '📸' },
-            { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨' },
-            { label: 'Visit History', href: '/portal/history', icon: '📋' },
+            { label: 'Messages', href: '/portal/messages', icon: '💬', span: 'col-span-2' },
+            { label: 'Photos', href: '/portal/photos', icon: '📸', span: '' },
+            { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨', span: '' },
+            { label: 'Visit History', href: '/portal/history', icon: '📋', span: 'col-span-2' },
           ].map((item) => (
-            <Link key={item.href} to={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-elita-camel/15 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]">
+            <Link key={item.href} to={item.href} className={cn(
+              'flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 hover:border-elita-camel/15 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]',
+              item.span
+            )}>
               <span className="text-base">{item.icon}</span>
               <span className="text-[13px] font-medium text-muted-foreground">{item.label}</span>
             </Link>
@@ -324,7 +345,7 @@ export function ClientDashboard() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[9px] font-semibold text-muted-foreground/70 uppercase tracking-[0.35em] mb-5">
+    <p className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.45em] mb-5">
       {children}
     </p>
   );
