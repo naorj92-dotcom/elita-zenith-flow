@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CalendarPlus, Clock, ArrowRight } from 'lucide-react';
+import { CalendarPlus, Clock, ArrowRight, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -22,12 +22,19 @@ function getCurrentStageIndex(progress: ProgressData[]): number {
   return STAGES.length - 1;
 }
 
+interface RecommendedServiceInfo {
+  duration: number;
+  price: number;
+  slots: Date[];
+}
+
 interface JourneyHeroProps {
   firstName: string;
   hasGoals: boolean;
   treatmentProgress: ProgressData[];
   nextAppointment: any;
   recommendation: { title: string; subtitle: string; category: TreatmentCategory } | null;
+  recommendedServiceInfo?: RecommendedServiceInfo;
   bookingHref: string;
 }
 
@@ -37,6 +44,7 @@ export function JourneyHero({
   treatmentProgress,
   nextAppointment,
   recommendation,
+  recommendedServiceInfo,
   bookingHref,
 }: JourneyHeroProps) {
   const currentStage = hasGoals ? getCurrentStageIndex(treatmentProgress) : 0;
@@ -228,6 +236,54 @@ export function JourneyHero({
                     </p>
                   </div>
                 </div>
+
+                {/* Service details */}
+                {recommendedServiceInfo && (
+                  <div className="relative z-10 mt-5 space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span className="font-medium">{recommendedServiceInfo.duration} min</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <DollarSign className="w-3.5 h-3.5" />
+                        <span className="font-medium">From ${recommendedServiceInfo.price}</span>
+                      </div>
+                    </div>
+
+                    {/* Available slots */}
+                    {recommendedServiceInfo.slots.length > 0 ? (
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider">
+                          Next Available
+                        </p>
+                        <div className="flex flex-col gap-2">
+                          {recommendedServiceInfo.slots.map((slot, i) => (
+                            <Link
+                              key={i}
+                              to={`${bookingHref}&date=${slot.toISOString()}`}
+                              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-border/30 hover:border-elita-camel/30 hover:bg-accent/30 transition-all duration-300 group"
+                            >
+                              <CalendarPlus className="w-3.5 h-3.5 text-elita-camel/60 group-hover:text-elita-camel transition-colors" />
+                              <span className="text-[13px] font-medium text-foreground">
+                                {format(slot, 'EEE MMM d')} at {format(slot, 'h:mm a')}
+                              </span>
+                              <ArrowRight className="w-3 h-3 text-muted-foreground/30 ml-auto group-hover:text-elita-camel/60 transition-colors" />
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <Link
+                        to={bookingHref}
+                        className="flex items-center gap-2 text-xs font-medium text-elita-camel hover:text-elita-camel/80 transition-colors"
+                      >
+                        Request Appointment
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
