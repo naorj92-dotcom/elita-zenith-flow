@@ -214,8 +214,8 @@ export function ClientBookingPage() {
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Choose Your Treatment</h2>
-              <p className="text-sm text-muted-foreground mt-1">Select the service you'd like to book</p>
+              <h2 className="text-2xl font-heading font-semibold text-foreground">Choose Your Treatment</h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Select the treatment that's right for you</p>
             </div>
             {loadingServices ? (
               <div className="flex justify-center py-12">
