@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, X, CheckCircle, XCircle, UserRoundPen, Search, Loader2, Package, Target, ArrowRight, FileText, Check } from 'lucide-react';
+import { Phone, X, CheckCircle, XCircle, UserRoundPen, Search, Loader2, Package, Target, ArrowRight, FileText, Check, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,8 @@ import { useQuery } from '@tanstack/react-query';
 import { matchServiceToCategory, CATEGORIES, type TreatmentCategory } from '@/lib/elitaMethod';
 import type { ScheduleAppointment } from '@/pages/SchedulePage';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { useRole } from '@/contexts/UnifiedAuthContext';
+import { ChartNoteForm } from '@/components/charts/ChartNoteForm';
 interface AppointmentPopoverProps {
   appointment: ScheduleAppointment;
   clientDetails?: {
