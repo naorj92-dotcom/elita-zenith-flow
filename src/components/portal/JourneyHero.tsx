@@ -99,7 +99,7 @@ export function JourneyHero({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="mb-12 sm:mb-14"
+              className="mb-14 sm:mb-18"
             >
               <JourneyStepper
                 stages={STAGES}
