@@ -87,12 +87,10 @@ export function JourneyHero({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="font-heading font-semibold text-foreground leading-[0.82] tracking-[-0.05em]"
-              style={{ fontSize: 'clamp(3.75rem, 8vw, 6rem)' }}
+              className="font-heading font-semibold text-foreground leading-[0.85] tracking-[-0.04em]"
+              style={{ fontSize: 'clamp(3rem, 7.5vw, 5.5rem)' }}
             >
-              Your Elita
-              <br />
-              <span className="italic font-normal tracking-[-0.03em]" style={{ fontSize: 'inherit' }}>Journey</span>
+              Your Elita Journey
             </motion.h1>
             {hasGoals && (
               <motion.p
