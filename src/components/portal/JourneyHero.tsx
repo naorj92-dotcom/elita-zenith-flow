@@ -191,27 +191,30 @@ export function JourneyHero({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
-              className="mb-8"
+              className="mb-10"
             >
               <div
-                className="relative rounded-2xl p-5 sm:p-6 border border-border/15"
+                className="relative rounded-[1.25rem] p-6 sm:p-7 border border-border/20 overflow-hidden"
                 style={{
-                  background: 'linear-gradient(165deg, hsl(36 26% 99%) 0%, hsl(34 20% 97%) 100%)',
-                  boxShadow: 'inset 0 1px 0 hsl(36 32% 100% / 0.6)',
+                  background: 'linear-gradient(165deg, hsl(36 30% 99%) 0%, hsl(34 24% 96.5%) 100%)',
+                  boxShadow: '0 8px 32px hsl(22 24% 22% / 0.05), inset 0 1px 0 hsl(36 36% 100% / 0.7)',
                 }}
               >
-                <p className="text-[8px] font-bold text-elita-camel/60 uppercase tracking-[0.4em] mb-3">
+                {/* Subtle glow accent */}
+                <div className="absolute top-0 right-0 w-[40%] h-[60%] bg-[radial-gradient(ellipse_60%_60%_at_90%_10%,hsl(34_48%_60%/0.06)_0%,transparent_60%)] pointer-events-none" />
+                <p className="text-[8px] font-bold text-elita-camel/70 uppercase tracking-[0.45em] mb-3 relative z-10">
                   Recommended
                 </p>
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center text-lg">
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="w-12 h-12 rounded-2xl bg-accent/50 flex items-center justify-center text-lg"
+                       style={{ boxShadow: '0 0 16px hsl(34 48% 60% / 0.06)' }}>
                     {CATEGORIES[recommendation.category].emoji}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-heading font-semibold text-foreground leading-snug">
+                    <p className="text-[15px] font-heading font-semibold text-foreground leading-snug">
                       {recommendation.title}
                     </p>
-                    <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-muted-foreground/60 mt-1 leading-relaxed">
                       {recommendation.subtitle}
                     </p>
                   </div>
