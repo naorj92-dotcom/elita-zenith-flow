@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CalendarPlus, Clock, ArrowRight } from 'lucide-react';
+import { CalendarPlus, Clock, ArrowRight, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
