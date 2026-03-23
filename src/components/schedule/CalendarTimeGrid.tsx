@@ -468,6 +468,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                   draggingApt={draggingApt}
                   dragGhostTop={dragGhostTop}
                   dropShadow={computeDropShadow()}
+                  formStatusMap={formStatusMap}
                 />
               </div>
             );
