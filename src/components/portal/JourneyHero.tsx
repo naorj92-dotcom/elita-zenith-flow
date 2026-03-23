@@ -118,18 +118,23 @@ export function JourneyHero({
           >
             {nextAppointment ? (
               <div
-                className="relative p-8 sm:p-10 rounded-[1.25rem] overflow-hidden grain-overlay"
+                className="relative p-10 sm:p-12 rounded-[1.5rem] overflow-hidden grain-overlay luxury-dust"
                 style={{
-                  background: 'linear-gradient(165deg, hsl(26 22% 28%) 0%, hsl(24 20% 24%) 40%, hsl(22 18% 22%) 100%)',
-                  boxShadow: '0 16px 56px hsl(22 24% 12% / 0.25), 0 6px 20px hsl(22 24% 12% / 0.12), inset 0 1px 0 hsl(34 30% 40% / 0.2)',
+                  background: 'linear-gradient(165deg, hsl(24 24% 26%) 0%, hsl(22 22% 21%) 35%, hsl(20 20% 18%) 70%, hsl(18 18% 16%) 100%)',
+                  boxShadow: '0 24px 80px hsl(20 24% 10% / 0.35), 0 8px 28px hsl(20 24% 10% / 0.18), 0 0 60px hsl(34 48% 60% / 0.06), inset 0 1px 0 hsl(34 34% 45% / 0.25), inset 0 -1px 0 hsl(20 18% 12% / 0.3)',
                 }}
               >
-                {/* Subtle gold glow overlay */}
+                {/* Gold glow overlay — stronger */}
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'radial-gradient(ellipse 70% 60% at 80% 20%, hsl(34 48% 60% / 0.12) 0%, transparent 60%)',
+                    background: 'radial-gradient(ellipse 60% 50% at 80% 15%, hsl(34 48% 60% / 0.18) 0%, transparent 55%), radial-gradient(ellipse 40% 40% at 20% 85%, hsl(30 40% 52% / 0.06) 0%, transparent 50%)',
                   }}
+                />
+                {/* Gold edge highlight — top */}
+                <div
+                  className="absolute top-0 left-[10%] right-[10%] h-[1px] pointer-events-none"
+                  style={{ background: 'linear-gradient(90deg, transparent, hsl(34 48% 60% / 0.3), transparent)' }}
                 />
 
                 <div className="relative">
