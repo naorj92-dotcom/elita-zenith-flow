@@ -67,7 +67,6 @@ export function Dashboard() {
       if (goalSetting) setDailyGoal(Number(goalSetting.value) || 2000);
 
       const now = new Date();
-      const now = new Date();
       const today = new Date(now); today.setHours(0, 0, 0, 0);
       const todayEnd = new Date(today); todayEnd.setHours(23, 59, 59, 999);
       const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
