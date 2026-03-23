@@ -320,6 +320,11 @@ export default function ClientProfilePage() {
                 <EmptyState icon={ShoppingCart} title="No product history" description="Product purchases and recommendations will appear here." compact />
               </TabsContent>
 
+              {/* JOURNEY PLAN */}
+              <TabsContent value="journey" className="mt-0">
+                <JourneyPlanTab clientId={id!} />
+              </TabsContent>
+
               {/* FILES */}
               <TabsContent value="files" className="mt-0">
                 <EmptyState icon={FolderOpen} title="No files" description="Uploaded documents and files will appear here." compact />
