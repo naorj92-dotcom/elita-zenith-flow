@@ -171,7 +171,7 @@ export function ClientDashboard() {
               {/* Focus + Progress */}
               <div className="flex items-center justify-between mb-7">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/8 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
                     <Target className="w-5 h-5 text-primary" />
                   </div>
                   <div>
@@ -208,9 +208,9 @@ export function ClientDashboard() {
               {urgency && (
                 <div className={cn(
                   'flex items-center gap-3 px-5 py-3.5 rounded-2xl mb-7 text-sm',
-                  urgency.tone === 'success' && 'bg-success/8 text-success',
-                  urgency.tone === 'info' && 'bg-primary/8 text-primary',
-                  urgency.tone === 'warning' && 'bg-warning/8 text-warning',
+                  urgency.tone === 'success' && 'bg-success/10 text-success',
+                  urgency.tone === 'info' && 'bg-primary/10 text-primary',
+                  urgency.tone === 'warning' && 'bg-warning/10 text-warning',
                 )}>
                   <Zap className="w-4 h-4 shrink-0" />
                   <span className="font-medium">{urgency.text}</span>
@@ -271,7 +271,7 @@ export function ClientDashboard() {
           <Card>
             <CardContent className="p-7">
               <div className="flex items-start gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-primary/8 flex items-center justify-center shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Clock className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">

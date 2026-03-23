@@ -238,7 +238,7 @@ export function Dashboard() {
           { label: 'Quick Checkout', href: '/pos', icon: Zap },
         ].map((action) => (
           <Link key={action.label} to={action.href} className="flex items-center gap-5 p-6 rounded-2xl bg-card border border-border hover:border-primary/20 hover:shadow-premium-md transition-all duration-300 group">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center group-hover:bg-primary/8 transition-colors duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors duration-300">
               <action.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
             </div>
             <span className="text-sm font-semibold text-foreground">{action.label}</span>
