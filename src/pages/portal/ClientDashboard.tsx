@@ -219,10 +219,10 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ QUICK ACTIONS — offset left ═══ */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-16 relative z-10 sm:-ml-1">
+      {/* ═══ QUICK ACTIONS — subdued, smaller ═══ */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-20 relative z-10 sm:-ml-1">
         <SectionLabel>Quick Actions</SectionLabel>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2.5">
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬', span: 'col-span-2' },
             { label: 'Photos', href: '/portal/photos', icon: '📸', span: '' },
@@ -230,12 +230,11 @@ export function ClientDashboard() {
             { label: 'Visit History', href: '/portal/history', icon: '📋', span: 'col-span-2' },
           ].map((item) => (
             <Link key={item.href} to={item.href} className={cn(
-              'flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 hover:border-elita-camel/15 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]',
+              'flex items-center gap-2.5 p-3.5 rounded-xl bg-card/60 border border-border/30 hover:border-elita-camel/15 hover:bg-card hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]',
               item.span
-            )}
-            style={{ boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.4)' }}>
-              <span className="text-base">{item.icon}</span>
-              <span className="text-[13px] font-medium text-muted-foreground">{item.label}</span>
+            )}>
+              <span className="text-sm">{item.icon}</span>
+              <span className="text-[12px] font-medium text-muted-foreground">{item.label}</span>
             </Link>
           ))}
         </div>
