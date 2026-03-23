@@ -67,8 +67,8 @@ export function ClientDashboard() {
     queryKey: ['client-active-packages', client?.id],
     queryFn: async () => {
       if (!client?.id) return [];
-      const { data } = await supabase.from('client_packages').select('id, sessions_used, sessions_total, packages(name)')
-        .eq('client_id', client.id).eq('status', 'active').limit(3);
+      const { data } = await supabase.from('client_packages').select('id, sessions_used, sessions_total, expiry_date, packages(name)')
+        .eq('client_id', client.id).eq('status', 'active');
       return data || [];
     },
     enabled: !!client?.id,
