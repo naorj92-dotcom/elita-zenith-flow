@@ -127,7 +127,7 @@ export function Dashboard() {
           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-2">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
-          <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-elita-heading tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight">
             Welcome back, {firstName}
           </h1>
         </div>

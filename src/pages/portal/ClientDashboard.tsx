@@ -124,7 +124,7 @@ export function ClientDashboard() {
               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-2">
                 Welcome back, {firstName}
               </p>
-              <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-elita-heading tracking-tight leading-[1.1]">
+              <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
                 Your Elita Journey
               </h1>
             </div>
