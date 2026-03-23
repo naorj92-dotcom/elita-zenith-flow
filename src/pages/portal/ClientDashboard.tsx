@@ -109,7 +109,7 @@ export function ClientDashboard() {
     <div className="max-w-xl mx-auto pb-32 page-atmosphere">
 
       {/* ═══ HERO — LUXURY JOURNEY SECTION ═══ */}
-      <div className="mt-4 sm:mt-8">
+      <div className="mt-4 sm:mt-8 mb-20">
         <JourneyHero
           firstName={firstName}
           hasGoals={hasGoals}
