@@ -124,7 +124,7 @@ export function ClientDashboard() {
               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-2">
                 Welcome back, {firstName}
               </p>
-              <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
+              <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-elita-heading tracking-tight leading-[1.1]">
                 Your Elita Journey
               </h1>
             </div>
@@ -204,7 +204,7 @@ export function ClientDashboard() {
             )}
 
             {/* Primary CTA — inside hero for focus */}
-            <Button asChild size="lg" className="w-full h-13 text-sm font-semibold gap-2.5 rounded-2xl">
+            <Button asChild size="lg" className="w-full h-13 text-sm font-semibold gap-2.5 rounded-2xl bg-elita-taupe text-primary-foreground hover:bg-elita-taupe/85">
               <Link to={bookingHref}>
                 <CalendarPlus className="h-4 w-4" />
                 {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
