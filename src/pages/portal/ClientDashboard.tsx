@@ -137,7 +137,7 @@ export function ClientDashboard() {
 
       {/* ═══ GOAL SELECTION (onboarding) ═══ */}
       {!hasGoals && (
-        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-14 relative z-10">
+        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-16 relative z-10">
           <SectionLabel>What's Your Goal?</SectionLabel>
           <div className="card-elevated p-7 sm:p-8">
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
