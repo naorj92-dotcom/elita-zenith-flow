@@ -555,6 +555,7 @@ interface ProviderColumnProps {
   dragGhostTop?: number | null;
   isDropTarget?: boolean;
   dropShadow?: { top: number; height: number; timeLabel: string } | null;
+  formStatusMap?: Record<string, 'complete' | 'pending' | 'none'>;
 }
 
 function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow }: ProviderColumnProps) {
