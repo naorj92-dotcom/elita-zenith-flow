@@ -96,7 +96,7 @@ export default {
         '18': '4.5rem',
       },
       boxShadow: {
-        'premium-sm': 'var(--shadow-sm)',
+        'premium-sm': 'var(--shadow-premium-sm, var(--shadow-sm))',
         'premium-md': 'var(--shadow-md)',
         'premium-lg': 'var(--shadow-lg)',
         'glow': 'var(--shadow-glow)',
