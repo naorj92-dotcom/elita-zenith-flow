@@ -71,6 +71,8 @@ export function ClientFormsPage() {
   const [selectedForm, setSelectedForm] = useState<ClientForm | null>(null);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [typedSignatureName, setTypedSignatureName] = useState('');
+  const [signatureConfirmed, setSignatureConfirmed] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showCelebration, setShowCelebration] = useState(false);
 
