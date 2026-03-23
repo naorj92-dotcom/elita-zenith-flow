@@ -191,8 +191,13 @@ export function ClientFormsPage() {
       }
     }
 
-    if (selectedForm.forms.requires_signature && !signatureData) {
-      errors['__signature'] = 'Please provide your signature';
+    if (selectedForm.forms.requires_signature) {
+      if (!typedSignatureName.trim()) {
+        errors['__signature_name'] = 'Please type your full legal name';
+      }
+      if (!signatureConfirmed) {
+        errors['__signature_confirm'] = 'You must confirm this is your electronic signature';
+      }
     }
 
     setFieldErrors(errors);
