@@ -230,17 +230,19 @@
 
   /* ═══ CARD TIER 2 — Premium ═══ */
   .card-premium {
-    @apply bg-card rounded-2xl border border-border/60 relative;
-    box-shadow: var(--shadow-md), inset 0 1px 0 hsl(36 34% 100% / 0.6);
+    @apply bg-card rounded-2xl border border-border/50 relative;
+    box-shadow: var(--shadow-lg), inset 0 1px 0 hsl(36 36% 100% / 0.65);
     transition: box-shadow 0.4s ease, transform 0.4s ease;
   }
-  .card-premium:hover { box-shadow: var(--shadow-lg), 0 0 30px hsl(34 48% 60% / 0.06); transform: translateY(-2px); }
+  .card-premium:hover { box-shadow: var(--shadow-xl), 0 0 40px hsl(34 48% 60% / 0.07); transform: translateY(-3px); }
 
   /* ═══ CARD TIER 3 — Elevated ═══ */
   .card-elevated {
-    @apply bg-card rounded-2xl border border-border/50;
-    box-shadow: var(--shadow-md), inset 0 1px 0 hsl(36 32% 100% / 0.5);
+    @apply bg-card rounded-2xl border border-border/40;
+    box-shadow: var(--shadow-md), inset 0 1px 0 hsl(36 34% 100% / 0.55);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
   }
+  .card-elevated:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
 
   /* ═══ CARD TIER 4 — Minimal ═══ */
   .card-minimal {
@@ -251,12 +253,12 @@
   /* ═══ Glow accent — warm luminous halo ═══ */
   .glow-accent {
     box-shadow:
-      0 0 80px hsl(34 48% 60% / 0.1),
-      0 0 160px hsl(30 40% 52% / 0.05),
-      0 0 40px hsl(34 48% 60% / 0.04),
+      0 0 100px hsl(34 48% 60% / 0.12),
+      0 0 200px hsl(30 40% 52% / 0.06),
+      0 0 50px hsl(34 48% 60% / 0.05),
       var(--shadow-xl),
-      0 0 0 1px hsl(32 24% 90% / 0.35),
-      inset 0 1px 0 hsl(38 44% 100% / 0.8);
+      0 0 0 1px hsl(32 24% 90% / 0.3),
+      inset 0 2px 0 hsl(38 48% 100% / 0.85);
   }
 
   /* ═══ Signature progress bar — glowing gold ═══ */
