@@ -13,7 +13,7 @@ import { Loader2, CalendarIcon, Upload, Lock, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/UnifiedAuthContext';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 
 const ADVERSE_REACTIONS = [
   { value: 'none', label: 'None' },
