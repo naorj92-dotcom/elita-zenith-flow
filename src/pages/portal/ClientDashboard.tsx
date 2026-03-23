@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Target, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type ProgressData, type TreatmentCategory } from '@/lib/elitaMethod';
 import { cn } from '@/lib/utils';
 import { JourneyHero } from '@/components/portal/JourneyHero';
