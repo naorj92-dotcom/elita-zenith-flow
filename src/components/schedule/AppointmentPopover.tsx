@@ -62,6 +62,8 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const end = new Date(start.getTime() + appointment.duration_minutes * 60000);
   const timeStr = `${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
   const age = calculateAge(clientDetails?.date_of_birth);
+  const { isOwner, isProvider } = useRole();
+  const canChart = isOwner || isProvider;
 
   const [showClientSearch, setShowClientSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,6 +71,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [isSearching, setIsSearching] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
   const [suggestionAccepted, setSuggestionAccepted] = useState<boolean | null>(null);
+  const [showChartNote, setShowChartNote] = useState(false);
 
   // Complete & Plan flow state
   const [showCompleteFlow, setShowCompleteFlow] = useState(false);
