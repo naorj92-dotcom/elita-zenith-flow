@@ -118,112 +118,123 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="p-6 sm:p-10 md:p-12 max-w-5xl mx-auto space-y-12">
+    <div className="p-6 sm:p-10 md:p-12 max-w-5xl mx-auto">
       <OnboardingTour />
 
-      {/* Header */}
-      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
-        <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.3em] mb-3">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground tracking-tight">
-            Welcome back, {firstName}
-          </h1>
+      {/* ═══ HERO HEADER ═══ */}
+      <motion.div {...fadeUp} className="card-hero glow-accent relative mb-12 mt-2 sm:mt-4">
+        <div className="accent-line" />
+        <div className="absolute top-8 right-10 w-40 h-40 rounded-full opacity-20 pointer-events-none"
+             style={{ background: 'radial-gradient(circle, hsl(32 38% 56% / 0.1) 0%, transparent 70%)' }} />
+        <div className="relative p-8 sm:p-10">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
+            <div>
+              <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.45em] mb-3">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </p>
+              <h1 className="text-3xl sm:text-[2.75rem] font-heading font-semibold text-foreground tracking-[-0.03em] leading-[0.95]">
+                Welcome back,
+                <br />
+                <span className="italic font-normal">{firstName}</span>
+              </h1>
+            </div>
+            <Button 
+              onClick={handleClockAction} 
+              disabled={isLoading} 
+              variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
+              size="default" 
+              className="gap-2 shrink-0 rounded-2xl h-12 px-6 shadow-sm"
+            >
+              {clockStatus?.is_clocked_in ? (
+                <><Square className="w-4 h-4" /> Clock Out</>
+              ) : (<><Play className="w-4 h-4" /> Clock In</>)}
+            </Button>
+          </div>
+
+          <div className="divider-luxe mt-8 mb-8" />
+
+          {/* KPI Cards — inside hero for dominance */}
+          <div className="grid grid-cols-3 gap-5">
+            {kpiCards.map((stat) => (
+              <div key={stat.label} className="p-5 rounded-2xl bg-card/60 border border-border/20 hover:bg-card/80 transition-all duration-300">
+                <p className="text-3xl sm:text-4xl font-heading font-bold text-foreground leading-none tracking-tight">{stat.value}</p>
+                <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1">
+                  {stat.change !== null && stat.change !== 0 && (
+                    stat.change > 0
+                      ? <ArrowUpRight className="w-3 h-3 text-success" />
+                      : <ArrowDownRight className="w-3 h-3 text-destructive" />
+                  )}
+                  {stat.sub}
+                </p>
+                <p className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-[0.3em] mt-3">{stat.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <Button 
-          onClick={handleClockAction} 
-          disabled={isLoading} 
-          variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
-          size="default" 
-          className="gap-2 shrink-0 rounded-2xl h-12 px-6"
-        >
-          {clockStatus?.is_clocked_in ? (
-            <><Square className="w-4 h-4" /> Clock Out</>
-          ) : (<><Play className="w-4 h-4" /> Clock In</>)}
-        </Button>
       </motion.div>
 
-      {/* KPI Cards */}
-      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-3 gap-5">
-        {kpiCards.map((stat) => (
-          <Card key={stat.label} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-            <CardContent className="p-6">
-              <p className="text-3xl sm:text-4xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
-              <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1">
-                {stat.change !== null && stat.change !== 0 && (
-                  stat.change > 0
-                    ? <ArrowUpRight className="w-3 h-3 text-success" />
-                    : <ArrowDownRight className="w-3 h-3 text-destructive" />
-                )}
-                {stat.sub}
-              </p>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mt-3.5">{stat.label}</p>
+      <div className="space-y-12">
+        {/* Today's Action Items */}
+        <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
+          <TodaysFocusWidget />
+        </motion.div>
+
+        {/* Today's Schedule */}
+        <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
+          <Card className="card-elevated">
+            <CardHeader className="flex flex-row items-center justify-between px-7 pt-7">
+              <CardTitle>Today's Schedule</CardTitle>
+              <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
+                View All <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            </CardHeader>
+            <CardContent className="space-y-2 px-7 pb-7">
+              {appointments.length === 0 ? (
+                <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
+              ) : (
+                appointments.slice(0, 5).map((apt) => (
+                  <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-2xl bg-muted/20 hover:bg-muted/40 hover:shadow-sm transition-all duration-300">
+                    <div className="text-center min-w-[52px]">
+                      <p className="text-sm font-semibold text-foreground">{apt.time}</p>
+                      <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
+                    </div>
+                    <StatusBadge status={apt.status} />
+                  </Link>
+                ))
+              )}
             </CardContent>
           </Card>
-        ))}
-      </motion.div>
+        </motion.div>
 
-      {/* Today's Action Items — PROMINENT */}
-      <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
-        <TodaysFocusWidget />
-      </motion.div>
+        {/* Operations */}
+        <motion.div {...fadeUp} transition={{ delay: 0.17 }}>
+          <TodayOpsWidget />
+        </motion.div>
 
-      {/* Today's Schedule */}
-      <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
-        <Card className="shadow-md">
-          <CardHeader className="flex flex-row items-center justify-between px-7 pt-7">
-            <CardTitle>Today's Schedule</CardTitle>
-            <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
-              View All <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </CardHeader>
-          <CardContent className="space-y-2 px-7 pb-7">
-            {appointments.length === 0 ? (
-              <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
-            ) : (
-              appointments.slice(0, 5).map((apt) => (
-                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 hover:shadow-sm transition-all duration-200">
-                  <div className="text-center min-w-[52px]">
-                    <p className="text-sm font-semibold text-foreground">{apt.time}</p>
-                    <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
-                  </div>
-                  <StatusBadge status={apt.status} />
-                </Link>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Operations */}
-      <motion.div {...fadeUp} transition={{ delay: 0.17 }}>
-        <TodayOpsWidget />
-      </motion.div>
-
-      {/* Quick Actions */}
-      <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.3em] mb-5">Quick Actions</p>
-        <div className="grid grid-cols-2 gap-4">
-          {[
-            { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
-            { label: 'Add Client', href: '/clients/new', icon: Users },
-            { label: 'View Schedule', href: '/schedule', icon: Clock },
-            { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
-          ].map((action) => (
-            <Link key={action.label} to={action.href} className="flex items-center gap-4 p-6 rounded-2xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-              <div className="w-11 h-11 rounded-2xl bg-muted flex items-center justify-center">
-                <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
-              </div>
-              <span className="text-sm font-medium text-foreground">{action.label}</span>
-            </Link>
-          ))}
-        </div>
-      </motion.div>
+        {/* Quick Actions */}
+        <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
+          <p className="text-[8px] font-bold text-muted-foreground/50 uppercase tracking-[0.45em] mb-5">Quick Actions</p>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
+              { label: 'Add Client', href: '/clients/new', icon: Users },
+              { label: 'View Schedule', href: '/schedule', icon: Clock },
+              { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
+            ].map((action) => (
+              <Link key={action.label} to={action.href} className="flex items-center gap-4 p-6 rounded-2xl bg-card border border-border/50 hover:border-elita-camel/15 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]">
+                <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center">
+                  <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
+                </div>
+                <span className="text-sm font-medium text-foreground">{action.label}</span>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }
