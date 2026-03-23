@@ -1,9 +1,11 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { CalendarPlus, Clock, ArrowRight, DollarSign } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CalendarPlus, Clock, ArrowRight, DollarSign, Check, Circle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES, type TreatmentCategory, type ProgressData } from '@/lib/elitaMethod';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +24,14 @@ function getCurrentStageIndex(progress: ProgressData[]): number {
   return STAGES.length - 1;
 }
 
+export interface StageConfig {
+  stage: string;
+  description: string | null;
+  timeline_estimate: string | null;
+  sessions_target: number;
+  service_ids: string[];
+}
+
 interface RecommendedServiceInfo {
   duration: number;
   price: number;
@@ -36,6 +46,7 @@ interface JourneyHeroProps {
   recommendation: { title: string; subtitle: string; category: TreatmentCategory } | null;
   recommendedServiceInfo?: RecommendedServiceInfo;
   bookingHref: string;
+  stageAppointments?: Record<string, { scheduled_at: string; status: string }[]>;
 }
 
 export function JourneyHero({
@@ -46,8 +57,20 @@ export function JourneyHero({
   recommendation,
   recommendedServiceInfo,
   bookingHref,
+  stageAppointments = {},
 }: JourneyHeroProps) {
   const currentStage = hasGoals ? getCurrentStageIndex(treatmentProgress) : 0;
+
+  // Fetch stage configs
+  const { data: stageConfigs = [] } = useQuery({
+    queryKey: ['journey-stage-configs'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('journey_stage_configs')
+        .select('stage, description, timeline_estimate, sessions_target, service_ids');
+      return (data || []) as StageConfig[];
+    },
+  });
 
   return (
     <motion.div
@@ -67,12 +90,11 @@ export function JourneyHero({
           <path d="M0,120 C300,160 500,60 700,110 C900,160 1100,80 1200,130 L1200,200 L0,200 Z" fill="hsl(30 40% 52%)" opacity="0.5" />
         </svg>
 
-        {/* Ambient glow layers — stronger */}
+        {/* Ambient glow layers */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[180%] h-[85%] bg-[radial-gradient(ellipse_65%_55%_at_50%_0%,hsl(34_48%_60%/0.22)_0%,transparent_60%)]" />
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[50%] bg-[radial-gradient(ellipse_75%_65%_at_50%_100%,hsl(30_40%_52%/0.1)_0%,transparent_55%)]" />
           <div className="absolute top-[10%] right-[-10%] w-[70%] h-[80%] bg-[radial-gradient(ellipse_55%_55%_at_85%_35%,hsl(34_48%_60%/0.15)_0%,transparent_55%)]" />
-          {/* Animated central spotlight */}
           <motion.div
             className="absolute top-[15%] left-[40%] w-[60%] h-[55%] bg-[radial-gradient(circle_at_center,hsl(34_48%_60%/0.12)_0%,transparent_65%)]"
             animate={{ opacity: [0.4, 1, 0.4], scale: [1, 1.12, 1] }}
@@ -81,7 +103,7 @@ export function JourneyHero({
         </div>
 
         <div className="relative px-8 pt-24 pb-16 sm:px-14 sm:pt-32 sm:pb-24">
-          {/* ─── Welcome & Title — asymmetric editorial ─── */}
+          {/* ─── Welcome & Title ─── */}
           <div className="text-left mb-16 sm:mb-24 max-w-[80%]">
             <motion.p
               initial={{ opacity: 0, x: -12 }}
@@ -112,7 +134,7 @@ export function JourneyHero({
             )}
           </div>
 
-          {/* ─── Journey Progress Stepper ─── */}
+          {/* ─── Journey Progress — Full-Width Stage Pills ─── */}
           {hasGoals && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -120,11 +142,18 @@ export function JourneyHero({
               transition={{ delay: 0.5, duration: 0.6 }}
               className="mb-18 sm:mb-24"
             >
-              <JourneyStepper stages={STAGES} currentStage={currentStage} progress={treatmentProgress} />
+              <JourneyStagePills
+                stages={STAGES}
+                currentStage={currentStage}
+                progress={treatmentProgress}
+                stageConfigs={stageConfigs}
+                stageAppointments={stageAppointments}
+                bookingHref={bookingHref}
+              />
             </motion.div>
           )}
 
-          {/* ─── Next Visit — signature glassmorphic VIP card ─── */}
+          {/* ─── Next Visit — signature VIP card ─── */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -142,17 +171,13 @@ export function JourneyHero({
                   boxShadow: '0 36px 110px hsl(20 24% 6% / 0.55), 0 14px 45px hsl(20 24% 8% / 0.3), 0 0 110px hsl(34 48% 60% / 0.12), inset 0 1px 0 hsl(34 34% 50% / 0.25), inset 0 -1px 0 hsl(20 18% 8% / 0.4)',
                 }}
               >
-                {/* Glass shimmer sweep */}
                 <div className="glass-shimmer absolute inset-0 pointer-events-none" />
-
-                {/* Gold atmospheric glow — intensified */}
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'radial-gradient(ellipse 60% 55% at 85% 0%, hsl(34 48% 60% / 0.3) 0%, transparent 55%), radial-gradient(ellipse 50% 50% at 10% 100%, hsl(30 40% 52% / 0.12) 0%, transparent 50%), radial-gradient(ellipse 30% 30% at 50% 50%, hsl(34 48% 60% / 0.04) 0%, transparent 60%)',
+                    background: 'radial-gradient(ellipse 60% 55% at 85% 0%, hsl(34 48% 60% / 0.3) 0%, transparent 55%), radial-gradient(ellipse 50% 50% at 10% 100%, hsl(30 40% 52% / 0.12) 0%, transparent 50%)',
                   }}
                 />
-                {/* Gold edge highlights */}
                 <div className="absolute top-0 left-[3%] right-[3%] h-[1px] pointer-events-none"
                   style={{ background: 'linear-gradient(90deg, transparent, hsl(34 48% 60% / 0.55), hsl(34 48% 65% / 0.3), transparent)' }}
                 />
@@ -165,14 +190,11 @@ export function JourneyHero({
                      style={{ color: 'hsl(34 48% 72%)' }}>
                     Your Next Visit
                   </p>
-
                   <p className="font-heading font-semibold leading-[0.88] tracking-tight"
                      style={{ color: 'hsl(36 30% 96%)', fontSize: 'clamp(2rem, 5vw, 3.25rem)' }}>
                     {nextAppointment.services?.name}
                   </p>
-
                   <div className="divider-luxe my-9 opacity-20" />
-
                   <div className="flex items-center gap-6">
                     <motion.div
                       animate={{ boxShadow: ['0 0 24px hsl(34 48% 60% / 0.1)', '0 0 40px hsl(34 48% 60% / 0.2)', '0 0 24px hsl(34 48% 60% / 0.1)'] }}
@@ -209,7 +231,7 @@ export function JourneyHero({
             )}
           </motion.div>
 
-          {/* ─── Recommendation chip — offset right ─── */}
+          {/* ─── Recommendation chip ─── */}
           {recommendation && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -251,7 +273,6 @@ export function JourneyHero({
                       </div>
                     </div>
 
-                    {/* Available slots */}
                     {recommendedServiceInfo.slots.length > 0 ? (
                       <div className="space-y-2">
                         <p className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider">
@@ -314,106 +335,269 @@ export function JourneyHero({
 }
 
 /* ═══════════════════════════════════════════════
-   JOURNEY STEPPER — Freeze → Tone → Tight → Glow
+   JOURNEY STAGE PILLS — Full-width tappable buttons
    ═══════════════════════════════════════════════ */
 
-function JourneyStepper({
+function JourneyStagePills({
   stages,
   currentStage,
   progress,
+  stageConfigs,
+  stageAppointments,
+  bookingHref,
 }: {
   stages: { key: TreatmentCategory; label: string }[];
   currentStage: number;
   progress: ProgressData[];
+  stageConfigs: StageConfig[];
+  stageAppointments: Record<string, { scheduled_at: string; status: string }[]>;
+  bookingHref: string;
 }) {
+  const [expandedStage, setExpandedStage] = useState<string | null>(null);
+
   return (
-    <div className="relative flex items-center justify-between px-2 sm:px-8">
-      {/* Connecting line (background) */}
-      <div className="absolute top-[22px] left-[10%] right-[10%] h-[2px] bg-border/20 rounded-full" />
-
-      {/* Connecting line (filled/gold) */}
-      <motion.div
-        className="absolute top-[22px] left-[10%] h-[2px] rounded-full"
-        style={{
-          background: 'linear-gradient(90deg, hsl(30 40% 52%) 0%, hsl(34 48% 60%) 100%)',
-          boxShadow: '0 0 16px hsl(34 48% 60% / 0.4)',
-        }}
-        initial={{ width: '0%' }}
-        animate={{ width: `${(currentStage / (stages.length - 1)) * 80}%` }}
-        transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.6 }}
-      />
-
+    <div className="space-y-3">
       {stages.map((stage, i) => {
         const p = progress.find(pr => pr.category === stage.key);
+        const config = stageConfigs.find(c => c.stage === stage.key);
         const isCompleted = p ? p.sessions_completed >= p.sessions_target : false;
         const isCurrent = i === currentStage;
         const isPast = i < currentStage;
+        const isActive = isCurrent || isPast || isCompleted;
+        const isExpanded = expandedStage === stage.key;
+
+        const sessionsCompleted = p?.sessions_completed || 0;
+        const sessionsTarget = config?.sessions_target || p?.sessions_target || 6;
+        const pct = sessionsTarget > 0 ? Math.min(Math.round((sessionsCompleted / sessionsTarget) * 100), 100) : 0;
+
+        const appointments = stageAppointments[stage.key] || [];
 
         return (
-          <div key={stage.key} className="relative flex flex-col items-center z-10">
-            {/* Glowing dot */}
-            <div className="relative">
-              {isCurrent && (
-                <motion.div
-                  className="absolute inset-[-10px] rounded-full"
-                  style={{ background: 'radial-gradient(circle, hsl(34 48% 60% / 0.4) 0%, transparent 70%)' }}
-                  animate={{ scale: [1, 1.6, 1], opacity: [0.5, 0.15, 0.5] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                />
-              )}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.5 + i * 0.12, duration: 0.5, ease: 'backOut' }}
-                className={cn(
-                  'w-11 h-11 rounded-full flex items-center justify-center text-[13px] font-medium transition-all duration-500',
-                  isCurrent && 'ring-2 ring-offset-2 ring-offset-transparent',
-                  (isCurrent || isPast || isCompleted)
-                    ? 'text-primary-foreground'
-                    : 'bg-muted/40 text-muted-foreground/35 border border-border/15',
-                )}
-                style={
-                  (isCurrent || isPast || isCompleted)
-                    ? {
-                        background: 'linear-gradient(135deg, hsl(30 40% 52%) 0%, hsl(34 48% 60%) 100%)',
-                        boxShadow: isCurrent
-                          ? '0 0 24px hsl(34 48% 60% / 0.5), 0 0 10px hsl(30 40% 52% / 0.35)'
-                          : '0 0 12px hsl(34 48% 60% / 0.2)',
-                      }
-                    : undefined
-                }
-              >
-                {isCompleted ? '✓' : (i + 1)}
-              </motion.div>
-            </div>
-
-            {/* Label */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 + i * 0.1, duration: 0.4 }}
+          <motion.div
+            key={stage.key}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 + i * 0.08, duration: 0.5 }}
+          >
+            {/* Stage Pill Button */}
+            <button
+              onClick={() => setExpandedStage(isExpanded ? null : stage.key)}
               className={cn(
-                'text-[10px] sm:text-[11px] mt-4 font-semibold tracking-wider',
-                (isCurrent || isPast || isCompleted)
-                  ? 'text-foreground'
-                  : 'text-muted-foreground/30',
+                'w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-400 text-left min-h-[56px]',
+                isExpanded
+                  ? 'rounded-b-none'
+                  : '',
+                isActive
+                  ? 'glass gold-edge'
+                  : 'bg-muted/20 border border-border/10',
               )}
+              style={isActive ? {
+                boxShadow: isCurrent
+                  ? '0 0 24px hsl(34 48% 60% / 0.15), inset 0 1px 0 hsl(34 48% 60% / 0.15)'
+                  : '0 0 8px hsl(34 48% 60% / 0.05)',
+              } : undefined}
             >
-              {stage.label}
-            </motion.p>
-
-            {/* Session count for current */}
-            {isCurrent && p && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.9, duration: 0.4 }}
-                className="text-[9px] text-elita-camel mt-1 font-medium"
+              {/* Stage number / check */}
+              <div
+                className={cn(
+                  'w-9 h-9 rounded-xl flex items-center justify-center text-[13px] font-semibold shrink-0 transition-all',
+                  isCompleted && 'text-primary-foreground',
+                  isCurrent && 'text-primary-foreground ring-2 ring-elita-camel/30 ring-offset-1 ring-offset-transparent',
+                  isPast && !isCompleted && 'text-primary-foreground',
+                  !isActive && 'bg-muted/40 text-muted-foreground/30',
+                )}
+                style={isActive ? {
+                  background: 'linear-gradient(135deg, hsl(30 40% 52%) 0%, hsl(34 48% 60%) 100%)',
+                  boxShadow: isCurrent ? '0 0 16px hsl(34 48% 60% / 0.4)' : '0 0 8px hsl(34 48% 60% / 0.15)',
+                } : undefined}
               >
-                {p.sessions_completed}/{p.sessions_target}
-              </motion.p>
-            )}
-          </div>
+                {isCompleted ? <Check className="w-4 h-4" /> : (i + 1)}
+              </div>
+
+              {/* Stage name + emoji */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{CATEGORIES[stage.key].emoji}</span>
+                  <span className={cn(
+                    'text-[14px] font-semibold',
+                    isActive ? 'text-foreground' : 'text-muted-foreground/40',
+                  )}>
+                    {stage.label}
+                  </span>
+                  {isCurrent && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-elita-camel bg-elita-camel/10 px-2 py-0.5 rounded-full">
+                      Current
+                    </span>
+                  )}
+                </div>
+
+                {/* Mini progress bar */}
+                <div className="mt-2 flex items-center gap-2.5">
+                  <div className="flex-1 h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 1, delay: 0.6 + i * 0.1 }}
+                      style={{
+                        background: isActive
+                          ? 'linear-gradient(90deg, hsl(30 40% 52%), hsl(34 48% 60%))'
+                          : 'hsl(var(--muted-foreground) / 0.2)',
+                      }}
+                    />
+                  </div>
+                  <span className={cn(
+                    'text-[10px] font-medium shrink-0',
+                    isActive ? 'text-muted-foreground' : 'text-muted-foreground/25',
+                  )}>
+                    {sessionsCompleted}/{sessionsTarget}
+                  </span>
+                </div>
+              </div>
+
+              {/* Expand arrow */}
+              <ChevronDown className={cn(
+                'w-4 h-4 shrink-0 transition-transform duration-300',
+                isActive ? 'text-muted-foreground/50' : 'text-muted-foreground/20',
+                isExpanded && 'rotate-180',
+              )} />
+            </button>
+
+            {/* Expanded Detail View */}
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="overflow-hidden"
+                >
+                  <div className={cn(
+                    'px-5 pb-5 pt-4 rounded-b-2xl border-t-0',
+                    isActive ? 'glass border border-t-0 border-border/20' : 'bg-muted/10 border border-t-0 border-border/5',
+                  )}>
+                    {/* Description */}
+                    {config?.description && (
+                      <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                        {config.description}
+                      </p>
+                    )}
+
+                    {/* Timeline estimate */}
+                    {config?.timeline_estimate && (
+                      <div className="flex items-center gap-2 mb-4">
+                        <Clock className="w-3.5 h-3.5 text-elita-camel/60" />
+                        <span className="text-[11px] font-medium text-elita-camel">
+                          {config.timeline_estimate}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Session list */}
+                    <div className="space-y-2 mb-4">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 mb-2">
+                        Sessions
+                      </p>
+                      {Array.from({ length: sessionsTarget }, (_, idx) => {
+                        const completedApt = appointments
+                          .filter(a => a.status === 'completed')
+                          .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[idx];
+                        const upcomingApt = !completedApt
+                          ? appointments
+                              .filter(a => ['scheduled', 'confirmed'].includes(a.status))
+                              .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[idx - sessionsCompleted]
+                          : null;
+
+                        if (idx < sessionsCompleted) {
+                          // Completed session
+                          return (
+                            <div key={idx} className="flex items-center gap-3 py-1.5">
+                              <div className="w-5 h-5 rounded-full bg-success/15 flex items-center justify-center">
+                                <Check className="w-3 h-3 text-success" />
+                              </div>
+                              <span className="text-xs text-foreground font-medium">
+                                Session {idx + 1}
+                              </span>
+                              {completedApt && (
+                                <span className="text-[11px] text-muted-foreground ml-auto">
+                                  {format(new Date(completedApt.scheduled_at), 'MMM d, yyyy')}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        if (upcomingApt) {
+                          // Upcoming booked session
+                          return (
+                            <div key={idx} className="flex items-center gap-3 py-1.5">
+                              <div className="w-5 h-5 rounded-full bg-warning/15 flex items-center justify-center">
+                                <Clock className="w-3 h-3 text-warning" />
+                              </div>
+                              <span className="text-xs text-foreground font-medium">
+                                Session {idx + 1}
+                              </span>
+                              <span className="text-[11px] text-warning ml-auto">
+                                → {format(new Date(upcomingApt.scheduled_at), 'MMM d, yyyy')}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        // Not yet scheduled
+                        return (
+                          <div key={idx} className="flex items-center gap-3 py-1.5">
+                            <div className="w-5 h-5 rounded-full border border-border/30 flex items-center justify-center">
+                              <Circle className="w-2.5 h-2.5 text-muted-foreground/25" />
+                            </div>
+                            <span className="text-xs text-muted-foreground/50 font-medium">
+                              Session {idx + 1}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground/30 ml-auto">
+                              Not yet scheduled
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Sessions remaining */}
+                    {sessionsTarget - sessionsCompleted > 0 && (
+                      <p className="text-[11px] font-medium text-muted-foreground mb-4">
+                        {sessionsTarget - sessionsCompleted} session{sessionsTarget - sessionsCompleted !== 1 ? 's' : ''} remaining
+                      </p>
+                    )}
+
+                    {/* Book next session button — only if not all booked */}
+                    {sessionsCompleted < sessionsTarget && (
+                      <Button
+                        asChild
+                        size="sm"
+                        className="w-full h-10 rounded-xl text-xs font-semibold text-primary-foreground"
+                        style={{
+                          background: 'linear-gradient(135deg, hsl(22 20% 38%) 0%, hsl(28 28% 36%) 100%)',
+                          boxShadow: '0 8px 24px hsl(22 24% 18% / 0.2), inset 0 1px 0 hsl(34 30% 48% / 0.2)',
+                        }}
+                      >
+                        <Link to={`/portal/book?category=${stage.key}`}>
+                          <CalendarPlus className="w-3.5 h-3.5 mr-1.5" />
+                          Book Next {stage.label} Session
+                        </Link>
+                      </Button>
+                    )}
+
+                    {isCompleted && (
+                      <div className="flex items-center gap-2 text-xs text-success font-medium">
+                        <Check className="w-4 h-4" />
+                        Stage complete!
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         );
       })}
     </div>
