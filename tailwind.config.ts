@@ -83,6 +83,8 @@ export default {
           charcoal: "hsl(var(--elita-charcoal))",
           gray: "hsl(var(--elita-gray))",
           "light-gray": "hsl(var(--elita-light-gray))",
+          taupe: "hsl(var(--elita-taupe))",
+          heading: "hsl(var(--elita-heading))",
         },
       },
       borderRadius: {
