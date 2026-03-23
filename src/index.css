@@ -160,6 +160,17 @@
     min-height: 100vh;
   }
 
+  /* Subtle edge vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background:
+      radial-gradient(ellipse 100% 100% at 50% 50%, transparent 55%, hsl(22 20% 18% / 0.04) 100%);
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     @apply tracking-tight text-foreground;
