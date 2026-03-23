@@ -31,7 +31,7 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-lg grid-cols-4">
+        <TabsList className="grid w-full max-w-2xl grid-cols-5">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             General
@@ -39,6 +39,10 @@ export function SettingsPage() {
           <TabsTrigger value="branding" className="flex items-center gap-2">
             <Paintbrush className="w-4 h-4" />
             Branding
+          </TabsTrigger>
+          <TabsTrigger value="goals" className="flex items-center gap-2">
+            <Target className="w-4 h-4" />
+            Goals
           </TabsTrigger>
           <TabsTrigger value="payments" className="flex items-center gap-2">
             <CreditCard className="w-4 h-4" />
@@ -49,6 +53,11 @@ export function SettingsPage() {
             Policies
           </TabsTrigger>
         </TabsList>
+
+        {/* Goals Settings */}
+        <TabsContent value="goals" className="space-y-6 mt-6">
+          <GoalsSettings />
+        </TabsContent>
 
         {/* General Settings */}
         <TabsContent value="general" className="space-y-6 mt-6">
