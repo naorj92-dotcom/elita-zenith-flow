@@ -8,27 +8,27 @@
 @layer base {
   :root {
     --background: 32 22% 95%;
-    --foreground: 24 18% 18%;
+    --foreground: 24 16% 28%;
 
     --card: 33 18% 98%;
-    --card-foreground: 24 18% 18%;
+    --card-foreground: 24 16% 28%;
 
     --popover: 33 18% 98%;
-    --popover-foreground: 24 18% 18%;
+    --popover-foreground: 24 16% 28%;
 
-    --primary: 24 22% 24%;
-    --primary-foreground: 34 20% 97%;
-    --primary-hover: 24 18% 32%;
-    --primary-muted: 24 12% 44%;
+    --primary: 24 20% 34%;
+    --primary-foreground: 32 22% 97%;
+    --primary-hover: 24 16% 42%;
+    --primary-muted: 24 12% 50%;
 
     --secondary: 30 18% 93%;
-    --secondary-foreground: 24 18% 26%;
+    --secondary-foreground: 24 16% 32%;
 
     --muted: 30 16% 91%;
     --muted-foreground: 24 12% 44%;
 
     --accent: 30 20% 90%;
-    --accent-foreground: 24 18% 18%;
+    --accent-foreground: 24 16% 28%;
 
     --destructive: 4 42% 48%;
     --destructive-foreground: 0 0% 100%;
@@ -37,7 +37,7 @@
     --success-foreground: 0 0% 100%;
 
     --warning: 34 50% 50%;
-    --warning-foreground: 24 18% 18%;
+    --warning-foreground: 24 16% 28%;
 
     --info: 200 30% 50%;
     --info-foreground: 0 0% 100%;
@@ -49,11 +49,11 @@
     --radius: 0.75rem;
 
     --sidebar-background: 30 18% 96%;
-    --sidebar-foreground: 24 18% 26%;
-    --sidebar-primary: 24 22% 24%;
+    --sidebar-foreground: 24 16% 34%;
+    --sidebar-primary: 24 20% 34%;
     --sidebar-primary-foreground: 32 22% 97%;
     --sidebar-accent: 30 18% 92%;
-    --sidebar-accent-foreground: 24 18% 18%;
+    --sidebar-accent-foreground: 24 16% 28%;
     --sidebar-border: 30 14% 90%;
     --sidebar-ring: 30 30% 56%;
 
@@ -61,8 +61,8 @@
     --elita-gold: 34 46% 52%;
     --elita-cream: 32 22% 95%;
     --elita-cream-dark: 30 16% 91%;
-    --elita-charcoal: 24 18% 18%;
-    --elita-gray: 24 12% 44%;
+    --elita-charcoal: 24 16% 28%;
+    --elita-gray: 24 12% 48%;
     --elita-light-gray: 30 16% 88%;
 
     --shadow-sm: 0 1px 3px hsl(24 18% 18% / 0.025);
@@ -146,8 +146,8 @@
     @apply tracking-tight;
   }
 
-  h1 { @apply text-2xl sm:text-3xl font-semibold text-foreground; line-height: 1.15; }
-  h2 { @apply text-xl font-medium text-foreground; line-height: 1.25; }
+  h1 { @apply text-2xl sm:text-3xl font-semibold; line-height: 1.15; color: hsl(30 36% 58%); }
+  h2 { @apply text-xl font-medium; line-height: 1.25; color: hsl(24 20% 34%); }
   h3 { @apply text-lg font-medium text-foreground; line-height: 1.3; }
 
   p, span, label { @apply text-sm leading-relaxed; }
