@@ -521,6 +521,48 @@ export function FormsManagementPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Link Consent Form to Services Dialog */}
+      <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="w-5 h-5" />
+              Link to Services
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Select which services should auto-assign this consent form when an appointment is booked.
+          </p>
+          <ScrollArea className="h-[300px] border rounded-lg">
+            <div className="p-2 space-y-1">
+              {services.map((svc: any) => {
+                const isLinked = linkedServiceIds.includes(svc.id);
+                return (
+                  <div
+                    key={svc.id}
+                    className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                    onClick={() => linkFormId && toggleServiceLink.mutate({ formId: linkFormId, serviceId: svc.id, linked: isLinked })}
+                  >
+                    <Checkbox checked={isLinked} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{svc.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{svc.category}</p>
+                    </div>
+                    {isLinked && <Unlink className="w-3.5 h-3.5 text-muted-foreground" />}
+                  </div>
+                );
+              })}
+              {services.length === 0 && (
+                <p className="text-center py-8 text-sm text-muted-foreground">No services found</p>
+              )}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLinkDialog(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Submission Detail Dialog */}
       <Dialog open={!!viewingSubmission} onOpenChange={() => setViewingSubmission(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0">

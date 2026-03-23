@@ -321,10 +321,46 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
         </div>
       )}
 
-      {/* Status badge */}
-      <Badge variant="outline" className="text-[10px] capitalize mb-3 rounded-lg">
-        {appointment.status.replace('_', ' ')}
-      </Badge>
+      {/* Form status + Status badge */}
+      <div className="flex items-center gap-2 mb-3">
+        <Badge variant="outline" className="text-[10px] capitalize rounded-lg">
+          {appointment.status.replace('_', ' ')}
+        </Badge>
+        {formStatus && formStatus.pending.length > 0 && (
+          <button
+            onClick={() => setShowPendingForms(!showPendingForms)}
+            className="flex items-center gap-1 text-[10px] font-medium text-destructive hover:underline"
+          >
+            <AlertTriangle className="w-3 h-3" />
+            {formStatus.pending.length} form{formStatus.pending.length > 1 ? 's' : ''} pending
+          </button>
+        )}
+        {formStatus && formStatus.pending.length === 0 && formStatus.total > 0 && (
+          <span className="flex items-center gap-1 text-[10px] font-medium text-success">
+            <CheckCircle className="w-3 h-3" />
+            Forms complete
+          </span>
+        )}
+      </div>
+
+      {/* Pending forms detail */}
+      <AnimatePresence>
+        {showPendingForms && formStatus && formStatus.pending.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden mb-3"
+          >
+            <div className="bg-destructive/5 rounded-xl p-3 space-y-1">
+              <p className="text-[10px] font-semibold text-destructive uppercase tracking-widest">Incomplete Forms</p>
+              {formStatus.pending.map((f: any) => (
+                <p key={f.id} className="text-xs text-foreground">• {(f.forms as any)?.name || 'Unnamed form'}</p>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Change Client */}
       {!isGoogleEvent && (

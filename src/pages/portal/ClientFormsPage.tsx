@@ -404,36 +404,68 @@ export function ClientFormsPage() {
                   </motion.div>
                 ))}
 
-                {/* Signature */}
+                {/* Electronic Signature */}
                 {selectedForm?.forms.requires_signature && (
-                  <div className="space-y-2 pt-4 border-t border-border">
+                  <div className="space-y-4 pt-4 border-t border-border">
                     <h3 className="text-sm font-medium flex items-center gap-2 text-foreground">
                       <FileSignature className="w-4 h-4 text-primary" />
-                      Signature
+                      Electronic Signature
                       <span className="text-destructive">*</span>
                     </h3>
                     {selectedForm.status === 'completed' && selectedForm.signature_data ? (
                       <div className="border border-border rounded-lg p-4 bg-muted/30">
-                        <img src={selectedForm.signature_data} alt="Signature" className="max-h-24" />
+                        <p className="text-sm font-medium text-foreground">{selectedForm.signature_data}</p>
                         <p className="text-xs text-muted-foreground mt-2">
                           Signed on {format(new Date(selectedForm.signed_at!), 'MMMM d, yyyy at h:mm a')}
                         </p>
                       </div>
                     ) : (
                       <>
-                        <SignaturePad
-                          onSignatureChange={(data) => {
-                            setSignatureData(data);
-                            if (fieldErrors['__signature']) {
-                              setFieldErrors(prev => { const n = { ...prev }; delete n['__signature']; return n; });
-                            }
-                          }}
-                          initialSignature={signatureData}
-                          disabled={selectedForm.status === 'completed'}
-                        />
-                        {fieldErrors['__signature'] && (
-                          <p className="text-xs text-destructive">{fieldErrors['__signature']}</p>
-                        )}
+                        <div className="space-y-1.5">
+                          <Label htmlFor="signature-name" className="text-sm">
+                            Full Legal Name
+                          </Label>
+                          <Input
+                            id="signature-name"
+                            value={typedSignatureName}
+                            onChange={(e) => {
+                              setTypedSignatureName(e.target.value);
+                              if (fieldErrors['__signature_name']) {
+                                setFieldErrors(prev => { const n = { ...prev }; delete n['__signature_name']; return n; });
+                              }
+                            }}
+                            placeholder="Type your full legal name"
+                            className={cn(fieldErrors['__signature_name'] && 'border-destructive')}
+                          />
+                          {fieldErrors['__signature_name'] && (
+                            <p className="text-xs text-destructive">{fieldErrors['__signature_name']}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <div className={cn(
+                            "flex items-start gap-3 p-3 rounded-lg border transition-colors",
+                            signatureConfirmed ? "border-primary/30 bg-primary/5" : "border-border",
+                            fieldErrors['__signature_confirm'] && "border-destructive"
+                          )}>
+                            <Checkbox
+                              id="signature-confirm"
+                              checked={signatureConfirmed}
+                              onCheckedChange={(v) => {
+                                setSignatureConfirmed(!!v);
+                                if (fieldErrors['__signature_confirm']) {
+                                  setFieldErrors(prev => { const n = { ...prev }; delete n['__signature_confirm']; return n; });
+                                }
+                              }}
+                              className="mt-0.5"
+                            />
+                            <Label htmlFor="signature-confirm" className="text-sm leading-relaxed cursor-pointer">
+                              I confirm this is my electronic signature and I agree to the above.
+                            </Label>
+                          </div>
+                          {fieldErrors['__signature_confirm'] && (
+                            <p className="text-xs text-destructive pl-1">{fieldErrors['__signature_confirm']}</p>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>

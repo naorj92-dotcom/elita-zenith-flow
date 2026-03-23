@@ -623,9 +623,15 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                 </span>
               )}
-              <p className="text-[9px] text-muted-foreground truncate">
+              <p className="text-[9px] text-muted-foreground truncate flex-1">
                 {isCheckedIn ? 'ARRIVED' : timeLabel}
               </p>
+              {formStatusMap && formStatusMap[apt.id] === 'pending' && (
+                <span className="w-2 h-2 rounded-full bg-destructive shrink-0" title="Forms pending" />
+              )}
+              {formStatusMap && formStatusMap[apt.id] === 'complete' && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Forms complete" />
+              )}
             </div>
             <p className="text-[10px] font-semibold truncate">{apt.client_name}</p>
             {height > 36 && <p className="text-[9px] opacity-70 truncate">{apt.service_name}</p>}
