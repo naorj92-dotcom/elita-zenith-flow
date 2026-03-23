@@ -256,7 +256,7 @@
 
   /* ═══ CARD TIER 3 — Elevated ═══ */
   .card-elevated {
-    @apply bg-card rounded-2xl border border-border/40;
+    @apply bg-card rounded-2xl border border-border/50;
     box-shadow: var(--shadow-md), inset 0 1px 0 hsl(36 34% 100% / 0.55);
     transition: box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -267,13 +267,14 @@
 
   /* ═══ CARD TIER 4 — Minimal ═══ */
   .card-minimal {
-    @apply bg-transparent rounded-xl border border-border/25;
-    box-shadow: none;
+    @apply bg-card/60 rounded-xl border border-border/30;
+    box-shadow: var(--shadow-xs);
     transition: all 0.3s ease;
   }
   .card-minimal:hover {
     border-color: hsl(var(--elita-camel) / 0.15);
     background: hsl(var(--card));
+    box-shadow: var(--shadow-sm);
   }
 
   /* ═══ Glassmorphism surface ═══ */
