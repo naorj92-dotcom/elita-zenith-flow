@@ -195,9 +195,9 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGES — premium tier ═══ */}
+      {/* ═══ PACKAGES — offset right ═══ */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-14 relative z-10">
+        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-16 relative z-10 sm:mr-[-4px] sm:ml-4">
           <SectionLabel>Session Progress</SectionLabel>
           <div className="space-y-3">
             {activePackages.map((pkg: any) => {
