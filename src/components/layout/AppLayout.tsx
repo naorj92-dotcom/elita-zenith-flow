@@ -146,13 +146,13 @@ export function AppLayout({ children }: AppLayoutProps) {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
                     itemActive 
-                      ? "bg-primary text-primary-foreground" 
+                      ? "bg-elita-camel/12 text-elita-camel font-medium" 
                       : "text-foreground hover:bg-accent"
                   )}
                 >
                   <Icon className={cn(
                     "w-[18px] h-[18px]",
-                    itemActive ? "text-primary-foreground" : "text-muted-foreground"
+                    itemActive ? "text-elita-camel" : "text-muted-foreground"
                   )} />
                   <span className="text-sm font-medium">{category.label}</span>
                 </Link>
