@@ -107,7 +107,7 @@ export function ClientPortalLayout() {
                 <Link key={category.label} to={item.href}
                   className={cn(
                     "flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 text-sm",
-                    itemActive ? "bg-primary text-primary-foreground font-medium" : "text-sidebar-foreground hover:bg-sidebar-accent"
+                    itemActive ? "bg-elita-camel/12 text-elita-camel font-medium" : "text-sidebar-foreground hover:bg-sidebar-accent"
                   )}>
                   <Icon className={cn("w-4 h-4", itemActive ? "text-primary-foreground" : "text-muted-foreground")} />
                   <span>{category.label}</span>
