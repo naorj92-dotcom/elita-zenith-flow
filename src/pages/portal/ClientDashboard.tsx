@@ -75,6 +75,25 @@ export function ClientDashboard() {
     enabled: !!client?.id,
   });
 
+  // Loyalty points
+  const { data: loyaltyBalance = 0 } = useQuery({
+    queryKey: ['client-loyalty-balance', client?.id],
+    queryFn: async () => {
+      if (!client?.id) return 0;
+      const { data } = await supabase.rpc('get_client_loyalty_balance', { p_client_id: client.id });
+      return data || 0;
+    },
+    enabled: !!client?.id,
+  });
+
+  const { data: lowestRewardCost = null } = useQuery({
+    queryKey: ['lowest-reward-cost'],
+    queryFn: async () => {
+      const { data } = await supabase.from('loyalty_rewards').select('points_cost').eq('is_active', true).order('points_cost', { ascending: true }).limit(1);
+      return data?.[0]?.points_cost || null;
+    },
+  });
+
   const { data: lastCompleted } = useQuery({
     queryKey: ['client-last-completed', client?.id],
     queryFn: async () => {
