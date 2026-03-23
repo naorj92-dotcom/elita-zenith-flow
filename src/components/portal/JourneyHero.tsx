@@ -50,30 +50,32 @@ export function JourneyHero({
       className="relative z-10"
     >
       {/* ─── Full-width glowing hero container ─── */}
-      <div className="journey-hero luxury-dust relative overflow-hidden rounded-[1.5rem]">
-        {/* Ambient glow layers */}
+      <div className="journey-hero luxury-dust relative overflow-hidden rounded-[2rem]">
+        {/* Ambient glow layers — stronger radials */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-[70%] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(34_48%_60%/0.1)_0%,transparent_65%)]" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[120%] h-[40%] bg-[radial-gradient(ellipse_70%_60%_at_50%_100%,hsl(30_40%_52%/0.05)_0%,transparent_60%)]" />
-          <div className="absolute top-[20%] right-0 w-[50%] h-[60%] bg-[radial-gradient(ellipse_50%_50%_at_90%_40%,hsl(34_48%_60%/0.06)_0%,transparent_60%)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[160%] h-[80%] bg-[radial-gradient(ellipse_65%_55%_at_50%_0%,hsl(34_48%_60%/0.16)_0%,transparent_60%)]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[50%] bg-[radial-gradient(ellipse_75%_65%_at_50%_100%,hsl(30_40%_52%/0.08)_0%,transparent_55%)]" />
+          <div className="absolute top-[15%] right-0 w-[60%] h-[70%] bg-[radial-gradient(ellipse_55%_55%_at_85%_35%,hsl(34_48%_60%/0.1)_0%,transparent_55%)]" />
+          {/* Central hero spotlight */}
+          <div className="absolute top-[30%] left-1/2 -translate-x-1/2 w-[50%] h-[40%] bg-[radial-gradient(circle_at_center,hsl(34_48%_60%/0.08)_0%,transparent_70%)]" />
         </div>
 
-        <div className="relative px-8 pt-12 pb-10 sm:px-12 sm:pt-16 sm:pb-14">
+        <div className="relative px-8 pt-16 pb-12 sm:px-12 sm:pt-24 sm:pb-18">
           {/* ─── Welcome & Title ─── */}
-          <div className="text-center mb-10 sm:mb-14">
+          <div className="text-center mb-12 sm:mb-16">
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-[9px] sm:text-[10px] font-semibold text-elita-camel uppercase tracking-[0.5em] mb-4"
+              className="text-[9px] sm:text-[11px] font-semibold text-elita-camel uppercase tracking-[0.55em] mb-5"
             >
               Welcome back, {firstName}
             </motion.p>
             <motion.h1
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-[2.75rem] sm:text-[3.75rem] font-heading font-semibold text-foreground leading-[0.92] tracking-[-0.035em]"
+              transition={{ delay: 0.3, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="text-[3.25rem] sm:text-[4.5rem] font-heading font-semibold text-foreground leading-[0.88] tracking-[-0.04em]"
             >
               Your Elita
               <br />
@@ -84,7 +86,7 @@ export function JourneyHero({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.45, duration: 0.5 }}
-                className="text-[11px] sm:text-xs text-muted-foreground mt-4 tracking-wide"
+                className="text-[11px] sm:text-xs text-muted-foreground/70 mt-5 tracking-widest uppercase font-medium"
               >
                 Stage {currentStage + 1} of {STAGES.length}
               </motion.p>
