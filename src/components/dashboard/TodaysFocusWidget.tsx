@@ -37,7 +37,7 @@ export function TodaysFocusWidget() {
         const rebookedIds = new Set((futureApts || []).map(a => a.client_id));
         const notRebooked = clientIds.filter(id => !rebookedIds.has(id));
         if (notRebooked.length > 0) {
-          items.push({ id: 'no-rebook', icon: UserX, title: `${notRebooked.length} client${notRebooked.length > 1 ? 's' : ''} didn't rebook`, description: 'Follow up to maintain their treatment schedule', type: 'alert', actionLabel: 'View Clients', actionHref: '/clients' });
+          items.push({ id: 'no-rebook', icon: UserX, title: `${notRebooked.length} client${notRebooked.length > 1 ? 's' : ''} didn't rebook`, description: 'Follow up to maintain their schedule', type: 'alert', actionLabel: 'View Clients', actionHref: '/clients' });
         }
       }
 
@@ -45,14 +45,14 @@ export function TodaysFocusWidget() {
         const { count: remaining } = await supabase.from('appointments').select('id', { count: 'exact', head: true })
           .gte('scheduled_at', now.toISOString()).lte('scheduled_at', todayEnd.toISOString()).in('status', ['scheduled', 'confirmed']);
         if ((remaining || 0) < 3) {
-          items.push({ id: 'open-slots', icon: Clock, title: 'Open slots this afternoon', description: 'Consider reaching out to waitlisted clients', type: 'insight', actionLabel: 'View Waitlist', actionHref: '/waitlist' });
+          items.push({ id: 'open-slots', icon: Clock, title: 'Open slots this afternoon', description: 'Reach out to waitlisted clients', type: 'insight', actionLabel: 'View Waitlist', actionHref: '/waitlist' });
         }
       }
 
       const { count: cancelledCount } = await supabase.from('appointments').select('id', { count: 'exact', head: true })
         .eq('status', 'cancelled').gte('updated_at', today.toISOString()).lte('updated_at', todayEnd.toISOString());
       if (cancelledCount && cancelledCount > 0) {
-        items.push({ id: 'cancellations', icon: CalendarX, title: `${cancelledCount} cancellation${cancelledCount > 1 ? 's' : ''} today`, description: 'These slots can be filled from the waitlist', type: 'alert', actionLabel: 'View Schedule', actionHref: '/schedule' });
+        items.push({ id: 'cancellations', icon: CalendarX, title: `${cancelledCount} cancellation${cancelledCount > 1 ? 's' : ''} today`, description: 'Fill from waitlist', type: 'alert', actionLabel: 'View Schedule', actionHref: '/schedule' });
       }
 
       const { data: todaysServices } = await supabase.from('appointments').select('services(name)')
@@ -63,11 +63,11 @@ export function TodaysFocusWidget() {
         todaysServices.forEach((a: any) => { const name = a.services?.name; if (name) serviceCounts[name] = (serviceCounts[name] || 0) + 1; });
         const topService = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1])[0];
         if (topService) {
-          items.push({ id: 'top-service', icon: TrendingUp, title: `Top treatment: ${topService[0]}`, description: `${topService[1]} session${topService[1] > 1 ? 's' : ''} booked today`, type: 'insight' });
+          items.push({ id: 'top-service', icon: TrendingUp, title: `Top: ${topService[0]}`, description: `${topService[1]} session${topService[1] > 1 ? 's' : ''} today`, type: 'insight' });
         }
       }
 
-      return items.slice(0, 4);
+      return items.slice(0, 3);
     },
     refetchInterval: 60000,
   });
@@ -81,40 +81,37 @@ export function TodaysFocusWidget() {
   };
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-8">
-        <div className="flex items-center gap-3 mb-7">
-          <div className="w-10 h-10 rounded-2xl bg-elita-camel/10 flex items-center justify-center">
-            <Lightbulb className="w-5 h-5 text-elita-camel" />
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center gap-2.5 mb-5">
+          <div className="w-8 h-8 rounded-lg bg-elita-camel/10 flex items-center justify-center">
+            <Lightbulb className="w-4 h-4 text-elita-camel" />
           </div>
-          <div>
-            <h2 className="text-lg font-heading font-semibold text-foreground">Today's Focus</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">What needs your attention right now</p>
-          </div>
+          <h2 className="text-base font-heading font-semibold text-foreground">Today's Focus</h2>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {focusItems.map((item, i) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, x: -12 }}
+              initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.08, duration: 0.4 }}
+              transition={{ delay: i * 0.06, duration: 0.3 }}
               className={cn(
-                'flex items-start gap-4 p-5 rounded-2xl border-l-4 transition-all duration-300',
+                'flex items-start gap-3 p-4 rounded-xl border-l-[3px] transition-colors',
                 typeStyles[item.type]
               )}
             >
               <item.icon className={cn(
-                'w-5 h-5 shrink-0 mt-0.5',
+                'w-4 h-4 shrink-0 mt-0.5',
                 item.type === 'alert' ? 'text-warning' : item.type === 'insight' ? 'text-elita-camel' : 'text-success'
               )} />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{item.description}</p>
+                <p className="text-sm font-medium text-foreground">{item.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
                 {item.actionLabel && item.actionHref && (
                   <Link to={item.actionHref}>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs px-0 mt-2.5 gap-1 text-elita-camel hover:text-elita-camel/80 hover:bg-transparent">
+                    <Button variant="ghost" size="sm" className="h-6 text-xs px-0 mt-1.5 gap-1 text-elita-camel hover:text-elita-camel/80 hover:bg-transparent">
                       {item.actionLabel} <ArrowRight className="w-3 h-3" />
                     </Button>
                   </Link>

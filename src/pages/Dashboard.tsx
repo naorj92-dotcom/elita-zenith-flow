@@ -11,19 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { AppointmentStatus } from '@/types';
-import { LiveGoalsWidget } from '@/components/dashboard/LiveGoalsWidget';
 import { TodayOpsWidget } from '@/components/dashboard/TodayOpsWidget';
-import { PurchaseRequestsWidget } from '@/components/dashboard/PurchaseRequestsWidget';
-import { CommissionWidget } from '@/components/dashboard/CommissionWidget';
-import { InventoryAlertsWidget } from '@/components/dashboard/InventoryAlertsWidget';
-import { StaffAnnouncementsWidget } from '@/components/dashboard/StaffAnnouncementsWidget';
-import { RevenueGoalTracker } from '@/components/dashboard/RevenueGoalTracker';
-import { LiveActivityFeed } from '@/components/dashboard/LiveActivityFeed';
 import { TodaysFocusWidget } from '@/components/dashboard/TodaysFocusWidget';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
-import { cn } from '@/lib/utils';
 
 interface TodayAppointment {
   id: string;
@@ -35,9 +27,9 @@ interface TodayAppointment {
 }
 
 const fadeUp = {
-  initial: { opacity: 0, y: 16 },
+  initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+  transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
 };
 
 export function Dashboard() {
@@ -116,29 +108,26 @@ export function Dashboard() {
   };
 
   const firstName = staff?.first_name || 'there';
-  const hasCommission = staff && (Number(staff.service_commission_tier1) > 0 || Number(staff.service_commission_tier2) > 0 || Number(staff.service_commission_tier3) > 0 || Number(staff.retail_commission_rate) > 0);
   const revenueChange = metrics.yesterday_revenue > 0 ? Math.round(((metrics.today_revenue - metrics.yesterday_revenue) / metrics.yesterday_revenue) * 100) : 0;
   const clientsChange = metrics.last_week_clients > 0 ? Math.round(((metrics.new_clients_week - metrics.last_week_clients) / metrics.last_week_clients) * 100) : 0;
 
   const kpiCards = [
     { label: "Today's Bookings", value: metrics.today_appointments, icon: Calendar, sub: 'Appointments', change: null },
     { label: "Today's Revenue", value: `$${metrics.today_revenue.toLocaleString()}`, icon: DollarSign, sub: revenueChange !== 0 ? `${revenueChange > 0 ? '+' : ''}${revenueChange}% vs yesterday` : 'Today', change: revenueChange },
-    { label: 'Week Sales', value: `$${metrics.week_sales.toLocaleString()}`, icon: TrendingUp, sub: 'This week', change: null },
     { label: 'New Clients', value: metrics.new_clients_week, icon: Users, sub: clientsChange !== 0 ? `${clientsChange > 0 ? '+' : ''}${clientsChange}% vs last week` : 'This week', change: clientsChange },
-    ...(hasCommission ? [{ label: 'Commission', value: `$${metrics.month_commission.toLocaleString()}`, icon: Target, sub: 'This month', change: null as number | null }] : []),
   ];
 
   return (
-    <div className="p-6 sm:p-8 md:p-12 max-w-6xl mx-auto space-y-12">
+    <div className="p-5 sm:p-8 md:p-10 max-w-5xl mx-auto space-y-8">
       <OnboardingTour />
 
       {/* Header */}
-      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em] mb-3">
+          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-2">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
-          <h1 className="text-3xl md:text-4xl font-heading font-semibold text-foreground tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight">
             Welcome back, {firstName}
           </h1>
         </div>
@@ -146,74 +135,64 @@ export function Dashboard() {
           onClick={handleClockAction} 
           disabled={isLoading} 
           variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
-          size="lg" 
-          className="gap-2.5 shrink-0"
+          size="default" 
+          className="gap-2 shrink-0"
         >
           {clockStatus?.is_clocked_in ? (
-            <><Square className="w-4 h-4" /> Clock Out
-              {clockStatus.clock_entry && <span className="text-xs opacity-80 ml-1">· Since {new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-            </>
+            <><Square className="w-4 h-4" /> Clock Out</>
           ) : (<><Play className="w-4 h-4" /> Clock In</>)}
         </Button>
       </motion.div>
 
       {/* KPI Cards */}
-      <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="grid grid-cols-2 lg:grid-cols-5 gap-5">
+      <motion.div {...fadeUp} transition={{ delay: 0.06 }} className="grid grid-cols-3 gap-4">
         {kpiCards.map((stat) => (
-          <Card key={stat.label} className="hover:shadow-premium-lg transition-shadow duration-400">
-            <CardContent className="p-7">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-3xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
-                  <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1">
-                    {stat.change !== null && stat.change !== 0 && (
-                      stat.change > 0
-                        ? <ArrowUpRight className="w-3.5 h-3.5 text-success" />
-                        : <ArrowDownRight className="w-3.5 h-3.5 text-destructive" />
-                    )}
-                    {stat.sub}
-                  </p>
-                </div>
-                <div className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center shrink-0">
-                  <stat.icon className="w-5 h-5 text-muted-foreground" />
-                </div>
-              </div>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mt-4">{stat.label}</p>
+          <Card key={stat.label}>
+            <CardContent className="p-5">
+              <p className="text-2xl sm:text-3xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
+              <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+                {stat.change !== null && stat.change !== 0 && (
+                  stat.change > 0
+                    ? <ArrowUpRight className="w-3 h-3 text-success" />
+                    : <ArrowDownRight className="w-3 h-3 text-destructive" />
+                )}
+                {stat.sub}
+              </p>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.12em] mt-3">{stat.label}</p>
             </CardContent>
           </Card>
         ))}
       </motion.div>
 
       {/* Today's Focus */}
-      <motion.div {...fadeUp} transition={{ delay: 0.12 }}>
+      <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
         <TodaysFocusWidget />
       </motion.div>
 
       {/* Today's Schedule */}
-      <motion.div {...fadeUp} transition={{ delay: 0.16 }}>
+      <motion.div {...fadeUp} transition={{ delay: 0.14 }}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Today's Schedule</CardTitle>
-            <Link to="/schedule" className="text-sm text-elita-camel hover:text-elita-camel/80 flex items-center gap-1 transition-colors font-medium">
-              View All <ChevronRight className="w-4 h-4" />
+            <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
+              View All <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-1.5">
             {appointments.length === 0 ? (
               <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
             ) : (
-              appointments.map((apt) => (
-                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-5 p-5 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-all duration-300 group">
-                  <div className="text-center min-w-[56px]">
+              appointments.slice(0, 6).map((apt) => (
+                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors duration-200 group">
+                  <div className="text-center min-w-[48px]">
                     <p className="text-sm font-semibold text-foreground">{apt.time}</p>
-                    <p className="text-[11px] text-muted-foreground">{apt.duration}m</p>
+                    <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground text-sm truncate">{apt.client_name}</p>
+                    <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
                     <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
                   </div>
                   <StatusBadge status={apt.status} />
-                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               ))
             )}
@@ -221,40 +200,26 @@ export function Dashboard() {
         </Card>
       </motion.div>
 
-      {/* Ops + Goals */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <motion.div {...fadeUp} transition={{ delay: 0.2 }} className="lg:col-span-2"><TodayOpsWidget /></motion.div>
-        <motion.div {...fadeUp} transition={{ delay: 0.22 }}><LiveGoalsWidget /></motion.div>
-      </div>
-
-      <motion.div {...fadeUp} transition={{ delay: 0.24 }}><PurchaseRequestsWidget /></motion.div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <motion.div {...fadeUp} transition={{ delay: 0.26 }}><RevenueGoalTracker /></motion.div>
-        <motion.div {...fadeUp} transition={{ delay: 0.28 }}><LiveActivityFeed /></motion.div>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-6">
-        <motion.div {...fadeUp} transition={{ delay: 0.3 }}><CommissionWidget /></motion.div>
-        <motion.div {...fadeUp} transition={{ delay: 0.32 }}><StaffAnnouncementsWidget /></motion.div>
-        <motion.div {...fadeUp} transition={{ delay: 0.34 }}><InventoryAlertsWidget /></motion.div>
-      </div>
+      {/* Operations */}
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
+        <TodayOpsWidget />
+      </motion.div>
 
       {/* Quick Actions */}
-      <motion.div {...fadeUp} transition={{ delay: 0.36 }}>
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-5">Quick Actions</p>
-        <div className="grid grid-cols-2 gap-5">
+      <motion.div {...fadeUp} transition={{ delay: 0.22 }}>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-4">Quick Actions</p>
+        <div className="grid grid-cols-2 gap-3">
           {[
             { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
             { label: 'Add Client', href: '/clients/new', icon: Users },
             { label: 'View Schedule', href: '/schedule', icon: Clock },
             { label: 'Quick Checkout', href: '/pos', icon: Zap },
           ].map((action) => (
-            <Link key={action.label} to={action.href} className="flex items-center gap-5 p-7 rounded-2xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-premium-md transition-all duration-400 group">
-              <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center group-hover:bg-elita-camel/10 transition-colors duration-400">
-                <action.icon className="w-5 h-5 text-muted-foreground group-hover:text-elita-camel transition-colors duration-400" />
+            <Link key={action.label} to={action.href} className="flex items-center gap-4 p-5 rounded-xl bg-card border border-border hover:border-elita-camel/20 transition-all duration-300 group">
+              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center group-hover:bg-elita-camel/10 transition-colors duration-300">
+                <action.icon className="w-4.5 h-4.5 text-muted-foreground group-hover:text-elita-camel transition-colors duration-300" />
               </div>
-              <span className="text-sm font-semibold text-foreground">{action.label}</span>
+              <span className="text-sm font-medium text-foreground">{action.label}</span>
             </Link>
           ))}
         </div>
