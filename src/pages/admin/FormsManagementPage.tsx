@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Search, FileText, ClipboardCheck, FileSignature, Scroll, Eye, Users, Send } from 'lucide-react';
+import { Plus, Search, FileText, ClipboardCheck, FileSignature, Scroll, Eye, Users, Send, Link2, Unlink } from 'lucide-react';
 import { FormField } from '@/components/forms/FormFieldRenderer';
 import { FormBuilderFull } from '@/components/forms/FormBuilderFull';
 import { format } from 'date-fns';
