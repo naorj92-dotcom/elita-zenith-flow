@@ -50,7 +50,7 @@ export function JourneyHero({
       className="relative z-10"
     >
       {/* ─── Full-width glowing hero container ─── */}
-      <div className="journey-hero relative overflow-hidden rounded-[1.5rem]">
+      <div className="journey-hero luxury-dust relative overflow-hidden rounded-[1.5rem]">
         {/* Ambient glow layers */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-[70%] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,hsl(34_48%_60%/0.1)_0%,transparent_65%)]" />
