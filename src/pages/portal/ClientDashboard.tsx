@@ -111,43 +111,43 @@ export function ClientDashboard() {
     : '/portal/book';
 
   return (
-    <div className="space-y-10 max-w-xl mx-auto pb-28">
+    <div className="space-y-12 max-w-xl mx-auto pb-32">
 
       {/* ═══ UNIFIED HERO BLOCK ═══ */}
       <motion.div {...fadeUp}>
-        <Card className="overflow-hidden border-elita-camel/10 mt-6 sm:mt-10">
-          <div className="h-0.5 bg-gradient-to-r from-elita-camel/50 via-elita-gold/20 to-transparent" />
-          <CardContent className="p-6 sm:p-7 space-y-6">
+        <Card className="card-hero overflow-hidden border-elita-camel/10 mt-8 sm:mt-12">
+          <div className="h-1 bg-gradient-to-r from-elita-camel/40 via-elita-camel/15 to-transparent" />
+          <CardContent className="p-7 sm:p-9 space-y-7">
 
             {/* Title */}
             <div>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-2">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.3em] mb-3">
                 Welcome back, {firstName}
               </p>
-              <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
+              <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground tracking-tight leading-[1.05]">
                 Your Elita Journey
               </h1>
             </div>
 
             {/* Next Visit — prominent */}
             {nextAppointment ? (
-              <div className="p-5 rounded-xl bg-accent/40 border border-border/50">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mb-2.5">Your Next Visit</p>
-                <p className="text-lg font-heading font-semibold text-foreground leading-snug">
+              <div className="p-6 rounded-2xl bg-accent/50 border border-border/40">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-3">Your Next Visit</p>
+                <p className="text-xl font-heading font-semibold text-foreground leading-snug">
                   {(nextAppointment as any).services?.name}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1.5">
+                <p className="text-sm text-muted-foreground mt-2">
                   {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d · h:mm a')}
                 </p>
                 {(nextAppointment as any).staff && (
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1.5">
                     with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
                   </p>
                 )}
               </div>
             ) : (
-              <div className="p-5 rounded-xl bg-muted/40 text-center">
-                <Clock className="w-5 h-5 text-muted-foreground mx-auto mb-2" />
+              <div className="p-6 rounded-2xl bg-muted/30 text-center">
+                <Clock className="w-5 h-5 text-muted-foreground mx-auto mb-2.5" />
                 <p className="text-sm text-muted-foreground">No upcoming visits</p>
               </div>
             )}
@@ -155,28 +155,28 @@ export function ClientDashboard() {
             {/* Progress + Urgency (only when goals exist) */}
             {hasGoals && totalTarget > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium text-foreground">Your Progress</p>
-                  <p className="text-lg font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-foreground tracking-wide uppercase">Your Progress</p>
+                  <p className="text-2xl font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-elita-camel rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${overallPct}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5">
+                <p className="text-xs text-muted-foreground mt-2">
                   {totalCompleted} of {totalTarget} sessions completed
                 </p>
 
                 {urgency && (
                   <div className={cn(
-                    'flex items-center gap-2 mt-4 px-3.5 py-2.5 rounded-xl text-xs font-medium',
-                    urgency.tone === 'success' && 'bg-success/10 text-success',
-                    urgency.tone === 'info' && 'bg-elita-camel/10 text-elita-camel',
-                    urgency.tone === 'warning' && 'bg-warning/10 text-warning',
+                    'flex items-center gap-2.5 mt-5 px-4 py-3 rounded-2xl text-xs font-medium',
+                    urgency.tone === 'success' && 'bg-success/8 text-success',
+                    urgency.tone === 'info' && 'bg-elita-camel/8 text-elita-camel',
+                    urgency.tone === 'warning' && 'bg-warning/8 text-warning',
                   )}>
                     <Sparkles className="w-3.5 h-3.5 shrink-0" />
                     {urgency.text}
@@ -187,15 +187,15 @@ export function ClientDashboard() {
 
             {/* Recommended Next Step (inline) */}
             {recommendation && (
-              <div className="bg-card rounded-xl p-4 border border-border/50">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mb-2.5">Recommended Next Step</p>
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{CATEGORIES[recommendation.category].emoji}</span>
+              <div className="bg-accent/30 rounded-2xl p-5 border border-border/30">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-3">Recommended Next Step</p>
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl">{CATEGORIES[recommendation.category].emoji}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-heading font-semibold text-foreground leading-snug">
                       {recommendation.title}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {recommendation.subtitle}
                     </p>
                   </div>
@@ -203,10 +203,10 @@ export function ClientDashboard() {
               </div>
             )}
 
-            {/* Primary CTA — inside hero for focus */}
-            <Button asChild size="lg" className="w-full h-13 text-sm font-semibold gap-2.5 rounded-2xl bg-[hsl(18_14%_38%)] text-white hover:bg-[hsl(18_14%_44%)] shadow-md">
+            {/* Primary CTA */}
+            <Button asChild size="lg" className="w-full h-14 text-sm font-semibold gap-2.5 rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-md transition-all duration-300 hover:shadow-lg">
               <Link to={bookingHref}>
-                <CalendarPlus className="h-4 w-4" />
+                <CalendarPlus className="h-4.5 w-4.5" />
                 {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
               </Link>
             </Button>
@@ -218,23 +218,23 @@ export function ClientDashboard() {
       {!hasGoals && (
         <motion.div {...fadeUp} transition={{ delay: 0.08 }}>
           <SectionLabel>What's Your Goal?</SectionLabel>
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+          <Card className="shadow-md">
+            <CardContent className="p-7">
+              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
                 Select your primary goal and we'll create your personalized plan.
               </p>
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {GOALS.map((goal) => (
                   <button
                     key={goal.key}
                     onClick={() => saveGoalMutation.mutate(goal.key)}
                     disabled={saveGoalMutation.isPending}
-                    className="flex items-center gap-4 w-full p-4 rounded-xl border border-border hover:border-elita-camel/25 hover:bg-accent/40 transition-all duration-300 text-left"
+                    className="flex items-center gap-4 w-full p-5 rounded-2xl border border-border hover:border-elita-camel/25 hover:bg-accent/40 hover:shadow-sm transition-all duration-300 text-left"
                   >
                     <span className="text-2xl">{goal.emoji}</span>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground">{goal.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{goal.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{goal.description}</p>
                     </div>
                   </button>
                 ))}
@@ -248,11 +248,11 @@ export function ClientDashboard() {
       {treatmentProgress.length > 0 && (
         <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
           <SectionLabel>Your Personalized Plan</SectionLabel>
-          <Card>
-            <CardContent className="p-5 space-y-3">
-              <div className="flex items-center gap-2.5 mb-1">
+          <Card className="shadow-md">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-3 mb-1">
                 <Target className="w-4 h-4 text-elita-camel" />
-                <p className="text-xs font-semibold text-foreground">
+                <p className="text-xs font-semibold text-foreground uppercase tracking-wide">
                   {GOALS.find(g => g.key === clientGoals[0])?.label}
                 </p>
               </div>
@@ -260,13 +260,13 @@ export function ClientDashboard() {
                 const cat = CATEGORIES[p.category as TreatmentCategory];
                 const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
                 return (
-                  <div key={p.category} className="flex items-center gap-2.5">
+                  <div key={p.category} className="flex items-center gap-3">
                     <span className="text-sm w-5 text-center">{cat?.emoji}</span>
-                    <span className="text-xs text-muted-foreground w-12">{cat?.label}</span>
-                    <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                    <span className="text-xs text-muted-foreground w-14">{cat?.label}</span>
+                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                       <motion.div className="h-full bg-elita-camel/60 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
                     </div>
-                    <span className="text-[10px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
+                    <span className="text-[10px] text-muted-foreground w-8 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                   </div>
                 );
               })}
@@ -279,20 +279,20 @@ export function ClientDashboard() {
       {activePackages.length > 0 && (
         <motion.div {...fadeUp} transition={{ delay: 0.14 }}>
           <SectionLabel>Session Progress</SectionLabel>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
-                <Card key={pkg.id}>
-                  <CardContent className="p-5">
-                    <div className="flex items-center justify-between mb-3">
+                <Card key={pkg.id} className="shadow-md hover:shadow-lg transition-shadow duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
                       <p className="text-sm font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                      <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
+                      <span className="text-xl font-heading font-bold text-elita-camel">{pct}%</span>
                     </div>
-                    <div className="h-1 bg-muted rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                       <motion.div className="h-full bg-elita-camel rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
+                    <p className="text-xs text-muted-foreground mt-2.5">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
                   </CardContent>
                 </Card>
               );
@@ -304,15 +304,15 @@ export function ClientDashboard() {
       {/* ═══ QUICK ACTIONS ═══ */}
       <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
         <SectionLabel>Quick Actions</SectionLabel>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬' },
             { label: 'My Photos', href: '/portal/photos', icon: '📸' },
             { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨' },
             { label: 'Visit History', href: '/portal/history', icon: '📋' },
           ].map((item) => (
-            <Link key={item.href} to={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-premium-md transition-all duration-300">
-              <span className="text-base">{item.icon}</span>
+            <Link key={item.href} to={item.href} className="flex items-center gap-3.5 p-5 rounded-2xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-md transition-all duration-300">
+              <span className="text-lg">{item.icon}</span>
               <span className="text-sm font-medium text-foreground">{item.label}</span>
             </Link>
           ))}

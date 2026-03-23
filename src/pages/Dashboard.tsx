@@ -118,16 +118,16 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="p-5 sm:p-8 md:p-10 max-w-5xl mx-auto space-y-10">
+    <div className="p-6 sm:p-10 md:p-12 max-w-5xl mx-auto space-y-12">
       <OnboardingTour />
 
       {/* Header */}
-      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
         <div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-2">
+          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.3em] mb-3">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
-          <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-foreground tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground tracking-tight">
             Welcome back, {firstName}
           </h1>
         </div>
@@ -136,7 +136,7 @@ export function Dashboard() {
           disabled={isLoading} 
           variant={clockStatus?.is_clocked_in ? "destructive" : "default"} 
           size="default" 
-          className="gap-2 shrink-0"
+          className="gap-2 shrink-0 rounded-2xl h-12 px-6"
         >
           {clockStatus?.is_clocked_in ? (
             <><Square className="w-4 h-4" /> Clock Out</>
@@ -145,12 +145,12 @@ export function Dashboard() {
       </motion.div>
 
       {/* KPI Cards */}
-      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-3 gap-4">
+      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-3 gap-5">
         {kpiCards.map((stat) => (
-          <Card key={stat.label} className="hover:shadow-premium-md transition-shadow duration-300">
-            <CardContent className="p-5">
-              <p className="text-2xl sm:text-3xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
-              <p className="text-[11px] text-muted-foreground mt-2.5 flex items-center gap-1">
+          <Card key={stat.label} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
+            <CardContent className="p-6">
+              <p className="text-3xl sm:text-4xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
+              <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1">
                 {stat.change !== null && stat.change !== 0 && (
                   stat.change > 0
                     ? <ArrowUpRight className="w-3 h-3 text-success" />
@@ -158,7 +158,7 @@ export function Dashboard() {
                 )}
                 {stat.sub}
               </p>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mt-3">{stat.label}</p>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mt-3.5">{stat.label}</p>
             </CardContent>
           </Card>
         ))}
@@ -171,20 +171,20 @@ export function Dashboard() {
 
       {/* Today's Schedule */}
       <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between px-7 pt-7">
             <CardTitle>Today's Schedule</CardTitle>
             <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
               View All <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </CardHeader>
-          <CardContent className="space-y-1.5">
+          <CardContent className="space-y-2 px-7 pb-7">
             {appointments.length === 0 ? (
               <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
             ) : (
               appointments.slice(0, 5).map((apt) => (
-                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 hover:shadow-sm transition-all duration-200">
-                  <div className="text-center min-w-[48px]">
+                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 hover:shadow-sm transition-all duration-200">
+                  <div className="text-center min-w-[52px]">
                     <p className="text-sm font-semibold text-foreground">{apt.time}</p>
                     <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
                   </div>
@@ -207,16 +207,16 @@ export function Dashboard() {
 
       {/* Quick Actions */}
       <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-4">Quick Actions</p>
-        <div className="grid grid-cols-2 gap-3">
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.3em] mb-5">Quick Actions</p>
+        <div className="grid grid-cols-2 gap-4">
           {[
             { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
             { label: 'Add Client', href: '/clients/new', icon: Users },
             { label: 'View Schedule', href: '/schedule', icon: Clock },
             { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
           ].map((action) => (
-            <Link key={action.label} to={action.href} className="flex items-center gap-4 p-5 rounded-xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-premium-md transition-all duration-300">
-              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+            <Link key={action.label} to={action.href} className="flex items-center gap-4 p-6 rounded-2xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="w-11 h-11 rounded-2xl bg-muted flex items-center justify-center">
                 <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
               </div>
               <span className="text-sm font-medium text-foreground">{action.label}</span>

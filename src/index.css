@@ -7,28 +7,28 @@
 
 @layer base {
   :root {
-    --background: 33 22% 95%;
-    --foreground: 18 12% 28%;
+    --background: 32 24% 95%;
+    --foreground: 20 18% 24%;
 
-    --card: 34 18% 98%;
-    --card-foreground: 18 12% 28%;
+    --card: 36 22% 99%;
+    --card-foreground: 20 18% 24%;
 
-    --popover: 34 18% 98%;
-    --popover-foreground: 18 12% 28%;
+    --popover: 36 22% 99%;
+    --popover-foreground: 20 18% 24%;
 
-    --primary: 18 14% 32%;
-    --primary-foreground: 35 20% 97%;
-    --primary-hover: 18 12% 40%;
-    --primary-muted: 18 10% 48%;
+    --primary: 20 16% 34%;
+    --primary-foreground: 36 24% 97%;
+    --primary-hover: 20 14% 42%;
+    --primary-muted: 20 10% 50%;
 
-    --secondary: 30 18% 93%;
-    --secondary-foreground: 18 12% 30%;
+    --secondary: 32 20% 93%;
+    --secondary-foreground: 20 16% 30%;
 
-    --muted: 30 16% 91%;
-    --muted-foreground: 18 10% 48%;
+    --muted: 32 18% 91%;
+    --muted-foreground: 22 10% 50%;
 
-    --accent: 30 20% 90%;
-    --accent-foreground: 18 12% 28%;
+    --accent: 32 22% 90%;
+    --accent-foreground: 20 18% 24%;
 
     --destructive: 4 42% 48%;
     --destructive-foreground: 0 0% 100%;
@@ -37,41 +37,43 @@
     --success-foreground: 0 0% 100%;
 
     --warning: 36 50% 50%;
-    --warning-foreground: 18 12% 28%;
+    --warning-foreground: 20 16% 24%;
 
     --info: 200 30% 50%;
     --info-foreground: 0 0% 100%;
 
-    --border: 30 16% 88%;
-    --input: 30 14% 86%;
-    --ring: 36 40% 54%;
+    --border: 32 16% 88%;
+    --input: 32 14% 86%;
+    --ring: 32 36% 56%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
-    --sidebar-background: 31 18% 96%;
-    --sidebar-foreground: 18 12% 30%;
-    --sidebar-primary: 18 14% 32%;
+    --sidebar-background: 33 20% 96%;
+    --sidebar-foreground: 20 16% 30%;
+    --sidebar-primary: 20 16% 34%;
     --sidebar-primary-foreground: 33 22% 97%;
-    --sidebar-accent: 30 18% 92%;
-    --sidebar-accent-foreground: 18 12% 28%;
-    --sidebar-border: 30 14% 90%;
-    --sidebar-ring: 36 40% 54%;
+    --sidebar-accent: 32 18% 92%;
+    --sidebar-accent-foreground: 20 16% 24%;
+    --sidebar-border: 32 14% 90%;
+    --sidebar-ring: 32 36% 56%;
 
     --elita-camel: 32 38% 56%;
     --elita-gold: 36 52% 50%;
-    --elita-cream: 33 22% 95%;
-    --elita-cream-dark: 30 16% 91%;
-    --elita-charcoal: 18 12% 28%;
-    --elita-gray: 18 10% 48%;
-    --elita-light-gray: 30 16% 88%;
-    --elita-taupe: 18 14% 32%;
-    --elita-heading: 36 52% 50%;
+    --elita-cream: 32 24% 95%;
+    --elita-cream-dark: 32 18% 91%;
+    --elita-charcoal: 20 18% 24%;
+    --elita-gray: 22 10% 50%;
+    --elita-light-gray: 32 16% 88%;
+    --elita-taupe: 20 16% 34%;
+    --elita-heading: 20 18% 24%;
 
-    --shadow-sm: 0 1px 3px hsl(18 12% 28% / 0.025);
-    --shadow-md: 0 4px 20px hsl(18 12% 28% / 0.035);
-    --shadow-lg: 0 12px 44px hsl(18 12% 28% / 0.05);
-    --shadow-glow: 0 0 28px hsl(36 52% 50% / 0.1);
-    --shadow-premium-sm: 0 1px 4px hsl(18 12% 28% / 0.025), 0 0 0 1px hsl(32 14% 89% / 0.5);
+    --shadow-xs: 0 1px 2px hsl(20 18% 24% / 0.02);
+    --shadow-sm: 0 1px 4px hsl(20 18% 24% / 0.03), 0 0 0 1px hsl(32 16% 90% / 0.6);
+    --shadow-md: 0 4px 24px hsl(20 18% 24% / 0.04), 0 1px 3px hsl(20 18% 24% / 0.02);
+    --shadow-lg: 0 12px 48px hsl(20 18% 24% / 0.06), 0 4px 12px hsl(20 18% 24% / 0.02);
+    --shadow-xl: 0 20px 64px hsl(20 18% 24% / 0.08), 0 8px 20px hsl(20 18% 24% / 0.03);
+    --shadow-glow: 0 0 32px hsl(32 38% 56% / 0.12);
+    --shadow-premium-sm: 0 1px 4px hsl(20 18% 24% / 0.025), 0 0 0 1px hsl(32 14% 89% / 0.5);
 
     --font-heading: 'Playfair Display', Georgia, serif;
     --font-body: 'Inter', system-ui, sans-serif;
@@ -142,17 +144,17 @@
     font-family: var(--font-body);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     letter-spacing: -0.01em;
-    line-height: 1.6;
+    line-height: 1.65;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    @apply tracking-tight;
+    @apply tracking-tight text-foreground;
   }
 
-  h1 { @apply text-2xl sm:text-3xl font-semibold text-foreground; line-height: 1.15; }
-  h2 { @apply text-xl font-medium text-foreground; line-height: 1.25; }
-  h3 { @apply text-lg font-medium text-foreground; line-height: 1.3; }
+  h1 { @apply text-3xl sm:text-4xl font-semibold; line-height: 1.1; letter-spacing: -0.025em; }
+  h2 { @apply text-xl sm:text-2xl font-medium; line-height: 1.2; }
+  h3 { @apply text-lg font-medium; line-height: 1.3; }
 
   p, span, label { @apply text-sm leading-relaxed; }
 }
@@ -161,17 +163,22 @@
   .card-premium {
     @apply bg-card rounded-2xl border border-border;
     box-shadow: var(--shadow-md);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    transition: box-shadow 0.35s ease, transform 0.35s ease;
   }
-  .card-premium:hover { box-shadow: var(--shadow-lg); }
+  .card-premium:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
 
   .card-elevated {
     @apply bg-card rounded-2xl border border-border;
     box-shadow: var(--shadow-md);
   }
 
+  .card-hero {
+    @apply bg-card rounded-2xl border border-border;
+    box-shadow: var(--shadow-lg);
+  }
+
   .section-inset {
-    @apply bg-accent/30 rounded-2xl p-5 sm:p-6;
+    @apply bg-accent/30 rounded-2xl p-6 sm:p-8;
   }
 
   .status-confirmed { @apply bg-success/10 text-success; }
@@ -206,10 +213,10 @@
     background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
   }
   .bg-gradient-card {
-    background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(34 10% 98%) 100%);
+    background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(36 14% 98%) 100%);
   }
   .bg-gradient-hero {
-    background: linear-gradient(170deg, hsl(var(--background)) 0%, hsl(34 12% 95%) 50%, hsl(var(--background)) 100%);
+    background: linear-gradient(170deg, hsl(var(--background)) 0%, hsl(34 16% 94%) 50%, hsl(var(--background)) 100%);
   }
 }
 
@@ -220,18 +227,18 @@
 
   .transition-premium { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
 
-  .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-  .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
-  .animate-scale-in { animation: scaleIn 0.25s ease-out forwards; }
+  .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+  .animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
+  .animate-scale-in { animation: scaleIn 0.3s ease-out forwards; }
 
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes scaleIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
 
   .skeleton { @apply bg-muted animate-pulse rounded-xl; }
 
   .hover-lift { @apply transition-all duration-300 ease-out; }
-  .hover-lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .hover-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
   .hover-lift:active { transform: translateY(0) scale(0.99); }
 
   .press-scale { @apply transition-transform duration-150 ease-out; }
