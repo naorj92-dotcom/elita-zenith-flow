@@ -230,11 +230,11 @@
 
   /* ═══ CARD TIER 2 — Premium ═══ */
   .card-premium {
-    @apply bg-card rounded-2xl border border-border/60 relative;
-    box-shadow: var(--shadow-md), inset 0 1px 0 hsl(36 34% 100% / 0.6);
+    @apply bg-card rounded-2xl border border-border/50 relative;
+    box-shadow: var(--shadow-lg), inset 0 1px 0 hsl(36 36% 100% / 0.65);
     transition: box-shadow 0.4s ease, transform 0.4s ease;
   }
-  .card-premium:hover { box-shadow: var(--shadow-lg), 0 0 30px hsl(34 48% 60% / 0.06); transform: translateY(-2px); }
+  .card-premium:hover { box-shadow: var(--shadow-xl), 0 0 40px hsl(34 48% 60% / 0.07); transform: translateY(-3px); }
 
   /* ═══ CARD TIER 3 — Elevated ═══ */
   .card-elevated {
