@@ -117,23 +117,23 @@ export function ClientDashboard() {
       <motion.div {...fadeUp}>
         <Card className="card-hero overflow-hidden border-elita-camel/10 mt-8 sm:mt-12">
           <div className="h-1 bg-gradient-to-r from-elita-camel/40 via-elita-camel/15 to-transparent" />
-          <CardContent className="p-7 sm:p-9 space-y-7">
+          <CardContent className="p-8 sm:p-10 space-y-8">
 
             {/* Title */}
             <div>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.3em] mb-3">
+              <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-[0.35em] mb-3">
                 Welcome back, {firstName}
               </p>
-              <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground tracking-tight leading-[1.05]">
+              <h1 className="text-4xl sm:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1]">
                 Your Elita Journey
               </h1>
             </div>
 
             {/* Next Visit — prominent */}
             {nextAppointment ? (
-              <div className="p-6 rounded-2xl bg-accent/50 border border-border/40">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-3">Your Next Visit</p>
-                <p className="text-xl font-heading font-semibold text-foreground leading-snug">
+              <div className="p-7 rounded-2xl bg-accent/50 border border-border/40">
+                <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-3">Your Next Visit</p>
+                <p className="text-2xl font-heading font-semibold text-foreground leading-snug">
                   {(nextAppointment as any).services?.name}
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
@@ -155,9 +155,9 @@ export function ClientDashboard() {
             {/* Progress + Urgency (only when goals exist) */}
             {hasGoals && totalTarget > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-foreground tracking-wide uppercase">Your Progress</p>
-                  <p className="text-2xl font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
+                <div className="flex items-center justify-between mb-3.5">
+                  <p className="text-[10px] font-semibold text-foreground tracking-widest uppercase">Your Progress</p>
+                  <p className="text-3xl font-heading font-bold text-elita-camel leading-none">{overallPct}%</p>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <motion.div
@@ -244,15 +244,15 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ CATEGORY PROGRESS (compact) ═══ */}
+      {/* ═══ CATEGORY PROGRESS (compact — reduced weight) ═══ */}
       {treatmentProgress.length > 0 && (
         <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
           <SectionLabel>Your Personalized Plan</SectionLabel>
-          <Card className="shadow-md">
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center gap-3 mb-1">
-                <Target className="w-4 h-4 text-elita-camel" />
-                <p className="text-xs font-semibold text-foreground uppercase tracking-wide">
+          <Card>
+            <CardContent className="p-5 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <Target className="w-3.5 h-3.5 text-elita-camel" />
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
                   {GOALS.find(g => g.key === clientGoals[0])?.label}
                 </p>
               </div>
@@ -260,13 +260,13 @@ export function ClientDashboard() {
                 const cat = CATEGORIES[p.category as TreatmentCategory];
                 const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
                 return (
-                  <div key={p.category} className="flex items-center gap-3">
-                    <span className="text-sm w-5 text-center">{cat?.emoji}</span>
-                    <span className="text-xs text-muted-foreground w-14">{cat?.label}</span>
-                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <motion.div className="h-full bg-elita-camel/60 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
+                  <div key={p.category} className="flex items-center gap-2.5">
+                    <span className="text-xs w-4 text-center">{cat?.emoji}</span>
+                    <span className="text-[11px] text-muted-foreground w-12">{cat?.label}</span>
+                    <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-elita-camel/50 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
                     </div>
-                    <span className="text-[10px] text-muted-foreground w-8 text-right">{p.sessions_completed}/{p.sessions_target}</span>
+                    <span className="text-[9px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                   </div>
                 );
               })}
@@ -275,24 +275,24 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGE PROGRESS ═══ */}
+      {/* ═══ PACKAGE PROGRESS (reduced weight) ═══ */}
       {activePackages.length > 0 && (
         <motion.div {...fadeUp} transition={{ delay: 0.14 }}>
           <SectionLabel>Session Progress</SectionLabel>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
-                <Card key={pkg.id} className="shadow-md hover:shadow-lg transition-shadow duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-sm font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                      <span className="text-xl font-heading font-bold text-elita-camel">{pct}%</span>
+                <Card key={pkg.id}>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[13px] font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
+                      <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
                     </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-1 bg-muted rounded-full overflow-hidden">
                       <motion.div className="h-full bg-elita-camel rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2.5">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
+                    <p className="text-[11px] text-muted-foreground mt-2">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
                   </CardContent>
                 </Card>
               );
@@ -304,16 +304,16 @@ export function ClientDashboard() {
       {/* ═══ QUICK ACTIONS ═══ */}
       <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
         <SectionLabel>Quick Actions</SectionLabel>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬' },
             { label: 'My Photos', href: '/portal/photos', icon: '📸' },
             { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨' },
             { label: 'Visit History', href: '/portal/history', icon: '📋' },
           ].map((item) => (
-            <Link key={item.href} to={item.href} className="flex items-center gap-3.5 p-5 rounded-2xl bg-card border border-border hover:border-elita-camel/20 hover:shadow-md transition-all duration-300">
-              <span className="text-lg">{item.icon}</span>
-              <span className="text-sm font-medium text-foreground">{item.label}</span>
+            <Link key={item.href} to={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-elita-camel/15 hover:shadow-sm transition-all duration-300">
+              <span className="text-base">{item.icon}</span>
+              <span className="text-[13px] font-medium text-muted-foreground">{item.label}</span>
             </Link>
           ))}
         </div>
