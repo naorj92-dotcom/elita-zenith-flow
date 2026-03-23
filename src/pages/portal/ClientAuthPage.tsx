@@ -78,22 +78,28 @@ export function ClientAuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full"
+          style={{ background: 'radial-gradient(circle, hsl(32 38% 56% / 0.06) 0%, hsl(34 24% 90% / 0.03) 40%, transparent 65%)' }} />
+      </div>
+
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="w-full max-w-sm"
+        transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="w-full max-w-[400px] login-glow relative z-10"
       >
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <img src={elitaLogo} alt="Elita MedSpa" className="h-14 w-auto" />
+            <img src={elitaLogo} alt="Elita MedSpa" className="h-16 w-auto" />
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-[0.15em]">Client Portal</p>
         </div>
 
-        <Card>
+        <Card className="shadow-xl border-border/50" style={{ boxShadow: 'var(--shadow-xl), inset 0 1px 0 hsl(36 30% 100% / 0.5)' }}>
           <CardHeader className="text-center pb-3">
             <CardTitle className="text-2xl font-heading">Welcome</CardTitle>
             <CardDescription className="mt-2">

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Elita Medical Spa — Ultra Luxury Design System */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -140,11 +140,17 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     font-family: var(--font-body);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     letter-spacing: -0.01em;
     line-height: 1.65;
+    /* Ambient atmosphere — subtle warm gradient */
+    background:
+      radial-gradient(ellipse 100% 60% at 50% 0%, hsl(34 22% 94% / 0.5) 0%, transparent 70%),
+      linear-gradient(180deg, hsl(32 24% 95%) 0%, hsl(34 20% 94%) 40%, hsl(32 22% 95%) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -160,59 +166,125 @@
 }
 
 @layer components {
+  /* ═══ CARD TIER 1 — Hero ═══ */
+  .card-hero {
+    @apply rounded-[1.25rem] overflow-hidden relative;
+    background: linear-gradient(172deg,
+      hsl(38 32% 99%) 0%,
+      hsl(35 26% 97.5%) 30%,
+      hsl(33 22% 96%) 65%,
+      hsl(31 20% 95%) 100%);
+    box-shadow:
+      var(--shadow-xl),
+      0 0 0 1px hsl(32 20% 91% / 0.5),
+      inset 0 1px 0 hsl(38 40% 100% / 0.7),
+      inset 0 -1px 0 hsl(30 14% 88% / 0.3);
+  }
+  .card-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 80% 20%, hsl(32 38% 56% / 0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ═══ CARD TIER 2 — Premium ═══ */
   .card-premium {
-    @apply bg-card rounded-2xl border border-border;
-    box-shadow: var(--shadow-md);
+    @apply bg-card rounded-2xl border border-border/70 relative;
+    box-shadow: var(--shadow-md), inset 0 1px 0 hsl(36 30% 100% / 0.5);
     transition: box-shadow 0.4s ease, transform 0.4s ease;
   }
   .card-premium:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
 
+  /* ═══ CARD TIER 3 — Elevated ═══ */
   .card-elevated {
-    @apply bg-card rounded-2xl border border-border;
-    box-shadow: var(--shadow-md);
+    @apply bg-card rounded-2xl border border-border/60;
+    box-shadow: var(--shadow-md), inset 0 1px 0 hsl(36 28% 100% / 0.4);
   }
 
-  .card-hero {
-    @apply rounded-[1.25rem] overflow-hidden;
-    background: linear-gradient(172deg, hsl(38 30% 99%) 0%, hsl(34 24% 97%) 35%, hsl(32 20% 95.5%) 70%, hsl(30 18% 94.5%) 100%);
-    box-shadow:
-      var(--shadow-xl),
-      0 0 0 1px hsl(32 20% 91% / 0.6),
-      inset 0 1px 0 hsl(36 30% 100% / 0.6);
-  }
-
+  /* ═══ CARD TIER 4 — Minimal ═══ */
   .card-minimal {
     @apply bg-transparent rounded-xl border border-border/30;
+    box-shadow: none;
   }
 
-  .section-inset {
-    @apply bg-accent/30 rounded-2xl p-6 sm:p-8;
-  }
-
+  /* ═══ Glow accent — warm halo ═══ */
   .glow-accent {
     box-shadow:
-      0 0 48px hsl(var(--elita-camel) / 0.06),
-      0 0 96px hsl(var(--elita-camel) / 0.03),
+      0 0 60px hsl(var(--elita-camel) / 0.07),
+      0 0 120px hsl(var(--elita-camel) / 0.03),
       var(--shadow-xl),
-      0 0 0 1px hsl(32 20% 91% / 0.6),
-      inset 0 1px 0 hsl(36 30% 100% / 0.6);
+      0 0 0 1px hsl(32 20% 91% / 0.5),
+      inset 0 1px 0 hsl(38 40% 100% / 0.7);
   }
 
+  /* ═══ Signature progress bar ═══ */
   .progress-glow {
-    background: linear-gradient(90deg, hsl(32 38% 56%) 0%, hsl(36 48% 52%) 60%, hsl(38 44% 58%) 100%);
-    box-shadow: 0 0 12px hsl(32 38% 56% / 0.25), 0 0 4px hsl(36 48% 52% / 0.15);
+    background: linear-gradient(90deg, hsl(32 38% 56%) 0%, hsl(35 44% 54%) 50%, hsl(38 42% 58%) 100%);
+    box-shadow: 0 0 14px hsl(32 38% 56% / 0.3), 0 0 5px hsl(36 48% 52% / 0.15);
+    border-radius: 9999px;
   }
 
+  /* ═══ Luxury dividers ═══ */
   .divider-luxe {
     height: 1px;
-    background: linear-gradient(90deg, transparent 0%, hsl(var(--elita-camel) / 0.12) 30%, hsl(var(--elita-camel) / 0.12) 70%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, hsl(var(--elita-camel) / 0.15) 25%, hsl(var(--elita-camel) / 0.15) 75%, transparent 100%);
   }
 
   .accent-line {
     height: 2px;
-    background: linear-gradient(90deg, hsl(var(--elita-camel) / 0.5) 0%, hsl(var(--elita-camel) / 0.15) 60%, transparent 100%);
+    background: linear-gradient(90deg, hsl(var(--elita-camel) / 0.4) 0%, hsl(var(--elita-camel) / 0.12) 50%, transparent 100%);
   }
 
+  /* ═══ Section background — soft floating panel ═══ */
+  .section-inset {
+    @apply rounded-2xl p-6 sm:p-8;
+    background: linear-gradient(168deg, hsl(36 20% 98%) 0%, hsl(34 16% 97%) 100%);
+    box-shadow: inset 0 1px 0 hsl(36 28% 100% / 0.6), 0 1px 3px hsl(20 18% 24% / 0.02);
+  }
+
+  /* ═══ Login glow — ambient light behind form ═══ */
+  .login-glow {
+    position: relative;
+  }
+  .login-glow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140%;
+    height: 140%;
+    background: radial-gradient(ellipse 50% 50% at center,
+      hsl(32 38% 56% / 0.08) 0%,
+      hsl(34 24% 90% / 0.04) 40%,
+      transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ═══ Page atmosphere — soft ambient glow behind content ═══ */
+  .page-atmosphere {
+    position: relative;
+  }
+  .page-atmosphere::before {
+    content: '';
+    position: fixed;
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 800px;
+    height: 50vh;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%,
+      hsl(34 26% 92% / 0.6) 0%,
+      hsl(32 20% 94% / 0.3) 40%,
+      transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Status badges */
   .status-confirmed { @apply bg-success/10 text-success; }
   .status-scheduled { @apply bg-primary/10 text-primary; }
   .status-pending { @apply bg-warning/10 text-warning; }
@@ -248,7 +320,9 @@
     background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(36 14% 98%) 100%);
   }
   .bg-gradient-hero {
-    background: linear-gradient(170deg, hsl(var(--background)) 0%, hsl(34 16% 94%) 50%, hsl(var(--background)) 100%);
+    background:
+      radial-gradient(ellipse 100% 50% at 50% 0%, hsl(34 22% 93% / 0.5) 0%, transparent 70%),
+      linear-gradient(170deg, hsl(var(--background)) 0%, hsl(34 18% 94%) 50%, hsl(var(--background)) 100%);
   }
   .bg-gradient-luxury {
     background: linear-gradient(168deg, hsl(36 26% 99%) 0%, hsl(34 22% 96%) 50%, hsl(32 18% 95%) 100%);

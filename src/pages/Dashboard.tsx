@@ -118,14 +118,12 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="p-6 sm:p-10 md:p-12 max-w-5xl mx-auto">
+    <div className="p-6 sm:p-10 md:p-12 max-w-5xl mx-auto page-atmosphere">
       <OnboardingTour />
 
       {/* ═══ HERO HEADER ═══ */}
       <motion.div {...fadeUp} className="card-hero glow-accent relative mb-12 mt-2 sm:mt-4">
         <div className="accent-line" />
-        <div className="absolute top-8 right-10 w-40 h-40 rounded-full opacity-20 pointer-events-none"
-             style={{ background: 'radial-gradient(circle, hsl(32 38% 56% / 0.1) 0%, transparent 70%)' }} />
         <div className="relative p-8 sm:p-10">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
             <div>
@@ -156,7 +154,8 @@ export function Dashboard() {
           {/* KPI Cards — inside hero for dominance */}
           <div className="grid grid-cols-3 gap-5">
             {kpiCards.map((stat) => (
-              <div key={stat.label} className="p-5 rounded-2xl bg-card/60 border border-border/20 hover:bg-card/80 transition-all duration-300">
+              <div key={stat.label} className="p-5 rounded-2xl border border-border/20 hover:border-border/40 transition-all duration-300"
+                   style={{ background: 'linear-gradient(168deg, hsl(36 24% 99%) 0%, hsl(34 18% 97.5%) 100%)', boxShadow: 'inset 0 1px 0 hsl(36 30% 100% / 0.5), 0 2px 8px hsl(20 18% 24% / 0.02)' }}>
                 <p className="text-3xl sm:text-4xl font-heading font-bold text-foreground leading-none tracking-tight">{stat.value}</p>
                 <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1">
                   {stat.change !== null && stat.change !== 0 && (
@@ -173,7 +172,7 @@ export function Dashboard() {
         </div>
       </motion.div>
 
-      <div className="space-y-12">
+      <div className="space-y-12 relative z-10">
         {/* Today's Action Items */}
         <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
           <TodaysFocusWidget />
@@ -225,7 +224,8 @@ export function Dashboard() {
               { label: 'View Schedule', href: '/schedule', icon: Clock },
               { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
             ].map((action) => (
-              <Link key={action.label} to={action.href} className="flex items-center gap-4 p-6 rounded-2xl bg-card border border-border/50 hover:border-elita-camel/15 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]">
+              <Link key={action.label} to={action.href} className="flex items-center gap-4 p-6 rounded-2xl bg-card border border-border/50 hover:border-elita-camel/15 hover:shadow-md hover:-translate-y-1 transition-all duration-300 active:scale-[0.98]"
+                    style={{ boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.4), var(--shadow-sm)' }}>
                 <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center">
                   <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
                 </div>

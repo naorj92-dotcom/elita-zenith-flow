@@ -12,9 +12,9 @@ import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type Progr
 import { cn } from '@/lib/utils';
 
 const fadeUp = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+  transition: { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] },
 };
 
 export function ClientDashboard() {
@@ -105,27 +105,22 @@ export function ClientDashboard() {
   };
   const urgency = getUrgencyMessage();
 
-  // Build quick-book link with recommendation pre-fill if available
   const bookingHref = recommendation
     ? `/portal/book?category=${recommendation.category}`
     : '/portal/book';
 
   return (
-    <div className="max-w-xl mx-auto pb-32">
+    <div className="max-w-xl mx-auto pb-32 page-atmosphere">
 
       {/* ═══ HERO — IMMERSIVE BRAND MOMENT ═══ */}
-      <motion.div {...fadeUp} className="mt-6 sm:mt-10">
+      <motion.div {...fadeUp} className="mt-6 sm:mt-10 relative z-10">
         <div className="card-hero glow-accent relative">
-          {/* Decorative top accent */}
+          {/* Decorative accent line */}
           <div className="accent-line" />
-          
-          {/* Subtle radial glow behind content */}
-          <div className="absolute top-12 right-8 w-48 h-48 rounded-full opacity-30 pointer-events-none"
-               style={{ background: 'radial-gradient(circle, hsl(32 38% 56% / 0.08) 0%, transparent 70%)' }} />
 
           <div className="relative p-8 sm:p-12 space-y-10">
 
-            {/* Title — editorial feel */}
+            {/* Title — editorial luxury */}
             <div className="space-y-3">
               <p className="text-[9px] font-semibold text-elita-camel uppercase tracking-[0.45em]">
                 Welcome back, {firstName}
@@ -137,10 +132,10 @@ export function ClientDashboard() {
               </h1>
             </div>
 
-            {/* Next Visit — immersive inner card */}
+            {/* Next Visit — inner card with depth */}
             {nextAppointment ? (
-              <div className="relative p-7 sm:p-8 rounded-2xl border border-border/25"
-                   style={{ background: 'linear-gradient(165deg, hsl(36 24% 99%) 0%, hsl(34 18% 97%) 100%)' }}>
+              <div className="relative p-7 sm:p-8 rounded-2xl border border-border/20"
+                   style={{ background: 'linear-gradient(165deg, hsl(36 24% 99%) 0%, hsl(34 18% 97.5%) 100%)', boxShadow: 'inset 0 1px 0 hsl(36 30% 100% / 0.6), 0 2px 8px hsl(20 18% 24% / 0.03)' }}>
                 <div className="divider-luxe absolute top-0 left-6 right-6" />
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -162,13 +157,13 @@ export function ClientDashboard() {
                 </div>
               </div>
             ) : (
-              <div className="p-8 rounded-2xl bg-card/50 text-center border border-border/15">
+              <div className="p-8 rounded-2xl text-center border border-border/15" style={{ background: 'linear-gradient(165deg, hsl(36 20% 99%) 0%, hsl(34 16% 97.5%) 100%)' }}>
                 <Clock className="w-5 h-5 text-muted-foreground/40 mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground/70">No upcoming visits</p>
               </div>
             )}
 
-            {/* Progress — signature element */}
+            {/* Progress — signature element with glow */}
             {hasGoals && totalTarget > 0 && (
               <div className="space-y-4">
                 <div className="flex items-end justify-between">
@@ -178,7 +173,7 @@ export function ClientDashboard() {
                   </div>
                   <p className="text-4xl font-heading font-bold text-elita-camel leading-none tracking-tight">{overallPct}<span className="text-lg">%</span></p>
                 </div>
-                <div className="h-2.5 bg-muted/50 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full progress-glow"
                     initial={{ width: 0 }}
@@ -203,7 +198,8 @@ export function ClientDashboard() {
 
             {/* Recommended Next Step */}
             {recommendation && (
-              <div className="relative bg-card/50 rounded-2xl p-6 border border-border/20">
+              <div className="relative rounded-2xl p-6 border border-border/20"
+                   style={{ background: 'linear-gradient(165deg, hsl(36 22% 99%) 0%, hsl(34 16% 97.5%) 100%)', boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.5)' }}>
                 <p className="text-[8px] font-bold text-elita-camel/50 uppercase tracking-[0.4em] mb-3.5">Recommended</p>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-accent/50 flex items-center justify-center text-xl">
@@ -236,7 +232,7 @@ export function ClientDashboard() {
 
       {/* ═══ GOAL SELECTION (onboarding) ═══ */}
       {!hasGoals && (
-        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-14">
+        <motion.div {...fadeUp} transition={{ delay: 0.08 }} className="mt-14 relative z-10">
           <SectionLabel>What's Your Goal?</SectionLabel>
           <div className="card-elevated p-7 sm:p-8">
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
@@ -248,7 +244,8 @@ export function ClientDashboard() {
                   key={goal.key}
                   onClick={() => saveGoalMutation.mutate(goal.key)}
                   disabled={saveGoalMutation.isPending}
-                  className="flex items-center gap-4 w-full p-5 rounded-2xl border border-border/60 hover:border-elita-camel/20 hover:bg-accent/30 hover:shadow-sm transition-all duration-300 text-left active:scale-[0.98]"
+                  className="flex items-center gap-4 w-full p-5 rounded-2xl border border-border/50 hover:border-elita-camel/20 hover:bg-accent/30 hover:shadow-sm transition-all duration-300 text-left active:scale-[0.98]"
+                  style={{ boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.3)' }}
                 >
                   <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center text-xl shrink-0">
                     {goal.emoji}
@@ -264,9 +261,9 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ TREATMENT PLAN — minimal ═══ */}
+      {/* ═══ TREATMENT PLAN — minimal tier ═══ */}
       {treatmentProgress.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-14">
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-14 relative z-10">
           <SectionLabel>Your Personalized Plan</SectionLabel>
           <div className="card-minimal p-5 space-y-3">
             <div className="flex items-center gap-2.5 mb-1">
@@ -282,7 +279,7 @@ export function ClientDashboard() {
                 <div key={p.category} className="flex items-center gap-2.5">
                   <span className="text-xs w-4 text-center">{cat?.emoji}</span>
                   <span className="text-[11px] text-muted-foreground w-12">{cat?.label}</span>
-                  <div className="flex-1 h-1 bg-muted/50 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-muted/40 rounded-full overflow-hidden">
                     <motion.div className="h-full bg-elita-camel/40 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.15 }} />
                   </div>
                   <span className="text-[9px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
@@ -293,26 +290,24 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ PACKAGES — standard ═══ */}
+      {/* ═══ PACKAGES — premium tier ═══ */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-14">
+        <motion.div {...fadeUp} transition={{ delay: 0.14 }} className="mt-14 relative z-10">
           <SectionLabel>Session Progress</SectionLabel>
           <div className="space-y-3">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
-                <Card key={pkg.id} className="hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
-                  <CardContent className="p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[13px] font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                      <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
-                    </div>
-                    <div className="h-1 bg-muted/50 rounded-full overflow-hidden">
-                      <motion.div className="h-full bg-elita-camel rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-2">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
-                  </CardContent>
-                </Card>
+                <div key={pkg.id} className="card-premium p-6 hover:-translate-y-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[13px] font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
+                    <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
+                  </div>
+                  <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                    <motion.div className="h-full rounded-full progress-glow" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-2.5">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
+                </div>
               );
             })}
           </div>
@@ -320,7 +315,7 @@ export function ClientDashboard() {
       )}
 
       {/* ═══ QUICK ACTIONS — asymmetric layout ═══ */}
-      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-14">
+      <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-14 relative z-10">
         <SectionLabel>Quick Actions</SectionLabel>
         <div className="grid grid-cols-3 gap-3">
           {[
@@ -330,9 +325,10 @@ export function ClientDashboard() {
             { label: 'Visit History', href: '/portal/history', icon: '📋', span: 'col-span-2' },
           ].map((item) => (
             <Link key={item.href} to={item.href} className={cn(
-              'flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 hover:border-elita-camel/15 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]',
+              'flex items-center gap-3 p-4 rounded-xl bg-card border border-border/40 hover:border-elita-camel/15 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]',
               item.span
-            )}>
+            )}
+            style={{ boxShadow: 'inset 0 1px 0 hsl(36 28% 100% / 0.4)' }}>
               <span className="text-base">{item.icon}</span>
               <span className="text-[13px] font-medium text-muted-foreground">{item.label}</span>
             </Link>
