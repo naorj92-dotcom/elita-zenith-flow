@@ -15,6 +15,8 @@ import type { ScheduleAppointment } from '@/pages/SchedulePage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRole } from '@/contexts/UnifiedAuthContext';
 import { ChartNoteForm } from '@/components/charts/ChartNoteForm';
+import { AlertTriangle } from 'lucide-react';
+
 interface AppointmentPopoverProps {
   appointment: ScheduleAppointment;
   clientDetails?: {
@@ -62,6 +64,7 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const end = new Date(start.getTime() + appointment.duration_minutes * 60000);
   const timeStr = `${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
   const age = calculateAge(clientDetails?.date_of_birth);
+  const isGoogleEvent = appointment.id.startsWith('gcal-');
   const { isOwner, isProvider } = useRole();
   const canChart = isOwner || isProvider;
 
@@ -72,6 +75,25 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [isChanging, setIsChanging] = useState(false);
   const [suggestionAccepted, setSuggestionAccepted] = useState<boolean | null>(null);
   const [showChartNote, setShowChartNote] = useState(false);
+  const [showPendingForms, setShowPendingForms] = useState(false);
+
+  // Fetch form status for this appointment
+  const { data: formStatus } = useQuery({
+    queryKey: ['appointment-forms', appointment.id, appointment.client_id],
+    queryFn: async () => {
+      if (!appointment.client_id || isGoogleEvent) return null;
+      const { data, error } = await supabase
+        .from('client_forms')
+        .select('id, status, forms:form_id (name)')
+        .eq('client_id', appointment.client_id)
+        .or(`appointment_id.eq.${appointment.id},appointment_id.is.null`);
+      if (error) return null;
+      const pending = (data || []).filter((f: any) => f.status === 'pending');
+      const completed = (data || []).filter((f: any) => f.status === 'completed');
+      return { pending, completed, total: data?.length || 0 };
+    },
+    enabled: !!appointment.client_id && !isGoogleEvent,
+  });
 
   // Complete & Plan flow state
   const [showCompleteFlow, setShowCompleteFlow] = useState(false);
@@ -79,7 +101,6 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
   const [isCompleting, setIsCompleting] = useState(false);
   const [completionStep, setCompletionStep] = useState<'notes' | 'done'>('notes');
 
-  const isGoogleEvent = appointment.id.startsWith('gcal-');
 
   const { data: clientPackage } = useQuery({
     queryKey: ['apt-client-package', appointment.client_id],
@@ -300,10 +321,46 @@ export function AppointmentPopover({ appointment, clientDetails, onClose, onStat
         </div>
       )}
 
-      {/* Status badge */}
-      <Badge variant="outline" className="text-[10px] capitalize mb-3 rounded-lg">
-        {appointment.status.replace('_', ' ')}
-      </Badge>
+      {/* Form status + Status badge */}
+      <div className="flex items-center gap-2 mb-3">
+        <Badge variant="outline" className="text-[10px] capitalize rounded-lg">
+          {appointment.status.replace('_', ' ')}
+        </Badge>
+        {formStatus && formStatus.pending.length > 0 && (
+          <button
+            onClick={() => setShowPendingForms(!showPendingForms)}
+            className="flex items-center gap-1 text-[10px] font-medium text-destructive hover:underline"
+          >
+            <AlertTriangle className="w-3 h-3" />
+            {formStatus.pending.length} form{formStatus.pending.length > 1 ? 's' : ''} pending
+          </button>
+        )}
+        {formStatus && formStatus.pending.length === 0 && formStatus.total > 0 && (
+          <span className="flex items-center gap-1 text-[10px] font-medium text-success">
+            <CheckCircle className="w-3 h-3" />
+            Forms complete
+          </span>
+        )}
+      </div>
+
+      {/* Pending forms detail */}
+      <AnimatePresence>
+        {showPendingForms && formStatus && formStatus.pending.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden mb-3"
+          >
+            <div className="bg-destructive/5 rounded-xl p-3 space-y-1">
+              <p className="text-[10px] font-semibold text-destructive uppercase tracking-widest">Incomplete Forms</p>
+              {formStatus.pending.map((f: any) => (
+                <p key={f.id} className="text-xs text-foreground">• {(f.forms as any)?.name || 'Unnamed form'}</p>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Change Client */}
       {!isGoogleEvent && (

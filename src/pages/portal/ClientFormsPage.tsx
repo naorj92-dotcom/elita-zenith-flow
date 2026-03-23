@@ -23,10 +23,12 @@ import {
   Loader2,
 } from 'lucide-react';
 import { FormFieldRenderer, FormField } from '@/components/forms/FormFieldRenderer';
-import { SignaturePad } from '@/components/forms/SignaturePad';
 import { CelebrationOverlay } from '@/components/shared/CelebrationOverlay';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 type FormType = 'intake' | 'consent' | 'contract' | 'custom';
 type FormStatus = 'pending' | 'completed' | 'expired' | 'draft';
@@ -69,6 +71,8 @@ export function ClientFormsPage() {
   const [selectedForm, setSelectedForm] = useState<ClientForm | null>(null);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [typedSignatureName, setTypedSignatureName] = useState('');
+  const [signatureConfirmed, setSignatureConfirmed] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -119,11 +123,18 @@ export function ClientFormsPage() {
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!selectedForm) return;
+      const signatureRecord = typedSignatureName
+        ? `Electronically signed by ${typedSignatureName} on ${new Date().toLocaleString()}`
+        : signatureData;
       const { error } = await supabase
         .from('client_forms')
         .update({
-          responses,
-          signature_data: signatureData,
+          responses: {
+            ...responses,
+            __typed_signature_name: typedSignatureName || undefined,
+            __signature_confirmed: signatureConfirmed || undefined,
+          },
+          signature_data: signatureRecord,
           signed_at: new Date().toISOString(),
           status: 'completed' as any,
         })
@@ -146,6 +157,8 @@ export function ClientFormsPage() {
     setSelectedForm(form);
     setResponses(form.responses || {});
     setSignatureData(form.signature_data);
+    setTypedSignatureName((form.responses as any)?.__typed_signature_name || '');
+    setSignatureConfirmed(!!(form.responses as any)?.__signature_confirmed);
     setFieldErrors({});
   };
 
@@ -153,6 +166,8 @@ export function ClientFormsPage() {
     setSelectedForm(null);
     setResponses({});
     setSignatureData(null);
+    setTypedSignatureName('');
+    setSignatureConfirmed(false);
     setFieldErrors({});
   };
 
@@ -176,8 +191,13 @@ export function ClientFormsPage() {
       }
     }
 
-    if (selectedForm.forms.requires_signature && !signatureData) {
-      errors['__signature'] = 'Please provide your signature';
+    if (selectedForm.forms.requires_signature) {
+      if (!typedSignatureName.trim()) {
+        errors['__signature_name'] = 'Please type your full legal name';
+      }
+      if (!signatureConfirmed) {
+        errors['__signature_confirm'] = 'You must confirm this is your electronic signature';
+      }
     }
 
     setFieldErrors(errors);
@@ -384,36 +404,68 @@ export function ClientFormsPage() {
                   </motion.div>
                 ))}
 
-                {/* Signature */}
+                {/* Electronic Signature */}
                 {selectedForm?.forms.requires_signature && (
-                  <div className="space-y-2 pt-4 border-t border-border">
+                  <div className="space-y-4 pt-4 border-t border-border">
                     <h3 className="text-sm font-medium flex items-center gap-2 text-foreground">
                       <FileSignature className="w-4 h-4 text-primary" />
-                      Signature
+                      Electronic Signature
                       <span className="text-destructive">*</span>
                     </h3>
                     {selectedForm.status === 'completed' && selectedForm.signature_data ? (
                       <div className="border border-border rounded-lg p-4 bg-muted/30">
-                        <img src={selectedForm.signature_data} alt="Signature" className="max-h-24" />
+                        <p className="text-sm font-medium text-foreground">{selectedForm.signature_data}</p>
                         <p className="text-xs text-muted-foreground mt-2">
                           Signed on {format(new Date(selectedForm.signed_at!), 'MMMM d, yyyy at h:mm a')}
                         </p>
                       </div>
                     ) : (
                       <>
-                        <SignaturePad
-                          onSignatureChange={(data) => {
-                            setSignatureData(data);
-                            if (fieldErrors['__signature']) {
-                              setFieldErrors(prev => { const n = { ...prev }; delete n['__signature']; return n; });
-                            }
-                          }}
-                          initialSignature={signatureData}
-                          disabled={selectedForm.status === 'completed'}
-                        />
-                        {fieldErrors['__signature'] && (
-                          <p className="text-xs text-destructive">{fieldErrors['__signature']}</p>
-                        )}
+                        <div className="space-y-1.5">
+                          <Label htmlFor="signature-name" className="text-sm">
+                            Full Legal Name
+                          </Label>
+                          <Input
+                            id="signature-name"
+                            value={typedSignatureName}
+                            onChange={(e) => {
+                              setTypedSignatureName(e.target.value);
+                              if (fieldErrors['__signature_name']) {
+                                setFieldErrors(prev => { const n = { ...prev }; delete n['__signature_name']; return n; });
+                              }
+                            }}
+                            placeholder="Type your full legal name"
+                            className={cn(fieldErrors['__signature_name'] && 'border-destructive')}
+                          />
+                          {fieldErrors['__signature_name'] && (
+                            <p className="text-xs text-destructive">{fieldErrors['__signature_name']}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <div className={cn(
+                            "flex items-start gap-3 p-3 rounded-lg border transition-colors",
+                            signatureConfirmed ? "border-primary/30 bg-primary/5" : "border-border",
+                            fieldErrors['__signature_confirm'] && "border-destructive"
+                          )}>
+                            <Checkbox
+                              id="signature-confirm"
+                              checked={signatureConfirmed}
+                              onCheckedChange={(v) => {
+                                setSignatureConfirmed(!!v);
+                                if (fieldErrors['__signature_confirm']) {
+                                  setFieldErrors(prev => { const n = { ...prev }; delete n['__signature_confirm']; return n; });
+                                }
+                              }}
+                              className="mt-0.5"
+                            />
+                            <Label htmlFor="signature-confirm" className="text-sm leading-relaxed cursor-pointer">
+                              I confirm this is my electronic signature and I agree to the above.
+                            </Label>
+                          </div>
+                          {fieldErrors['__signature_confirm'] && (
+                            <p className="text-xs text-destructive pl-1">{fieldErrors['__signature_confirm']}</p>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>

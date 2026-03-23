@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Search, FileText, ClipboardCheck, FileSignature, Scroll, Eye, Users, Send } from 'lucide-react';
+import { Plus, Search, FileText, ClipboardCheck, FileSignature, Scroll, Eye, Users, Send, Link2, Unlink } from 'lucide-react';
 import { FormField } from '@/components/forms/FormFieldRenderer';
 import { FormBuilderFull } from '@/components/forms/FormBuilderFull';
 import { format } from 'date-fns';
@@ -166,6 +166,55 @@ export function FormsManagementPage() {
     setSelectedClientIds([]);
     setAssignClientSearch('');
     setShowAssignDialog(true);
+  };
+
+  // Service linking state
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [linkFormId, setLinkFormId] = useState<string | null>(null);
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['services-for-link'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('services').select('id, name, category').eq('is_active', true).order('name');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: showLinkDialog,
+  });
+
+  const { data: serviceFormLinks = [] } = useQuery({
+    queryKey: ['service-form-links'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('service_form_links').select('*');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const linkedServiceIds = linkFormId
+    ? serviceFormLinks.filter((l: any) => l.form_id === linkFormId).map((l: any) => l.service_id)
+    : [];
+
+  const toggleServiceLink = useMutation({
+    mutationFn: async ({ formId, serviceId, linked }: { formId: string; serviceId: string; linked: boolean }) => {
+      if (linked) {
+        const { error } = await supabase.from('service_form_links').delete().eq('form_id', formId).eq('service_id', serviceId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('service_form_links').insert({ form_id: formId, service_id: serviceId });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service-form-links'] });
+      toast.success('Service link updated');
+    },
+    onError: (error: any) => toast.error(error.message || 'Failed to update link'),
+  });
+
+  const openLinkDialog = (formId: string) => {
+    setLinkFormId(formId);
+    setShowLinkDialog(true);
   };
 
 
@@ -378,15 +427,28 @@ export function FormsManagementPage() {
                           <span className="flex items-center gap-1"><FileSignature className="w-3 h-3" />Signature required</span>
                         )}
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs"
-                        onClick={(e) => { e.stopPropagation(); openAssignDialog(form.id); }}
-                      >
-                        <Send className="w-3 h-3" />
-                        Assign
-                      </Button>
+                      <div className="flex gap-1.5">
+                        {form.form_type === 'consent' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-xs"
+                            onClick={(e) => { e.stopPropagation(); openLinkDialog(form.id); }}
+                          >
+                            <Link2 className="w-3 h-3" />
+                            Link
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={(e) => { e.stopPropagation(); openAssignDialog(form.id); }}
+                        >
+                          <Send className="w-3 h-3" />
+                          Assign
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -504,6 +566,48 @@ export function FormsManagementPage() {
               <Send className="w-4 h-4" />
               {assignMutation.isPending ? 'Assigning...' : `Assign to ${selectedClientIds.length || ''} Client${selectedClientIds.length !== 1 ? 's' : ''}`}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link Consent Form to Services Dialog */}
+      <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="w-5 h-5" />
+              Link to Services
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Select which services should auto-assign this consent form when an appointment is booked.
+          </p>
+          <ScrollArea className="h-[300px] border rounded-lg">
+            <div className="p-2 space-y-1">
+              {services.map((svc: any) => {
+                const isLinked = linkedServiceIds.includes(svc.id);
+                return (
+                  <div
+                    key={svc.id}
+                    className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer"
+                    onClick={() => linkFormId && toggleServiceLink.mutate({ formId: linkFormId, serviceId: svc.id, linked: isLinked })}
+                  >
+                    <Checkbox checked={isLinked} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{svc.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{svc.category}</p>
+                    </div>
+                    {isLinked && <Unlink className="w-3.5 h-3.5 text-muted-foreground" />}
+                  </div>
+                );
+              })}
+              {services.length === 0 && (
+                <p className="text-center py-8 text-sm text-muted-foreground">No services found</p>
+              )}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLinkDialog(false)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

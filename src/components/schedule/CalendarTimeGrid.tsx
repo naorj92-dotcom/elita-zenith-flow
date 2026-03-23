@@ -80,7 +80,7 @@ function googleEventToAppointment(event: GoogleCalendarEvent): ScheduleAppointme
   };
 }
 
-export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onClientChanged, onStatusChange, clientDetailsMap }: CalendarTimeGridProps) {
+export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onClientChanged, onStatusChange, clientDetailsMap, formStatusMap }: CalendarTimeGridProps & { formStatusMap?: Record<string, 'complete' | 'pending' | 'none'> }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const [selectedApt, setSelectedApt] = useState<ScheduleAppointment | null>(null);
@@ -440,11 +440,12 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       colWidth={staffColWidth}
                       onAptClick={handleAptClick}
                       onGoogleEventClick={handleGoogleEventClick}
-                      onDragStart={handleDragStart}
+                     onDragStart={handleDragStart}
                       draggingApt={draggingApt}
                       dragGhostTop={dragGhostTop}
                       isDropTarget={!!draggingApt && dragTargetStaffId === s.id && dragOriginStaffId !== s.id}
                       dropShadow={computeDropShadow(s.id)}
+                      formStatusMap={formStatusMap}
                     />
                   ))}
                 </div>
@@ -467,6 +468,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                   draggingApt={draggingApt}
                   dragGhostTop={dragGhostTop}
                   dropShadow={computeDropShadow()}
+                  formStatusMap={formStatusMap}
                 />
               </div>
             );
@@ -553,9 +555,10 @@ interface ProviderColumnProps {
   dragGhostTop?: number | null;
   isDropTarget?: boolean;
   dropShadow?: { top: number; height: number; timeLabel: string } | null;
+  formStatusMap?: Record<string, 'complete' | 'pending' | 'none'>;
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow, formStatusMap }: ProviderColumnProps) {
   return (
     <div
       data-staff-col={staffId}
@@ -620,9 +623,15 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                 </span>
               )}
-              <p className="text-[9px] text-muted-foreground truncate">
+              <p className="text-[9px] text-muted-foreground truncate flex-1">
                 {isCheckedIn ? 'ARRIVED' : timeLabel}
               </p>
+              {formStatusMap && formStatusMap[apt.id] === 'pending' && (
+                <span className="w-2 h-2 rounded-full bg-destructive shrink-0" title="Forms pending" />
+              )}
+              {formStatusMap && formStatusMap[apt.id] === 'complete' && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Forms complete" />
+              )}
             </div>
             <p className="text-[10px] font-semibold truncate">{apt.client_name}</p>
             {height > 36 && <p className="text-[9px] opacity-70 truncate">{apt.service_name}</p>}

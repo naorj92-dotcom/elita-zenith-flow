@@ -1876,6 +1876,42 @@ export type Database = {
         }
         Relationships: []
       }
+      service_form_links: {
+        Row: {
+          created_at: string
+          form_id: string
+          id: string
+          service_id: string
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          id?: string
+          service_id: string
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_form_links_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_form_links_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_recommendations: {
         Row: {
           client_id: string
