@@ -166,9 +166,9 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* ═══ TREATMENT PLAN — minimal tier ═══ */}
+      {/* ═══ TREATMENT PLAN — offset left for editorial feel ═══ */}
       {treatmentProgress.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-14 relative z-10">
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="mt-16 relative z-10 sm:-ml-2">
           <SectionLabel>Your Personalized Plan</SectionLabel>
           <div className="card-minimal p-5 space-y-3">
             <div className="flex items-center gap-2.5 mb-1">
