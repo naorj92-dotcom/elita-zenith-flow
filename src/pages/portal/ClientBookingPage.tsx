@@ -30,7 +30,7 @@ const TIME_SLOTS = [
 
 type BookingStep = 'service' | 'provider' | 'datetime' | 'confirm';
 const STEPS: BookingStep[] = ['service', 'provider', 'datetime', 'confirm'];
-const STEP_LABELS = ['Service', 'Provider', 'Date & Time', 'Confirm'];
+const STEP_LABELS = ['Treatment', 'Provider', 'Date & Time', 'Confirm'];
 
 const slideVariants = {
   enter: (direction: number) => ({ x: direction > 0 ? 80 : -80, opacity: 0 }),
@@ -214,8 +214,8 @@ export function ClientBookingPage() {
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Choose Your Treatment</h2>
-              <p className="text-sm text-muted-foreground mt-1">Select the service you'd like to book</p>
+              <h2 className="text-2xl font-heading font-semibold text-foreground">Choose Your Treatment</h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Select the treatment that's right for you</p>
             </div>
             {loadingServices ? (
               <div className="flex justify-center py-12">
@@ -275,8 +275,8 @@ export function ClientBookingPage() {
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Choose Your Provider</h2>
-              <p className="text-sm text-muted-foreground mt-1">Select who you'd like to see</p>
+              <h2 className="text-2xl font-heading font-semibold text-foreground">Choose Your Provider</h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Select who you'd like to see</p>
             </div>
             {loadingProviders ? (
               <div className="flex justify-center py-12">
@@ -318,8 +318,8 @@ export function ClientBookingPage() {
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Pick Date & Time</h2>
-              <p className="text-sm text-muted-foreground mt-1">Choose your preferred appointment slot</p>
+              <h2 className="text-2xl font-heading font-semibold text-foreground">Pick Date & Time</h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Choose your preferred session time</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -413,8 +413,8 @@ export function ClientBookingPage() {
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Review & Confirm</h2>
-              <p className="text-sm text-muted-foreground mt-1">Double-check your appointment details</p>
+              <h2 className="text-2xl font-heading font-semibold text-foreground">Review & Confirm</h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Everything looks perfect?</p>
             </div>
 
             <Card className="border-border overflow-hidden">
@@ -471,7 +471,7 @@ export function ClientBookingPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-xl mx-auto py-4">
       <CelebrationOverlay show={showCelebration} onComplete={() => setShowCelebration(false)} />
 
       {/* Stepper */}
