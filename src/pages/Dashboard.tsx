@@ -16,6 +16,7 @@ import { TodaysFocusWidget } from '@/components/dashboard/TodaysFocusWidget';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { cn } from '@/lib/utils';
 
 interface TodayAppointment {
   id: string;
@@ -25,6 +26,14 @@ interface TodayAppointment {
   status: AppointmentStatus;
   duration: number;
 }
+
+type MetricPeriod = 'today' | 'week' | 'month';
+
+const PERIOD_LABELS: Record<MetricPeriod, string> = {
+  today: 'Today',
+  week: 'This Week',
+  month: 'This Month',
+};
 
 const fadeUp = {
   initial: { opacity: 0, y: 12 },
@@ -36,63 +45,101 @@ export function Dashboard() {
   const { staff, clockStatus, clockIn, clockOut, isLoading } = useAuth();
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<TodayAppointment[]>([]);
-  const [metrics, setMetrics] = useState({
-    today_appointments: 0, today_sales: 0, week_sales: 0, month_commission: 0,
-    new_clients_week: 0, today_revenue: 0, yesterday_revenue: 0, last_week_clients: 0,
+  const [metricPeriod, setMetricPeriod] = useState<MetricPeriod>('today');
+  const [allMetrics, setAllMetrics] = useState<Record<MetricPeriod, { bookings: number; revenue: number; newClients: number; prevBookings: number; prevRevenue: number; prevClients: number }>>({
+    today: { bookings: 0, revenue: 0, newClients: 0, prevBookings: 0, prevRevenue: 0, prevClients: 0 },
+    week: { bookings: 0, revenue: 0, newClients: 0, prevBookings: 0, prevRevenue: 0, prevClients: 0 },
+    month: { bookings: 0, revenue: 0, newClients: 0, prevBookings: 0, prevRevenue: 0, prevClients: 0 },
   });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!staff) return;
-      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const now = new Date();
+      const today = new Date(now); today.setHours(0, 0, 0, 0);
       const todayEnd = new Date(today); todayEnd.setHours(23, 59, 59, 999);
       const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayEnd = new Date(yesterday); yesterdayEnd.setHours(23, 59, 59, 999);
+      const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
+      const lastWeekStart = new Date(weekStart); lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(monthStart); lastMonthEnd.setMilliseconds(-1);
 
-      const { data: appointmentsData } = await supabase
+      // Fetch all appointments for the month (covers all periods)
+      const { data: monthApts } = await supabase
         .from('appointments')
-        .select(`id, scheduled_at, duration_minutes, status, total_amount, clients (first_name, last_name), services (name)`)
-        .eq('staff_id', staff.id).gte('scheduled_at', today.toISOString()).lte('scheduled_at', todayEnd.toISOString())
+        .select('id, scheduled_at, duration_minutes, status, total_amount, clients (first_name, last_name), services (name)')
+        .eq('staff_id', staff.id)
+        .gte('scheduled_at', monthStart.toISOString())
         .order('scheduled_at', { ascending: true });
 
-      if (appointmentsData) {
-        const formatted: TodayAppointment[] = appointmentsData.map((apt: any) => ({
+      // Previous month appointments for comparison
+      const { data: prevMonthApts } = await supabase
+        .from('appointments')
+        .select('id, scheduled_at, status, total_amount')
+        .eq('staff_id', staff.id)
+        .gte('scheduled_at', lastMonthStart.toISOString())
+        .lt('scheduled_at', monthStart.toISOString());
+
+      // Yesterday appointments for today comparison
+      const { data: yesterdayApts } = await supabase
+        .from('appointments')
+        .select('id, status, total_amount')
+        .eq('staff_id', staff.id)
+        .gte('scheduled_at', yesterday.toISOString())
+        .lte('scheduled_at', yesterdayEnd.toISOString());
+
+      // Last week appointments for week comparison
+      const { data: lastWeekApts } = await supabase
+        .from('appointments')
+        .select('id, status, total_amount')
+        .eq('staff_id', staff.id)
+        .gte('scheduled_at', lastWeekStart.toISOString())
+        .lt('scheduled_at', weekStart.toISOString());
+
+      // Clients
+      const [todayClients, weekClients, monthClients, yesterdayClients, lastWeekClients, lastMonthClients] = await Promise.all([
+        supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', today.toISOString()).lte('created_at', todayEnd.toISOString()),
+        supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', weekStart.toISOString()),
+        supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', monthStart.toISOString()),
+        supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', yesterday.toISOString()).lte('created_at', yesterdayEnd.toISOString()),
+        supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', lastWeekStart.toISOString()).lt('created_at', weekStart.toISOString()),
+        supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', lastMonthStart.toISOString()).lt('created_at', monthStart.toISOString()),
+      ]);
+
+      const allApts = monthApts || [];
+      const calcMetrics = (apts: any[], start: Date, end: Date) => ({
+        bookings: apts.filter(a => { const d = new Date(a.scheduled_at); return d >= start && d <= end; }).length,
+        revenue: apts.filter(a => { const d = new Date(a.scheduled_at); return d >= start && d <= end && a.status === 'completed'; }).reduce((s: number, a: any) => s + Number(a.total_amount || 0), 0),
+      });
+      const calcPrevMetrics = (apts: any[]) => ({
+        prevBookings: (apts || []).length,
+        prevRevenue: (apts || []).filter((a: any) => a.status === 'completed').reduce((s: number, a: any) => s + Number(a.total_amount || 0), 0),
+      });
+
+      const todayM = calcMetrics(allApts, today, todayEnd);
+      const weekM = calcMetrics(allApts, weekStart, todayEnd);
+      const monthM = calcMetrics(allApts, monthStart, todayEnd);
+      const prevToday = calcPrevMetrics(yesterdayApts);
+      const prevWeek = calcPrevMetrics(lastWeekApts);
+      const prevMonth = calcPrevMetrics(prevMonthApts);
+
+      setAllMetrics({
+        today: { ...todayM, newClients: todayClients.count || 0, ...prevToday, prevClients: yesterdayClients.count || 0 },
+        week: { ...weekM, newClients: weekClients.count || 0, ...prevWeek, prevClients: lastWeekClients.count || 0 },
+        month: { ...monthM, newClients: monthClients.count || 0, ...prevMonth, prevClients: lastMonthClients.count || 0 },
+      });
+
+      // Today's appointments for schedule display
+      const todayFormatted: TodayAppointment[] = allApts
+        .filter(a => { const d = new Date(a.scheduled_at); return d >= today && d <= todayEnd; })
+        .map((apt: any) => ({
           id: apt.id, time: new Date(apt.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown',
           service_name: apt.services?.name || 'Unknown', status: apt.status as AppointmentStatus, duration: apt.duration_minutes,
         }));
-        const todayRevenue = appointmentsData.filter((a: any) => a.status === 'completed').reduce((s: number, a: any) => s + Number(a.total_amount || 0), 0);
-        setAppointments(formatted);
-        setMetrics(prev => ({ ...prev, today_appointments: formatted.length, today_revenue: todayRevenue }));
-      }
-
-      const { data: yesterdayApts } = await supabase.from('appointments').select('total_amount').eq('staff_id', staff.id).eq('status', 'completed')
-        .gte('scheduled_at', yesterday.toISOString()).lte('scheduled_at', yesterdayEnd.toISOString());
-      const yesterdayRev = (yesterdayApts || []).reduce((s: number, a: any) => s + Number(a.total_amount || 0), 0);
-
-      const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
-      const lastWeekStart = new Date(weekStart); lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-
-      const [transRes, newClientsRes, lastWeekClientsRes] = await Promise.all([
-        supabase.from('transactions').select('amount, commission_amount, transaction_date').eq('staff_id', staff.id).gte('transaction_date', monthStart.toISOString()),
-        supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', weekStart.toISOString()),
-        supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', lastWeekStart.toISOString()).lt('created_at', weekStart.toISOString()),
-      ]);
-
-      if (transRes.data) {
-        let todaySales = 0, weekSales = 0, monthCommission = 0;
-        transRes.data.forEach(t => {
-          const tDate = new Date(t.transaction_date);
-          monthCommission += Number(t.commission_amount) || 0;
-          if (tDate >= today && tDate <= todayEnd) todaySales += Number(t.amount);
-          if (tDate >= weekStart) weekSales += Number(t.amount);
-        });
-        setMetrics(prev => ({
-          ...prev, today_sales: todaySales, week_sales: weekSales, month_commission: monthCommission,
-          new_clients_week: newClientsRes.count || 0, yesterday_revenue: yesterdayRev, last_week_clients: lastWeekClientsRes.count || 0,
-        }));
-      }
+      setAppointments(todayFormatted);
     };
     fetchDashboardData();
   }, [staff]);
@@ -108,13 +155,18 @@ export function Dashboard() {
   };
 
   const firstName = staff?.first_name || 'there';
-  const revenueChange = metrics.yesterday_revenue > 0 ? Math.round(((metrics.today_revenue - metrics.yesterday_revenue) / metrics.yesterday_revenue) * 100) : 0;
-  const clientsChange = metrics.last_week_clients > 0 ? Math.round(((metrics.new_clients_week - metrics.last_week_clients) / metrics.last_week_clients) * 100) : 0;
+  const m = allMetrics[metricPeriod];
+  const revChange = m.prevRevenue > 0 ? Math.round(((m.revenue - m.prevRevenue) / m.prevRevenue) * 100) : 0;
+  const clientsChange = m.prevClients > 0 ? Math.round(((m.newClients - m.prevClients) / m.prevClients) * 100) : 0;
+  const bookingsChange = m.prevBookings > 0 ? Math.round(((m.bookings - m.prevBookings) / m.prevBookings) * 100) : 0;
+
+  const periodSuffix = PERIOD_LABELS[metricPeriod];
+  const prevLabel = metricPeriod === 'today' ? 'yesterday' : metricPeriod === 'week' ? 'last week' : 'last month';
 
   const kpiCards = [
-    { label: "Today's Bookings", value: metrics.today_appointments, sub: 'Appointments', change: null },
-    { label: "Today's Revenue", value: `$${metrics.today_revenue.toLocaleString()}`, sub: revenueChange !== 0 ? `${revenueChange > 0 ? '+' : ''}${revenueChange}% vs yesterday` : 'Today', change: revenueChange },
-    { label: 'New Clients', value: metrics.new_clients_week, sub: clientsChange !== 0 ? `${clientsChange > 0 ? '+' : ''}${clientsChange}% vs last week` : 'This week', change: clientsChange },
+    { label: `Bookings ${periodSuffix}`, value: m.bookings, sub: bookingsChange !== 0 ? `${bookingsChange > 0 ? '+' : ''}${bookingsChange}% vs ${prevLabel}` : periodSuffix, change: bookingsChange },
+    { label: `Revenue ${periodSuffix}`, value: `$${m.revenue.toLocaleString()}`, sub: revChange !== 0 ? `${revChange > 0 ? '+' : ''}${revChange}% vs ${prevLabel}` : periodSuffix, change: revChange },
+    { label: `New Clients ${periodSuffix}`, value: m.newClients, sub: clientsChange !== 0 ? `${clientsChange > 0 ? '+' : ''}${clientsChange}% vs ${prevLabel}` : periodSuffix, change: clientsChange },
   ];
 
   return (
@@ -159,7 +211,27 @@ export function Dashboard() {
             </Button>
           </div>
 
-          <div className="divider-luxe mt-12 mb-12" />
+          <div className="divider-luxe mt-12 mb-10" />
+
+          {/* Period Toggle */}
+          <div className="flex items-center justify-center mb-8">
+            <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-muted/30 border border-border/30">
+              {(['today', 'week', 'month'] as MetricPeriod[]).map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setMetricPeriod(period)}
+                  className={cn(
+                    'px-5 py-2 rounded-xl text-xs font-semibold transition-all duration-300',
+                    metricPeriod === period
+                      ? 'bg-card text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground/70'
+                  )}
+                >
+                  {PERIOD_LABELS[period]}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* KPI Cards */}
           <div className="grid grid-cols-3 gap-5">
