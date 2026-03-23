@@ -19,7 +19,7 @@ import { InventoryAlertsWidget } from '@/components/dashboard/InventoryAlertsWid
 import { StaffAnnouncementsWidget } from '@/components/dashboard/StaffAnnouncementsWidget';
 import { RevenueGoalTracker } from '@/components/dashboard/RevenueGoalTracker';
 import { LiveActivityFeed } from '@/components/dashboard/LiveActivityFeed';
-import { BusinessAlertsWidget } from '@/components/dashboard/BusinessAlertsWidget';
+import { TodaysFocusWidget } from '@/components/dashboard/TodaysFocusWidget';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
@@ -35,7 +35,7 @@ interface TodayAppointment {
 }
 
 const fadeUp = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
 };
 
@@ -62,7 +62,6 @@ export function Dashboard() {
       today.setHours(0, 0, 0, 0);
       const todayEnd = new Date(today);
       todayEnd.setHours(23, 59, 59, 999);
-
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayEnd = new Date(yesterday);
@@ -90,15 +89,9 @@ export function Dashboard() {
         setMetrics(prev => ({ ...prev, today_appointments: formatted.length, today_revenue: todayRevenue }));
       }
 
-      // Yesterday revenue for comparison
       const { data: yesterdayApts } = await supabase
-        .from('appointments')
-        .select('total_amount')
-        .eq('staff_id', staff.id)
-        .eq('status', 'completed')
-        .gte('scheduled_at', yesterday.toISOString())
-        .lte('scheduled_at', yesterdayEnd.toISOString());
-
+        .from('appointments').select('total_amount').eq('staff_id', staff.id).eq('status', 'completed')
+        .gte('scheduled_at', yesterday.toISOString()).lte('scheduled_at', yesterdayEnd.toISOString());
       const yesterdayRev = (yesterdayApts || []).reduce((s: number, a: any) => s + Number(a.total_amount || 0), 0);
 
       const weekStart = new Date(today);
@@ -121,19 +114,12 @@ export function Dashboard() {
           if (tDate >= today && tDate <= todayEnd) todaySales += Number(t.amount);
           if (tDate >= weekStart) weekSales += Number(t.amount);
         });
-
         setMetrics(prev => ({
-          ...prev,
-          today_sales: todaySales,
-          week_sales: weekSales,
-          month_commission: monthCommission,
-          new_clients_week: newClientsRes.count || 0,
-          yesterday_revenue: yesterdayRev,
-          last_week_clients: lastWeekClientsRes.count || 0,
+          ...prev, today_sales: todaySales, week_sales: weekSales, month_commission: monthCommission,
+          new_clients_week: newClientsRes.count || 0, yesterday_revenue: yesterdayRev, last_week_clients: lastWeekClientsRes.count || 0,
         }));
       }
     };
-
     fetchDashboardData();
   }, [staff]);
 
@@ -150,7 +136,6 @@ export function Dashboard() {
   const firstName = staff?.first_name || 'there';
   const hasCommission = staff && (Number(staff.service_commission_tier1) > 0 || Number(staff.service_commission_tier2) > 0 || Number(staff.service_commission_tier3) > 0 || Number(staff.retail_commission_rate) > 0);
 
-  // Calculate % changes
   const revenueChange = metrics.yesterday_revenue > 0 ? Math.round(((metrics.today_revenue - metrics.yesterday_revenue) / metrics.yesterday_revenue) * 100) : 0;
   const clientsChange = metrics.last_week_clients > 0 ? Math.round(((metrics.new_clients_week - metrics.last_week_clients) / metrics.last_week_clients) * 100) : 0;
 
@@ -163,16 +148,16 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto space-y-5">
+    <div className="p-5 sm:p-7 md:p-10 max-w-6xl mx-auto space-y-7">
       <OnboardingTour />
 
       {/* Header + Clock */}
-      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <motion.div {...fadeUp} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
         <div>
-          <h1 className="text-2xl font-heading font-semibold text-foreground">Welcome back, {firstName}</h1>
-          <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <h1 className="text-3xl font-heading font-semibold text-foreground tracking-tight">Welcome back, {firstName}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         </div>
-        <Button onClick={handleClockAction} disabled={isLoading} variant={clockStatus?.is_clocked_in ? "destructive" : "default"} size="lg" className="gap-2 shrink-0">
+        <Button onClick={handleClockAction} disabled={isLoading} variant={clockStatus?.is_clocked_in ? "destructive" : "default"} size="lg" className="gap-2.5 shrink-0 h-12 rounded-xl shadow-sm hover:shadow-md transition-shadow">
           {clockStatus?.is_clocked_in ? (
             <><Square className="w-4 h-4" /> Clock Out
               {clockStatus.clock_entry && <span className="text-xs opacity-80 ml-1">· Since {new Date(clockStatus.clock_entry.clock_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
@@ -182,24 +167,24 @@ export function Dashboard() {
       </motion.div>
 
       {/* KPI Cards */}
-      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {kpiCards.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="p-4">
+          <Card key={stat.label} className="shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-2xl font-semibold text-foreground leading-none">{stat.value}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+                  <p className="text-2xl font-heading font-bold text-foreground leading-none">{stat.value}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
                     {stat.change !== null && stat.change !== 0 && (
                       stat.change > 0
-                        ? <ArrowUpRight className="w-3 h-3 text-success" />
-                        : <ArrowDownRight className="w-3 h-3 text-destructive" />
+                        ? <ArrowUpRight className="w-3.5 h-3.5 text-success" />
+                        : <ArrowDownRight className="w-3.5 h-3.5 text-destructive" />
                     )}
                     {stat.sub}
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <stat.icon className="w-4 h-4 text-muted-foreground" />
+                <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                  <stat.icon className="w-4.5 h-4.5 text-muted-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -207,32 +192,32 @@ export function Dashboard() {
         ))}
       </motion.div>
 
-      {/* Business Alerts */}
+      {/* Today's Focus */}
       <motion.div {...fadeUp} transition={{ delay: 0.08 }}>
-        <BusinessAlertsWidget />
+        <TodaysFocusWidget />
       </motion.div>
 
       {/* Today's Schedule */}
-      <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
-        <Card>
+      <motion.div {...fadeUp} transition={{ delay: 0.12 }}>
+        <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base font-semibold">Today's Schedule</CardTitle>
-            <Link to="/schedule" className="text-sm text-primary hover:text-primary-hover flex items-center gap-1 transition-colors">
+            <CardTitle className="text-lg font-heading font-semibold">Today's Schedule</CardTitle>
+            <Link to="/schedule" className="text-sm text-primary hover:text-primary/80 flex items-center gap-1 transition-colors font-medium">
               View All <ChevronRight className="w-4 h-4" />
             </Link>
           </CardHeader>
-          <CardContent className="space-y-1.5">
+          <CardContent className="space-y-2">
             {appointments.length === 0 ? (
               <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
             ) : (
               appointments.map((apt) => (
-                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors group">
+                <Link key={apt.id} to={`/schedule/${apt.id}`} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/60 hover:shadow-sm transition-all group">
                   <div className="text-center min-w-[52px]">
-                    <p className="text-sm font-medium text-foreground">{apt.time}</p>
+                    <p className="text-sm font-semibold text-foreground">{apt.time}</p>
                     <p className="text-[11px] text-muted-foreground">{apt.duration}m</p>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground text-sm truncate">{apt.client_name}</p>
+                    <p className="font-semibold text-foreground text-sm truncate">{apt.client_name}</p>
                     <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
                   </div>
                   <StatusBadge status={apt.status} />
@@ -245,40 +230,37 @@ export function Dashboard() {
       </motion.div>
 
       {/* Ops + Goals */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        <motion.div {...fadeUp} transition={{ delay: 0.15 }} className="lg:col-span-2"><TodayOpsWidget /></motion.div>
-        <motion.div {...fadeUp} transition={{ delay: 0.18 }}><LiveGoalsWidget /></motion.div>
+      <div className="grid lg:grid-cols-3 gap-5">
+        <motion.div {...fadeUp} transition={{ delay: 0.16 }} className="lg:col-span-2"><TodayOpsWidget /></motion.div>
+        <motion.div {...fadeUp} transition={{ delay: 0.19 }}><LiveGoalsWidget /></motion.div>
       </div>
 
-      {/* Purchase Requests */}
-      <motion.div {...fadeUp} transition={{ delay: 0.2 }}><PurchaseRequestsWidget /></motion.div>
+      <motion.div {...fadeUp} transition={{ delay: 0.22 }}><PurchaseRequestsWidget /></motion.div>
 
-      {/* Revenue + Activity */}
-      <div className="grid lg:grid-cols-2 gap-4">
-        <motion.div {...fadeUp} transition={{ delay: 0.22 }}><RevenueGoalTracker /></motion.div>
-        <motion.div {...fadeUp} transition={{ delay: 0.24 }}><LiveActivityFeed /></motion.div>
+      <div className="grid lg:grid-cols-2 gap-5">
+        <motion.div {...fadeUp} transition={{ delay: 0.24 }}><RevenueGoalTracker /></motion.div>
+        <motion.div {...fadeUp} transition={{ delay: 0.26 }}><LiveActivityFeed /></motion.div>
       </div>
 
-      {/* Commission + Announcements + Inventory */}
-      <div className="grid lg:grid-cols-3 gap-4">
-        <motion.div {...fadeUp} transition={{ delay: 0.26 }}><CommissionWidget /></motion.div>
-        <motion.div {...fadeUp} transition={{ delay: 0.28 }}><StaffAnnouncementsWidget /></motion.div>
-        <motion.div {...fadeUp} transition={{ delay: 0.3 }}><InventoryAlertsWidget /></motion.div>
+      <div className="grid lg:grid-cols-3 gap-5">
+        <motion.div {...fadeUp} transition={{ delay: 0.28 }}><CommissionWidget /></motion.div>
+        <motion.div {...fadeUp} transition={{ delay: 0.3 }}><StaffAnnouncementsWidget /></motion.div>
+        <motion.div {...fadeUp} transition={{ delay: 0.32 }}><InventoryAlertsWidget /></motion.div>
       </div>
 
       {/* Quick Actions */}
-      <motion.div {...fadeUp} transition={{ delay: 0.32 }} className="grid grid-cols-2 gap-3">
+      <motion.div {...fadeUp} transition={{ delay: 0.34 }} className="grid grid-cols-2 gap-4">
         {[
           { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
           { label: 'Add Client', href: '/clients/new', icon: Users },
           { label: 'View Schedule', href: '/schedule', icon: Clock },
           { label: 'Quick Checkout', href: '/pos', icon: Zap },
         ].map((action) => (
-          <Link key={action.label} to={action.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-md transition-all group">
-            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+          <Link key={action.label} to={action.href} className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-md transition-all group">
+            <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
               <action.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
-            <span className="text-sm font-medium text-foreground">{action.label}</span>
+            <span className="text-sm font-semibold text-foreground">{action.label}</span>
           </Link>
         ))}
       </motion.div>
