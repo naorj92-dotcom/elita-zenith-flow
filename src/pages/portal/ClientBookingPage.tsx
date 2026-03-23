@@ -318,8 +318,8 @@ export function ClientBookingPage() {
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Pick Date & Time</h2>
-              <p className="text-sm text-muted-foreground mt-1">Choose your preferred appointment slot</p>
+              <h2 className="text-2xl font-heading font-semibold text-foreground">Pick Date & Time</h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Choose your preferred session time</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
