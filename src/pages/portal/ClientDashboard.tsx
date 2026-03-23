@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CalendarPlus, ArrowRight, Clock, Target, Zap } from 'lucide-react';
+import { CalendarPlus, ArrowRight, Clock, Target, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
@@ -12,7 +12,7 @@ import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type Progr
 import { cn } from '@/lib/utils';
 
 const fadeUp = {
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
 };
@@ -100,28 +100,45 @@ export function ClientDashboard() {
   const getUrgencyMessage = () => {
     if (daysSinceLastSession === null) return null;
     if (daysSinceLastSession <= 7) return { text: 'You\'re on track — great consistency', tone: 'success' as const };
-    if (daysSinceLastSession <= 14) return { text: 'Time for your next session', tone: 'info' as const };
-    return { text: 'Let\'s get back on track', tone: 'warning' as const };
+    if (daysSinceLastSession <= 14) return { text: 'Time for your next session to stay on track', tone: 'info' as const };
+    return { text: 'Let\'s get back on track — book your next session', tone: 'warning' as const };
   };
   const urgency = getUrgencyMessage();
 
   return (
-    <div className="space-y-8 max-w-xl mx-auto pb-24">
-      {/* Hero */}
-      <motion.div {...fadeUp} className="text-center pt-8 sm:pt-12">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-3">
+    <div className="space-y-10 max-w-xl mx-auto pb-28">
+      {/* Hero — dominant section */}
+      <motion.div {...fadeUp} className="pt-10 sm:pt-14">
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-4">
           Welcome back, {firstName}
         </p>
         <h1 className="text-3xl sm:text-4xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
           Your Elita Journey
         </h1>
-        <p className="text-muted-foreground mt-3 text-sm leading-relaxed max-w-xs mx-auto">
-          Personalized treatments designed for your results
-        </p>
+
+        {/* Inline next visit — visually dominant */}
+        {nextAppointment ? (
+          <div className="mt-8 p-6 rounded-2xl bg-card border border-border">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.15em] mb-3">Your Next Visit</p>
+            <p className="text-lg font-heading font-semibold text-foreground leading-snug">
+              {(nextAppointment as any).services?.name}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d · h:mm a')}
+            </p>
+            {(nextAppointment as any).staff && (
+              <p className="text-xs text-muted-foreground mt-1">
+                with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground mt-4">No upcoming visits — book your next session below.</p>
+        )}
       </motion.div>
 
-      {/* Primary CTA */}
-      <motion.div {...fadeUp} transition={{ delay: 0.08 }}>
+      {/* Single dominant CTA */}
+      <motion.div {...fadeUp} transition={{ delay: 0.06 }}>
         <Button asChild size="lg" className="w-full h-14 text-sm font-semibold gap-2.5 rounded-2xl">
           <Link to="/portal/book">
             <CalendarPlus className="h-4.5 w-4.5" />
@@ -130,7 +147,7 @@ export function ClientDashboard() {
         </Button>
       </motion.div>
 
-      {/* Goal Selection (first time) */}
+      {/* Goal Selection (onboarding) */}
       {!hasGoals && (
         <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
           <SectionLabel>What's Your Goal?</SectionLabel>
@@ -160,15 +177,15 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* Personalized Plan */}
+      {/* Personalized Plan — visually highlighted */}
       {recommendation && (
         <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
           <SectionLabel>Your Personalized Plan</SectionLabel>
           <Card className="overflow-hidden border-elita-camel/15">
-            <div className="h-0.5 bg-gradient-to-r from-elita-camel/40 via-elita-gold/25 to-transparent" />
-            <CardContent className="p-6">
+            <div className="h-0.5 bg-gradient-to-r from-elita-camel/40 via-elita-gold/20 to-transparent" />
+            <CardContent className="p-6 space-y-6">
               {/* Focus + Progress */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-elita-camel/10 flex items-center justify-center">
                     <Target className="w-4.5 h-4.5 text-elita-camel" />
@@ -188,7 +205,7 @@ export function ClientDashboard() {
 
               {/* Progress bar */}
               {totalTarget > 0 && (
-                <div className="mb-6">
+                <div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-elita-camel rounded-full"
@@ -206,12 +223,12 @@ export function ClientDashboard() {
               {/* Urgency */}
               {urgency && (
                 <div className={cn(
-                  'flex items-center gap-2.5 px-4 py-3 rounded-xl mb-6 text-xs font-medium',
+                  'flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-medium',
                   urgency.tone === 'success' && 'bg-success/10 text-success',
                   urgency.tone === 'info' && 'bg-elita-camel/10 text-elita-camel',
                   urgency.tone === 'warning' && 'bg-warning/10 text-warning',
                 )}>
-                  <Zap className="w-3.5 h-3.5 shrink-0" />
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
                   {urgency.text}
                 </div>
               )}
@@ -228,29 +245,24 @@ export function ClientDashboard() {
                     <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                       {recommendation.subtitle}
                     </p>
-                    <Button asChild size="sm" className="mt-4 gap-1.5 h-9 px-4">
-                      <Link to="/portal/book">
-                        Book Treatment <ArrowRight className="h-3 w-3" />
-                      </Link>
-                    </Button>
                   </div>
                 </div>
               </div>
 
-              {/* Category breakdown */}
+              {/* Category breakdown — reduced weight */}
               {treatmentProgress.length > 0 && (
-                <div className="mt-6 pt-5 border-t border-border/40 space-y-3">
+                <div className="pt-4 border-t border-border/30 space-y-2.5">
                   {treatmentProgress.map((p) => {
                     const cat = CATEGORIES[p.category as TreatmentCategory];
                     const pct = p.sessions_target > 0 ? Math.round((p.sessions_completed / p.sessions_target) * 100) : 0;
                     return (
                       <div key={p.category} className="flex items-center gap-2.5">
-                        <span className="text-base">{cat?.emoji}</span>
-                        <span className="text-xs font-medium text-foreground w-14">{cat?.label}</span>
+                        <span className="text-sm">{cat?.emoji}</span>
+                        <span className="text-xs text-muted-foreground w-12">{cat?.label}</span>
                         <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                          <motion.div className="h-full bg-elita-camel/70 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.2 }} />
+                          <motion.div className="h-full bg-elita-camel/60 rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.2 }} />
                         </div>
-                        <span className="text-[11px] font-medium text-muted-foreground w-8 text-right">{p.sessions_completed}/{p.sessions_target}</span>
+                        <span className="text-[10px] text-muted-foreground w-7 text-right">{p.sessions_completed}/{p.sessions_target}</span>
                       </div>
                     );
                   })}
@@ -261,65 +273,24 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* Next Visit */}
-      <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
-        <SectionLabel>Your Next Visit</SectionLabel>
-        {nextAppointment ? (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-elita-camel/10 flex items-center justify-center shrink-0">
-                  <Clock className="h-5 w-5 text-elita-camel" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-heading font-semibold text-foreground text-lg leading-tight">
-                    {(nextAppointment as any).services?.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {format(new Date((nextAppointment as any).scheduled_at), 'EEEE, MMMM d · h:mm a')}
-                  </p>
-                  {(nextAppointment as any).staff && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      with {(nextAppointment as any).staff.first_name} {(nextAppointment as any).staff.last_name}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
-                <Clock className="h-4.5 w-4.5 text-muted-foreground" />
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">No upcoming visits</p>
-              <Button asChild variant="outline" size="sm" className="gap-1.5">
-                <Link to="/portal/book">Schedule Now <ArrowRight className="h-3 w-3" /></Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </motion.div>
-
-      {/* Package Progress */}
+      {/* Package Progress — only if active */}
       {activePackages.length > 0 && (
-        <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
-          <SectionLabel>Your Progress</SectionLabel>
+        <motion.div {...fadeUp} transition={{ delay: 0.18 }}>
+          <SectionLabel>Session Progress</SectionLabel>
           <div className="space-y-3">
             {activePackages.map((pkg: any) => {
               const pct = pkg.sessions_total > 0 ? Math.round((pkg.sessions_used / pkg.sessions_total) * 100) : 0;
               return (
                 <Card key={pkg.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-sm font-semibold text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
-                      <span className="text-xl font-heading font-bold text-elita-camel">{pct}%</span>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-foreground">{pkg.packages?.name || 'Treatment Package'}</p>
+                      <span className="text-lg font-heading font-bold text-elita-camel">{pct}%</span>
                     </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-1 bg-muted rounded-full overflow-hidden">
                       <motion.div className="h-full bg-elita-camel rounded-full" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">{pkg.sessions_used} of {pkg.sessions_total} sessions · {pkg.sessions_total - pkg.sessions_used} remaining</p>
+                    <p className="text-xs text-muted-foreground mt-2">{pkg.sessions_total - pkg.sessions_used} sessions remaining</p>
                   </CardContent>
                 </Card>
               );
@@ -328,18 +299,18 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
-      {/* Quick Actions */}
-      <motion.div {...fadeUp} transition={{ delay: 0.24 }}>
+      {/* Quick Actions — minimal, secondary */}
+      <motion.div {...fadeUp} transition={{ delay: 0.22 }}>
         <SectionLabel>Quick Actions</SectionLabel>
         <div className="grid grid-cols-2 gap-3">
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬' },
             { label: 'My Photos', href: '/portal/photos', icon: '📸' },
-            { label: 'Forms', href: '/portal/forms', icon: '📋' },
             { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨' },
+            { label: 'Visit History', href: '/portal/history', icon: '📋' },
           ].map((item) => (
-            <Link key={item.href} to={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-elita-camel/20 transition-all duration-300 group">
-              <span className="text-lg">{item.icon}</span>
+            <Link key={item.href} to={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-elita-camel/20 transition-all duration-300">
+              <span className="text-base">{item.icon}</span>
               <span className="text-sm font-medium text-foreground">{item.label}</span>
             </Link>
           ))}
@@ -351,7 +322,7 @@ export function ClientDashboard() {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em] mb-4">
+    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.25em] mb-4">
       {children}
     </p>
   );
