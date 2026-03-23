@@ -116,61 +116,69 @@ export function JourneyHero({
             </motion.div>
           )}
 
-          {/* ─── Next Visit — glassmorphic VIP card ─── */}
+          {/* ─── Next Visit — signature glassmorphic VIP card ─── */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-            className="mb-14"
+            transition={{ delay: 0.6, duration: 0.9 }}
+            className="mb-16 sm:-mr-4"
           >
             {nextAppointment ? (
               <motion.div
-                whileHover={{ y: -6, scale: 1.015 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="next-visit-card glass-dark gold-edge relative p-10 sm:p-14 rounded-[2rem] overflow-hidden grain-overlay luxury-dust"
+                whileHover={{ y: -8, scale: 1.02, rotateX: 1 }}
+                transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="next-visit-card glass-dark gold-edge inner-glow gradient-sweep relative p-12 sm:p-16 rounded-[2.25rem] overflow-hidden grain-overlay luxury-dust"
                 style={{
-                  boxShadow: '0 32px 100px hsl(20 24% 8% / 0.5), 0 12px 40px hsl(20 24% 10% / 0.25), 0 0 100px hsl(34 48% 60% / 0.1)',
+                  background: 'linear-gradient(165deg, hsl(26 24% 30%) 0%, hsl(24 22% 24%) 25%, hsl(22 20% 19%) 55%, hsl(20 18% 14%) 100%)',
+                  backgroundSize: '200% 200%',
+                  boxShadow: '0 36px 110px hsl(20 24% 6% / 0.55), 0 14px 45px hsl(20 24% 8% / 0.3), 0 0 110px hsl(34 48% 60% / 0.12), inset 0 1px 0 hsl(34 34% 50% / 0.25), inset 0 -1px 0 hsl(20 18% 8% / 0.4)',
                 }}
               >
                 {/* Glass shimmer sweep */}
                 <div className="glass-shimmer absolute inset-0 pointer-events-none" />
 
-                {/* Gold atmospheric glow */}
+                {/* Gold atmospheric glow — intensified */}
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background: 'radial-gradient(ellipse 55% 50% at 80% 5%, hsl(34 48% 60% / 0.25) 0%, transparent 55%), radial-gradient(ellipse 45% 45% at 15% 95%, hsl(30 40% 52% / 0.1) 0%, transparent 50%)',
+                    background: 'radial-gradient(ellipse 60% 55% at 85% 0%, hsl(34 48% 60% / 0.3) 0%, transparent 55%), radial-gradient(ellipse 50% 50% at 10% 100%, hsl(30 40% 52% / 0.12) 0%, transparent 50%), radial-gradient(ellipse 30% 30% at 50% 50%, hsl(34 48% 60% / 0.04) 0%, transparent 60%)',
                   }}
                 />
-                {/* Gold edge highlight — top */}
-                <div
-                  className="absolute top-0 left-[5%] right-[5%] h-[1px] pointer-events-none"
-                  style={{ background: 'linear-gradient(90deg, transparent, hsl(34 48% 60% / 0.5), transparent)' }}
+                {/* Gold edge highlights */}
+                <div className="absolute top-0 left-[3%] right-[3%] h-[1px] pointer-events-none"
+                  style={{ background: 'linear-gradient(90deg, transparent, hsl(34 48% 60% / 0.55), hsl(34 48% 65% / 0.3), transparent)' }}
+                />
+                <div className="absolute bottom-0 left-[8%] right-[8%] h-[1px] pointer-events-none"
+                  style={{ background: 'linear-gradient(90deg, transparent, hsl(34 48% 60% / 0.12), transparent)' }}
                 />
 
                 <div className="relative z-10">
-                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.6em] mb-7"
+                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.65em] mb-8"
                      style={{ color: 'hsl(34 48% 72%)' }}>
                     Your Next Visit
                   </p>
 
-                  <p className="text-[2.25rem] sm:text-[3rem] font-heading font-semibold leading-[0.9] tracking-tight"
-                     style={{ color: 'hsl(36 30% 96%)' }}>
+                  <p className="font-heading font-semibold leading-[0.88] tracking-tight"
+                     style={{ color: 'hsl(36 30% 96%)', fontSize: 'clamp(2rem, 5vw, 3.25rem)' }}>
                     {nextAppointment.services?.name}
                   </p>
 
-                  <div className="divider-luxe my-8 opacity-25" />
+                  <div className="divider-luxe my-9 opacity-20" />
 
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                         style={{ background: 'hsl(34 48% 60% / 0.16)', border: '1px solid hsl(34 48% 60% / 0.25)', boxShadow: '0 0 30px hsl(34 48% 60% / 0.12)' }}>
-                      <Clock className="w-5 h-5" style={{ color: 'hsl(34 48% 72%)' }} />
-                    </div>
+                  <div className="flex items-center gap-6">
+                    <motion.div
+                      animate={{ boxShadow: ['0 0 24px hsl(34 48% 60% / 0.1)', '0 0 40px hsl(34 48% 60% / 0.2)', '0 0 24px hsl(34 48% 60% / 0.1)'] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
+                      style={{ background: 'hsl(34 48% 60% / 0.14)', border: '1px solid hsl(34 48% 60% / 0.2)' }}
+                    >
+                      <Clock className="w-5.5 h-5.5" style={{ color: 'hsl(34 48% 72%)' }} />
+                    </motion.div>
                     <div>
-                      <p className="text-[15px] font-medium" style={{ color: 'hsl(36 26% 92%)' }}>
+                      <p className="text-[16px] font-medium" style={{ color: 'hsl(36 26% 93%)' }}>
                         {format(new Date(nextAppointment.scheduled_at), 'EEEE, MMMM d')}
                       </p>
-                      <p className="text-[11px] mt-1.5" style={{ color: 'hsl(34 18% 55%)' }}>
+                      <p className="text-[11px] mt-2 font-light" style={{ color: 'hsl(34 14% 50%)' }}>
                         {format(new Date(nextAppointment.scheduled_at), 'h:mm a')}
                         {nextAppointment.staff && (
                           <span> · with {nextAppointment.staff.first_name} {nextAppointment.staff.last_name}</span>
@@ -182,13 +190,13 @@ export function JourneyHero({
               </motion.div>
             ) : (
               <div
-                className="glass-dark gold-edge p-10 sm:p-12 rounded-[2rem] text-center overflow-hidden grain-overlay"
+                className="glass-dark gold-edge inner-glow p-12 sm:p-14 rounded-[2.25rem] text-center overflow-hidden grain-overlay"
                 style={{
-                  boxShadow: '0 20px 60px hsl(22 24% 12% / 0.3), inset 0 1px 0 hsl(34 30% 40% / 0.2)',
+                  boxShadow: '0 24px 70px hsl(22 24% 10% / 0.35), inset 0 1px 0 hsl(34 30% 40% / 0.2)',
                 }}
               >
-                <Clock className="w-5 h-5 mx-auto mb-3" style={{ color: 'hsl(34 40% 55%)' }} />
-                <p className="text-sm" style={{ color: 'hsl(34 18% 55%)' }}>No upcoming visits</p>
+                <Clock className="w-5 h-5 mx-auto mb-4" style={{ color: 'hsl(34 40% 55%)' }} />
+                <p className="text-sm font-light" style={{ color: 'hsl(34 14% 50%)' }}>No upcoming visits</p>
               </div>
             )}
           </motion.div>
@@ -231,15 +239,16 @@ export function JourneyHero({
           <Button
             asChild
             size="lg"
-            className="w-full h-[4.5rem] text-[15px] font-semibold gap-3 rounded-[1.5rem] bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-500 hover:-translate-y-2 active:translate-y-0 active:scale-[0.99] btn-glow"
+            className="w-full h-[4.75rem] text-[15px] font-semibold gap-3 rounded-[1.5rem] text-primary-foreground transition-all duration-600 hover:-translate-y-2.5 active:translate-y-0 active:scale-[0.98] btn-glow"
             style={{
-              boxShadow: '0 16px 48px hsl(22 24% 18% / 0.2), 0 0 40px hsl(34 48% 60% / 0.08), inset 0 1px 0 hsl(34 30% 45% / 0.25)',
+              background: 'linear-gradient(165deg, hsl(22 20% 38%) 0%, hsl(24 22% 32%) 40%, hsl(28 28% 36%) 100%)',
+              boxShadow: '0 20px 56px hsl(22 24% 18% / 0.25), 0 0 50px hsl(34 48% 60% / 0.1), inset 0 1px 0 hsl(34 30% 48% / 0.3), inset 0 -1px 0 hsl(22 20% 24% / 0.3)',
             }}
           >
             <Link to={bookingHref}>
               <CalendarPlus className="h-5 w-5" />
               {recommendation ? 'Book Recommended Session' : 'Book Your Next Session'}
-              <ArrowRight className="h-4 w-4 ml-1 opacity-60" />
+              <ArrowRight className="h-4 w-4 ml-1 opacity-50" />
             </Link>
           </Button>
         </div>
