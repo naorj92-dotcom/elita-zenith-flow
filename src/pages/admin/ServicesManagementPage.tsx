@@ -34,6 +34,7 @@ interface ServiceFormData {
   requires_consent: boolean;
   machine_type_id: string | null;
   recovery_buffer_minutes: number;
+  rebooking_interval_days: number | null;
 }
 
 const initialFormData: ServiceFormData = {
@@ -46,6 +47,7 @@ const initialFormData: ServiceFormData = {
   requires_consent: false,
   machine_type_id: null,
   recovery_buffer_minutes: 0,
+  rebooking_interval_days: null,
 };
 
 const categories = [
@@ -186,6 +188,7 @@ export function ServicesManagementPage() {
       requires_consent: service.requires_consent,
       machine_type_id: service.machine_type_id || null,
       recovery_buffer_minutes: service.recovery_buffer_minutes || 0,
+      rebooking_interval_days: service.rebooking_interval_days ?? null,
     });
     setIsDialogOpen(true);
   };
@@ -360,6 +363,19 @@ export function ServicesManagementPage() {
                     onChange={(e) => setFormData({ ...formData, recovery_buffer_minutes: parseInt(e.target.value) || 0 })}
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="rebooking_interval">Rebooking Interval (days)</Label>
+                <Input
+                  id="rebooking_interval"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 30 — leave blank if N/A"
+                  value={formData.rebooking_interval_days ?? ''}
+                  onChange={(e) => setFormData({ ...formData, rebooking_interval_days: e.target.value ? parseInt(e.target.value) : null })}
+                />
+                <p className="text-xs text-muted-foreground">Suggested days between sessions for rebooking prompts</p>
               </div>
 
               <div className="flex items-center justify-between py-2">

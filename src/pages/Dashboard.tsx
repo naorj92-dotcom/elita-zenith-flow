@@ -17,6 +17,7 @@ import { TodaysFocusWidget } from '@/components/dashboard/TodaysFocusWidget';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { RebookRemindersWidget } from '@/components/dashboard/RebookRemindersWidget';
 import { cn } from '@/lib/utils';
 
 interface TodayAppointment {
@@ -340,6 +341,11 @@ export function Dashboard() {
               )}
             </CardContent>
           </Card>
+        </motion.div>
+
+        {/* Rebook Reminders */}
+        <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+          <RebookRemindersWidget />
         </motion.div>
 
         {/* Operations */}

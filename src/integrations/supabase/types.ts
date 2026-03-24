@@ -1979,6 +1979,64 @@ export type Database = {
           },
         ]
       }
+      rebook_reminders: {
+        Row: {
+          client_id: string
+          created_at: string
+          dismissed_at: string | null
+          id: string
+          remind_at: string
+          service_id: string
+          staff_id: string | null
+          status: string
+          suggested_date: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          dismissed_at?: string | null
+          id?: string
+          remind_at: string
+          service_id: string
+          staff_id?: string | null
+          status?: string
+          suggested_date: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          dismissed_at?: string | null
+          id?: string
+          remind_at?: string
+          service_id?: string
+          staff_id?: string | null
+          status?: string
+          suggested_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rebook_reminders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rebook_reminders_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rebook_reminders_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receipts: {
         Row: {
           appointment_id: string | null
@@ -2300,6 +2358,7 @@ export type Database = {
           machine_type_id: string | null
           name: string
           price: number
+          rebooking_interval_days: number | null
           recovery_buffer_minutes: number
           required_room_type: string | null
           requires_consent: boolean
@@ -2316,6 +2375,7 @@ export type Database = {
           machine_type_id?: string | null
           name: string
           price: number
+          rebooking_interval_days?: number | null
           recovery_buffer_minutes?: number
           required_room_type?: string | null
           requires_consent?: boolean
@@ -2332,6 +2392,7 @@ export type Database = {
           machine_type_id?: string | null
           name?: string
           price?: number
+          rebooking_interval_days?: number | null
           recovery_buffer_minutes?: number
           required_room_type?: string | null
           requires_consent?: boolean

@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
 import { LiveReceiptPreview } from '@/components/pos/LiveReceiptPreview';
 import { ElitaRecommendationsPanel } from '@/components/pos/ElitaRecommendationsPanel';
+import { RebookingModal } from '@/components/pos/RebookingModal';
 import { 
   ReceiptData, 
   RetailItem, 
@@ -59,6 +60,10 @@ export function POSPage() {
   // Email receipt state
   const [sendEmailReceipt, setSendEmailReceipt] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
+  
+  // Rebooking state
+  const [showRebooking, setShowRebooking] = useState(false);
+  const [rebookServices, setRebookServices] = useState<Array<{ serviceId: string; serviceName: string; rebookingIntervalDays: number }>>([]);
 
   // Fetch clients
   const { data: clients = [] } = useQuery({
@@ -93,7 +98,7 @@ export function POSPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('services')
-        .select('id, name, price, machine_type_id, machines(name)')
+        .select('id, name, price, machine_type_id, rebooking_interval_days, machines(name)')
         .eq('is_active', true)
         .order('name');
       if (error) throw error;
@@ -474,6 +479,18 @@ export function POSPage() {
       setGeneratedReceipt(receipt);
       setShowReceipt(true);
       toast.success('Sale completed successfully!');
+
+      // Prepare rebooking suggestions
+      const serviceCartItems = cart.filter(i => i.type === 'service');
+      const rebookable = serviceCartItems
+        .map(ci => {
+          const svc = services.find(s => s.id === ci.id);
+          return svc?.rebooking_interval_days
+            ? { serviceId: svc.id, serviceName: svc.name, rebookingIntervalDays: svc.rebooking_interval_days }
+            : null;
+        })
+        .filter(Boolean) as Array<{ serviceId: string; serviceName: string; rebookingIntervalDays: number }>;
+      setRebookServices(rebookable);
 
       // Send email receipt if enabled and client has email
       if (sendEmailReceipt && client?.email) {
@@ -1049,9 +1066,24 @@ export function POSPage() {
         <ReceiptPreview
           receipt={generatedReceipt}
           open={showReceipt}
-          onClose={() => setShowReceipt(false)}
+          onClose={() => {
+            setShowReceipt(false);
+            if (rebookServices.length > 0) {
+              setShowRebooking(true);
+            }
+          }}
         />
       )}
+
+      {/* Rebooking Suggestion Modal */}
+      <RebookingModal
+        open={showRebooking}
+        onClose={() => { setShowRebooking(false); setRebookServices([]); }}
+        clientId={selectedClient}
+        clientFirstName={clients.find(c => c.id === selectedClient)?.first_name || 'Client'}
+        staffId={selectedStaff}
+        services={rebookServices}
+      />
     </div>
   );
 }
