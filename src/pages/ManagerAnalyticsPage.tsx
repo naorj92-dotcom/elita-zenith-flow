@@ -89,8 +89,6 @@ export default function ManagerAnalyticsPage() {
             <Sparkles className="w-4 h-4 mr-2" />
             Upsell Performance
           </TabsTrigger>
-            Expert Insights
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="machines" className="space-y-6">
