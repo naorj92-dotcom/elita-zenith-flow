@@ -85,6 +85,12 @@ export default function ManagerAnalyticsPage() {
             <Target className="w-4 h-4 mr-2" />
             Expert Insights
           </TabsTrigger>
+          <TabsTrigger value="upsell" className="data-[state=active]:bg-background">
+            <Sparkles className="w-4 h-4 mr-2" />
+            Upsell Performance
+          </TabsTrigger>
+            Expert Insights
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="machines" className="space-y-6">
