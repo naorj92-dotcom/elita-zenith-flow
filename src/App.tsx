@@ -191,7 +191,7 @@ function AppRoutes() {
         <Route path="appointments" element={<ClientHistoryPage />} />
         <Route path="benefits" element={<ClientMembershipsPage />} />
         <Route path="payments" element={<ClientHistoryPage />} />
-        <Route path="gift-cards" element={<ClientPackagesPage />} />
+        <Route path="gift-cards" element={<ClientGiftCardsPage />} />
         <Route path="profile" element={<ClientDashboard />} />
         <Route path="messages" element={<ClientMessagesPage />} />
         <Route path="skin-analysis" element={<ClientSkinAnalysisPage />} />
