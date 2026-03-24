@@ -157,6 +157,7 @@ function AppRoutes() {
       
       {/* ========== OPERATIONS (Owner Only) ========== */}
       <Route path="/machines" element={<OwnerRoute><MachinesManagementPage /></OwnerRoute>} />
+      <Route path="/inventory" element={<OwnerRoute><InventoryManagementPage /></OwnerRoute>} />
       <Route path="/products" element={<OwnerRoute><ProductsManagementPage /></OwnerRoute>} />
       <Route path="/forms" element={<OwnerRoute><FormsManagementPage /></OwnerRoute>} />
       <Route path="/notifications" element={<OwnerRoute><NotificationsManagementPage /></OwnerRoute>} />

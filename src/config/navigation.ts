@@ -118,7 +118,8 @@ export const OWNER_NAVIGATION: NavCategory[] = [
     icon: Wrench,
     items: [
       { label: 'Machines', href: '/machines', icon: Cpu },
-      { label: 'Inventory', href: '/products', icon: Package },
+      { label: 'Inventory', href: '/inventory', icon: Package },
+      { label: 'Retail Products', href: '/products', icon: ShoppingCart },
       { label: 'Forms & Consents', href: '/forms', icon: FileText },
       { label: 'Notifications', href: '/notifications', icon: Bell },
       { label: 'Exclusive Deals', href: '/deals', icon: Gift },
