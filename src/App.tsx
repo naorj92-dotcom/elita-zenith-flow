@@ -214,6 +214,7 @@ function AppRoutes() {
       {/* ========== 404 ========== */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   );
 }
 
