@@ -13,6 +13,7 @@ import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type Progr
 import { cn } from '@/lib/utils';
 import { JourneyHero } from '@/components/portal/JourneyHero';
 import { PendingFormsBanner } from '@/components/portal/PendingFormsBanner';
+import { BirthdayGiftBanner } from '@/components/portal/BirthdayGiftBanner';
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -218,6 +219,11 @@ export function ClientDashboard() {
 
   return (
     <div className="max-w-xl mx-auto pb-36 page-atmosphere">
+
+      {/* ═══ BIRTHDAY GIFT BANNER ═══ */}
+      <div className="mt-4 sm:mt-6 px-1">
+        <BirthdayGiftBanner />
+      </div>
 
       {/* ═══ PENDING FORMS BANNER ═══ */}
       <div className="mt-4 sm:mt-6 px-1">

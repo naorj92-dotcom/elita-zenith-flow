@@ -65,6 +65,11 @@ export function POSPage() {
   const [showRebooking, setShowRebooking] = useState(false);
   const [rebookServices, setRebookServices] = useState<Array<{ serviceId: string; serviceName: string; rebookingIntervalDays: number }>>([]);
 
+  // Birthday code state
+  const [birthdayCode, setBirthdayCode] = useState('');
+  const [birthdayGiftApplied, setBirthdayGiftApplied] = useState<{ id: string; code: string; discount_percent: number | null; gift_type: string } | null>(null);
+  const [birthdayLookupLoading, setBirthdayLookupLoading] = useState(false);
+
   // Fetch clients
   const { data: clients = [] } = useQuery({
     queryKey: ['clients'],
@@ -190,6 +195,40 @@ export function POSPage() {
     const amountToApply = Math.min(giftCardBalance, totalAmount);
     setGiftCardApplied({ code: giftCardCode.trim().toUpperCase(), amount: amountToApply });
     toast.success(`Applied $${amountToApply.toFixed(2)} from gift card`);
+  };
+
+  // Birthday code lookup
+  const lookupBirthdayCode = async () => {
+    if (!birthdayCode.trim()) return;
+    setBirthdayLookupLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('birthday_gifts')
+        .select('id, code, gift_type, discount_percent, expiry_date, redeemed, client_id')
+        .eq('code', birthdayCode.trim().toUpperCase())
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) { toast.error('Birthday code not found'); return; }
+      if (data.redeemed) { toast.error('This code has already been redeemed'); return; }
+      if (new Date(data.expiry_date) < new Date()) { toast.error('This code has expired'); return; }
+      if (selectedClient && data.client_id !== selectedClient) { toast.error('This code belongs to a different client'); return; }
+
+      setBirthdayGiftApplied({ id: data.id, code: data.code, discount_percent: data.discount_percent ? Number(data.discount_percent) : null, gift_type: data.gift_type });
+
+      if (data.gift_type === 'discount' && data.discount_percent) {
+        const discountVal = (subtotal * Number(data.discount_percent)) / 100;
+        setDiscountAmount(prev => prev + discountVal);
+        toast.success(`Birthday discount applied: ${data.discount_percent}% off ($${discountVal.toFixed(2)})`);
+      } else {
+        toast.success('Birthday gift applied!');
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to lookup birthday code');
+    } finally {
+      setBirthdayLookupLoading(false);
+    }
   };
 
   const applyLoyaltyPoints = () => {
@@ -480,7 +519,16 @@ export function POSPage() {
       setShowReceipt(true);
       toast.success('Sale completed successfully!');
 
-      // Prepare rebooking suggestions
+      // Mark birthday gift as redeemed
+      if (birthdayGiftApplied) {
+        await supabase
+          .from('birthday_gifts')
+          .update({ redeemed: true, redeemed_at: new Date().toISOString() })
+          .eq('id', birthdayGiftApplied.id);
+        setBirthdayGiftApplied(null);
+        setBirthdayCode('');
+      }
+
       const serviceCartItems = cart.filter(i => i.type === 'service');
       const rebookable = serviceCartItems
         .map(ci => {
@@ -957,7 +1005,49 @@ export function POSPage() {
                 )}
               </div>
 
-              {/* Payment Method */}
+              {/* Birthday Code */}
+              <div className="p-3 bg-warning/5 rounded-lg border border-warning/20">
+                <Label className="text-xs flex items-center gap-1 mb-2">
+                  🎂 Birthday Code
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={birthdayCode}
+                    onChange={(e) => setBirthdayCode(e.target.value.toUpperCase())}
+                    placeholder="BDAY-XXXXXX"
+                    className="text-sm h-8 flex-1 uppercase"
+                    disabled={!!birthdayGiftApplied}
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={lookupBirthdayCode}
+                    disabled={birthdayLookupLoading || !birthdayCode.trim() || !!birthdayGiftApplied}
+                  >
+                    {birthdayLookupLoading ? <span className="animate-pulse">...</span> : <Search className="h-3 w-3" />}
+                  </Button>
+                </div>
+                {birthdayGiftApplied && (
+                  <div className="flex items-center justify-between mt-2 p-2 bg-warning/10 rounded border border-warning/20">
+                    <span className="text-xs flex items-center gap-1 text-warning">
+                      <Check className="h-3 w-3" />
+                      {birthdayGiftApplied.gift_type === 'discount'
+                        ? `${birthdayGiftApplied.discount_percent}% birthday discount`
+                        : 'Birthday gift applied'}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 text-xs text-destructive"
+                      onClick={() => setBirthdayGiftApplied(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label className="text-xs">Payment Method</Label>
                 <div className="grid grid-cols-2 gap-2 mt-1">
