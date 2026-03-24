@@ -365,6 +365,18 @@ export function ServicesManagementPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="rebooking_interval">Rebooking Interval (days)</Label>
+                <Input
+                  id="rebooking_interval"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 30 — leave blank if N/A"
+                  value={formData.rebooking_interval_days ?? ''}
+                  onChange={(e) => setFormData({ ...formData, rebooking_interval_days: e.target.value ? parseInt(e.target.value) : null })}
+                />
+                <p className="text-xs text-muted-foreground">Suggested days between sessions for rebooking prompts</p>
+
               <div className="flex items-center justify-between py-2">
                 <div className="space-y-0.5">
                   <Label>Requires Consent Form</Label>
