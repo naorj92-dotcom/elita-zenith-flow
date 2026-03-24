@@ -415,6 +415,9 @@ export function ClientDashboard() {
         </motion.div>
       )}
 
+      {/* ═══ TODAY'S DEALS ═══ */}
+      <DashboardDealsWidget />
+
       {/* ═══ QUICK ACTIONS — subdued, asymmetric grid ═══ */}
       <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-24 relative z-10 sm:-ml-1">
         <SectionLabel>Quick Actions</SectionLabel>

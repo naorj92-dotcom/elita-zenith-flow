@@ -209,6 +209,7 @@ function AppRoutes() {
         <Route path="rewards" element={<ClientRewardsStorePage />} />
         <Route path="reviews" element={<ClientReviewsPage />} />
         <Route path="family" element={<ClientFamilyPage />} />
+        <Route path="deals" element={<ClientDealsPage />} />
       </Route>
       
       {/* ========== 404 ========== */}
