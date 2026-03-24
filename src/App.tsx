@@ -197,7 +197,7 @@ function AppRoutes() {
         <Route path="benefits" element={<Navigate to="/portal/memberships" replace />} />
         <Route path="payments" element={<ClientHistoryPage defaultTab="payments" />} />
         <Route path="gift-cards" element={<ClientGiftCardsPage />} />
-        <Route path="profile" element={<ClientDashboard />} />
+        <Route path="profile" element={<ClientProfilePage />} />
         <Route path="messages" element={<ClientMessagesPage />} />
         <Route path="skin-analysis" element={<ClientSkinAnalysisPage />} />
         <Route path="waitlist" element={<ClientWaitlistPage />} />
