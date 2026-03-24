@@ -2138,6 +2138,56 @@ export type Database = {
           },
         ]
       }
+      skin_analyses: {
+        Row: {
+          client_id: string
+          concerns: Json | null
+          created_at: string | null
+          id: string
+          next_steps: string | null
+          overall_summary: string | null
+          photo_url: string | null
+          recommendations: Json | null
+          shared_at: string | null
+          shared_with_provider: boolean | null
+          skin_score: number | null
+        }
+        Insert: {
+          client_id: string
+          concerns?: Json | null
+          created_at?: string | null
+          id?: string
+          next_steps?: string | null
+          overall_summary?: string | null
+          photo_url?: string | null
+          recommendations?: Json | null
+          shared_at?: string | null
+          shared_with_provider?: boolean | null
+          skin_score?: number | null
+        }
+        Update: {
+          client_id?: string
+          concerns?: Json | null
+          created_at?: string | null
+          id?: string
+          next_steps?: string | null
+          overall_summary?: string | null
+          photo_url?: string | null
+          recommendations?: Json | null
+          shared_at?: string | null
+          shared_with_provider?: boolean | null
+          skin_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skin_analyses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff: {
         Row: {
           avatar_url: string | null
