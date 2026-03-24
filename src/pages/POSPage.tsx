@@ -724,6 +724,16 @@ export function POSPage() {
             taxRate={taxRate}
           />
           
+          {/* Elita Recommendations */}
+          {cart.length > 0 && selectedClient && (
+            <ElitaRecommendationsPanel
+              cart={cart}
+              clientId={selectedClient}
+              staffId={selectedStaff}
+              onAddService={addToCart}
+            />
+          )}
+
           {/* Cart & Checkout Controls */}
           <Card>
             <CardHeader className="py-3">
