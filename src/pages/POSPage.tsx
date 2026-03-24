@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
 import { LiveReceiptPreview } from '@/components/pos/LiveReceiptPreview';
 import { ElitaRecommendationsPanel } from '@/components/pos/ElitaRecommendationsPanel';
+import { RebookingModal } from '@/components/pos/RebookingModal';
 import { 
   ReceiptData, 
   RetailItem, 
