@@ -108,6 +108,10 @@ export default function ManagerAnalyticsPage() {
         <TabsContent value="insights" className="space-y-6">
           <ExpertInsights dateRange={dateRange} />
         </TabsContent>
+
+        <TabsContent value="upsell" className="space-y-6">
+          <UpsellPerformanceReport dateRange={dateRange} />
+        </TabsContent>
       </Tabs>
     </div>
   );
