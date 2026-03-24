@@ -288,10 +288,13 @@ export default function NotificationsManagementPage() {
       </div>
 
       <Tabs defaultValue="triggers" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="triggers" className="gap-2">
             <Zap className="h-4 w-4" />
             Automated Triggers
+          </TabsTrigger>
+          <TabsTrigger value="birthday" className="gap-2">
+            🎂 Birthday
           </TabsTrigger>
           <TabsTrigger value="email" className="gap-2">
             <Mail className="h-4 w-4" />
@@ -306,6 +309,11 @@ export default function NotificationsManagementPage() {
             Message Log
           </TabsTrigger>
         </TabsList>
+
+        {/* ── Birthday Campaign Tab ── */}
+        <TabsContent value="birthday">
+          <BirthdayCampaignSection />
+        </TabsContent>
 
         {/* ── Automated Triggers Tab ── */}
         <TabsContent value="triggers" className="space-y-4">
