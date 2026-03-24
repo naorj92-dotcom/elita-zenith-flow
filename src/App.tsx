@@ -13,7 +13,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 // Pages
 import { LoginPage } from "@/pages/LoginPage";
 import { Dashboard } from "@/pages/Dashboard";
-import ClientProfilePage from "@/pages/ClientProfilePage";
+import StaffClientProfilePage from "@/pages/ClientProfilePage";
 import { PayrollPage } from "@/pages/PayrollPage";
 import { SchedulePage } from "@/pages/SchedulePage";
 import { ClientsPage } from "@/pages/ClientsPage";
