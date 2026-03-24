@@ -35,7 +35,7 @@ export default function ManagerAnalyticsPage() {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['machines', 'staff', 'products', 'insights'].includes(tab)) {
+    if (tab && ['machines', 'staff', 'products', 'insights', 'upsell'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
