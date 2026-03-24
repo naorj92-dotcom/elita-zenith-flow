@@ -996,7 +996,49 @@ export function POSPage() {
                 )}
               </div>
 
-              {/* Payment Method */}
+              {/* Birthday Code */}
+              <div className="p-3 bg-warning/5 rounded-lg border border-warning/20">
+                <Label className="text-xs flex items-center gap-1 mb-2">
+                  🎂 Birthday Code
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={birthdayCode}
+                    onChange={(e) => setBirthdayCode(e.target.value.toUpperCase())}
+                    placeholder="BDAY-XXXXXX"
+                    className="text-sm h-8 flex-1 uppercase"
+                    disabled={!!birthdayGiftApplied}
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={lookupBirthdayCode}
+                    disabled={birthdayLookupLoading || !birthdayCode.trim() || !!birthdayGiftApplied}
+                  >
+                    {birthdayLookupLoading ? <span className="animate-pulse">...</span> : <Search className="h-3 w-3" />}
+                  </Button>
+                </div>
+                {birthdayGiftApplied && (
+                  <div className="flex items-center justify-between mt-2 p-2 bg-warning/10 rounded border border-warning/20">
+                    <span className="text-xs flex items-center gap-1 text-warning">
+                      <Check className="h-3 w-3" />
+                      {birthdayGiftApplied.gift_type === 'discount'
+                        ? `${birthdayGiftApplied.discount_percent}% birthday discount`
+                        : 'Birthday gift applied'}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 text-xs text-destructive"
+                      onClick={() => setBirthdayGiftApplied(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label className="text-xs">Payment Method</Label>
                 <div className="grid grid-cols-2 gap-2 mt-1">
