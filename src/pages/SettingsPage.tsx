@@ -31,7 +31,7 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-2xl grid-cols-5">
+        <TabsList className="grid w-full max-w-3xl grid-cols-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             General
@@ -51,6 +51,10 @@ export function SettingsPage() {
           <TabsTrigger value="policies" className="flex items-center gap-2">
             <Shield className="w-4 h-4" />
             Policies
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Security
           </TabsTrigger>
         </TabsList>
 
