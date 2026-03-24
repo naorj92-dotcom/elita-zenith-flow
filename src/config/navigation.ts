@@ -68,6 +68,7 @@ export const OWNER_NAVIGATION: NavCategory[] = [
       { label: 'Staff Performance', href: '/analytics?tab=staff', icon: Target },
       { label: 'Machine ROI', href: '/analytics?tab=machines', icon: Cpu },
       { label: 'Products', href: '/analytics?tab=products', icon: PieChart },
+      { label: 'Upsell Performance', href: '/analytics?tab=upsell', icon: TrendingUp },
       { label: 'Expert Insights', href: '/analytics?tab=insights', icon: Sparkles },
     ],
   },
