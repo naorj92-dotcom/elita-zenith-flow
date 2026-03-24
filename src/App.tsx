@@ -10,63 +10,63 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ClientPortalLayout } from "@/components/layout/ClientPortalLayout";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
-// Pages
-import { LoginPage } from "@/pages/LoginPage";
-import { Dashboard } from "@/pages/Dashboard";
-import StaffClientProfilePage from "@/pages/ClientProfilePage";
-import { PayrollPage } from "@/pages/PayrollPage";
-import { SchedulePage } from "@/pages/SchedulePage";
-import { ClientsPage } from "@/pages/ClientsPage";
-import { TimeClockPage } from "@/pages/TimeClockPage";
-import { POSPage } from "@/pages/POSPage";
-import { ReceiptHistoryPage } from "@/pages/ReceiptHistoryPage";
-import { CompetitionPage } from "@/pages/CompetitionPage";
-import { StaffManagementPage } from "@/pages/admin/StaffManagementPage";
-import { ServicesManagementPage } from "@/pages/admin/ServicesManagementPage";
-import { ProductsManagementPage } from "@/pages/admin/ProductsManagementPage";
-import { FormsManagementPage } from "@/pages/admin/FormsManagementPage";
-import { ClientPhotosManagementPage } from "@/pages/admin/ClientPhotosManagementPage";
-import { MembershipsManagementPage } from "@/pages/admin/MembershipsManagementPage";
-import { GiftCardsManagementPage } from "@/pages/admin/GiftCardsManagementPage";
-import { WaitlistManagementPage } from "@/pages/admin/WaitlistManagementPage";
-import { MachinesManagementPage } from "@/pages/admin/MachinesManagementPage";
-import { PackagesManagementPage } from "@/pages/admin/PackagesManagementPage";
-import NotificationsManagementPage from "@/pages/admin/NotificationsManagementPage";
-import MessagesManagementPage from "@/pages/admin/MessagesManagementPage";
-import ManagerAnalyticsPage from "@/pages/ManagerAnalyticsPage";
-import MyReportsPage from "@/pages/MyReportsPage";
-import StaffReportsPage from "@/pages/StaffReportsPage";
-import SettingsPage from "@/pages/SettingsPage";
-import AuditLogPage from "@/pages/AuditLogPage";
-import { DealsManagementPage } from "@/pages/admin/DealsManagementPage";
-import { AftercareTipsManagementPage } from "@/pages/admin/AftercareTipsManagementPage";
-import CheckoutRulesPage from "@/pages/admin/CheckoutRulesPage";
-import { InventoryManagementPage } from "@/pages/admin/InventoryManagementPage";
+// Pages (lazy-loaded for code splitting)
+const LoginPage = React.lazy(() => import("@/pages/LoginPage").then(m => ({ default: m.LoginPage })));
+const Dashboard = React.lazy(() => import("@/pages/Dashboard").then(m => ({ default: m.Dashboard })));
+const StaffClientProfilePage = React.lazy(() => import("@/pages/ClientProfilePage"));
+const PayrollPage = React.lazy(() => import("@/pages/PayrollPage").then(m => ({ default: m.PayrollPage })));
+const SchedulePage = React.lazy(() => import("@/pages/SchedulePage").then(m => ({ default: m.SchedulePage })));
+const ClientsPage = React.lazy(() => import("@/pages/ClientsPage").then(m => ({ default: m.ClientsPage })));
+const TimeClockPage = React.lazy(() => import("@/pages/TimeClockPage").then(m => ({ default: m.TimeClockPage })));
+const POSPage = React.lazy(() => import("@/pages/POSPage").then(m => ({ default: m.POSPage })));
+const ReceiptHistoryPage = React.lazy(() => import("@/pages/ReceiptHistoryPage").then(m => ({ default: m.ReceiptHistoryPage })));
+const CompetitionPage = React.lazy(() => import("@/pages/CompetitionPage").then(m => ({ default: m.CompetitionPage })));
+const StaffManagementPage = React.lazy(() => import("@/pages/admin/StaffManagementPage").then(m => ({ default: m.StaffManagementPage })));
+const ServicesManagementPage = React.lazy(() => import("@/pages/admin/ServicesManagementPage").then(m => ({ default: m.ServicesManagementPage })));
+const ProductsManagementPage = React.lazy(() => import("@/pages/admin/ProductsManagementPage").then(m => ({ default: m.ProductsManagementPage })));
+const FormsManagementPage = React.lazy(() => import("@/pages/admin/FormsManagementPage").then(m => ({ default: m.FormsManagementPage })));
+const ClientPhotosManagementPage = React.lazy(() => import("@/pages/admin/ClientPhotosManagementPage").then(m => ({ default: m.ClientPhotosManagementPage })));
+const MembershipsManagementPage = React.lazy(() => import("@/pages/admin/MembershipsManagementPage").then(m => ({ default: m.MembershipsManagementPage })));
+const GiftCardsManagementPage = React.lazy(() => import("@/pages/admin/GiftCardsManagementPage").then(m => ({ default: m.GiftCardsManagementPage })));
+const WaitlistManagementPage = React.lazy(() => import("@/pages/admin/WaitlistManagementPage").then(m => ({ default: m.WaitlistManagementPage })));
+const MachinesManagementPage = React.lazy(() => import("@/pages/admin/MachinesManagementPage").then(m => ({ default: m.MachinesManagementPage })));
+const PackagesManagementPage = React.lazy(() => import("@/pages/admin/PackagesManagementPage").then(m => ({ default: m.PackagesManagementPage })));
+const NotificationsManagementPage = React.lazy(() => import("@/pages/admin/NotificationsManagementPage"));
+const MessagesManagementPage = React.lazy(() => import("@/pages/admin/MessagesManagementPage"));
+const ManagerAnalyticsPage = React.lazy(() => import("@/pages/ManagerAnalyticsPage"));
+const MyReportsPage = React.lazy(() => import("@/pages/MyReportsPage"));
+const StaffReportsPage = React.lazy(() => import("@/pages/StaffReportsPage"));
+const SettingsPage = React.lazy(() => import("@/pages/SettingsPage"));
+const AuditLogPage = React.lazy(() => import("@/pages/AuditLogPage"));
+const DealsManagementPage = React.lazy(() => import("@/pages/admin/DealsManagementPage").then(m => ({ default: m.DealsManagementPage })));
+const AftercareTipsManagementPage = React.lazy(() => import("@/pages/admin/AftercareTipsManagementPage").then(m => ({ default: m.AftercareTipsManagementPage })));
+const CheckoutRulesPage = React.lazy(() => import("@/pages/admin/CheckoutRulesPage"));
+const InventoryManagementPage = React.lazy(() => import("@/pages/admin/InventoryManagementPage").then(m => ({ default: m.InventoryManagementPage })));
 
-// Client Portal Pages
-import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
-import { ClientDashboard } from "@/pages/portal/ClientDashboard";
-import { ClientProfilePage } from "@/pages/portal/ClientProfilePage";
-import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
-import { ClientPhotosPage } from "@/pages/portal/ClientPhotosPage";
-import { ClientRecommendationsPage } from "@/pages/portal/ClientRecommendationsPage";
-import { ClientHistoryPage } from "@/pages/portal/ClientHistoryPage";
-import { ClientBookingPage } from "@/pages/portal/ClientBookingPage";
-import { ClientFormsPage } from "@/pages/portal/ClientFormsPage";
-import { ClientMembershipsPage } from "@/pages/portal/ClientMembershipsPage";
-import { ClientMessagesPage } from "@/pages/portal/ClientMessagesPage";
-import { ClientSkinAnalysisPage } from "@/pages/portal/ClientSkinAnalysisPage";
-import { ClientWaitlistPage } from "@/pages/portal/ClientWaitlistPage";
-import { ClientRewardsStorePage } from "@/pages/portal/ClientRewardsStorePage";
-import { ClientGiftCardsPage } from "@/pages/portal/ClientGiftCardsPage";
-import { ClientReviewsPage } from "@/pages/portal/ClientReviewsPage";
-import { ClientFamilyPage } from "@/pages/portal/ClientFamilyPage";
-import NotFound from "./pages/NotFound";
-import IntakeFormPage from "./pages/IntakeFormPage";
-import { SetupPage } from "./pages/SetupPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import CheckInKioskPage from "./pages/CheckInKioskPage";
-import { ClientPackagesManagementPage } from "./pages/ClientPackagesManagementPage";
+// Client Portal Pages (lazy-loaded)
+const ClientAuthPage = React.lazy(() => import("@/pages/portal/ClientAuthPage").then(m => ({ default: m.ClientAuthPage })));
+const ClientDashboard = React.lazy(() => import("@/pages/portal/ClientDashboard").then(m => ({ default: m.ClientDashboard })));
+const ClientProfilePage = React.lazy(() => import("@/pages/portal/ClientProfilePage").then(m => ({ default: m.ClientProfilePage })));
+const ClientPackagesPage = React.lazy(() => import("@/pages/portal/ClientPackagesPage").then(m => ({ default: m.ClientPackagesPage })));
+const ClientPhotosPage = React.lazy(() => import("@/pages/portal/ClientPhotosPage").then(m => ({ default: m.ClientPhotosPage })));
+const ClientRecommendationsPage = React.lazy(() => import("@/pages/portal/ClientRecommendationsPage").then(m => ({ default: m.ClientRecommendationsPage })));
+const ClientHistoryPage = React.lazy(() => import("@/pages/portal/ClientHistoryPage").then(m => ({ default: m.ClientHistoryPage })));
+const ClientBookingPage = React.lazy(() => import("@/pages/portal/ClientBookingPage").then(m => ({ default: m.ClientBookingPage })));
+const ClientFormsPage = React.lazy(() => import("@/pages/portal/ClientFormsPage").then(m => ({ default: m.ClientFormsPage })));
+const ClientMembershipsPage = React.lazy(() => import("@/pages/portal/ClientMembershipsPage").then(m => ({ default: m.ClientMembershipsPage })));
+const ClientMessagesPage = React.lazy(() => import("@/pages/portal/ClientMessagesPage").then(m => ({ default: m.ClientMessagesPage })));
+const ClientSkinAnalysisPage = React.lazy(() => import("@/pages/portal/ClientSkinAnalysisPage").then(m => ({ default: m.ClientSkinAnalysisPage })));
+const ClientWaitlistPage = React.lazy(() => import("@/pages/portal/ClientWaitlistPage").then(m => ({ default: m.ClientWaitlistPage })));
+const ClientRewardsStorePage = React.lazy(() => import("@/pages/portal/ClientRewardsStorePage").then(m => ({ default: m.ClientRewardsStorePage })));
+const ClientGiftCardsPage = React.lazy(() => import("@/pages/portal/ClientGiftCardsPage").then(m => ({ default: m.ClientGiftCardsPage })));
+const ClientReviewsPage = React.lazy(() => import("@/pages/portal/ClientReviewsPage").then(m => ({ default: m.ClientReviewsPage })));
+const ClientFamilyPage = React.lazy(() => import("@/pages/portal/ClientFamilyPage").then(m => ({ default: m.ClientFamilyPage })));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
+const IntakeFormPage = React.lazy(() => import("./pages/IntakeFormPage"));
+const SetupPage = React.lazy(() => import("./pages/SetupPage").then(m => ({ default: m.SetupPage })));
+const ResetPasswordPage = React.lazy(() => import("./pages/ResetPasswordPage"));
+const CheckInKioskPage = React.lazy(() => import("./pages/CheckInKioskPage"));
+const ClientPackagesManagementPage = React.lazy(() => import("./pages/ClientPackagesManagementPage").then(m => ({ default: m.ClientPackagesManagementPage })));
 
 const queryClient = new QueryClient();
 
@@ -119,6 +119,11 @@ function OwnerRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    }>
     <Routes>
       {/* ========== PUBLIC FORMS ========== */}
       <Route path="/intake" element={<IntakeFormPage />} />
@@ -209,6 +214,7 @@ function AppRoutes() {
       {/* ========== 404 ========== */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   );
 }
 
