@@ -32,7 +32,7 @@ const TIME_SLOTS = [
   { hour: 17, minute: 0 },
 ];
 
-export function ClientHistoryPage() {
+export function ClientHistoryPage({ defaultTab = 'visits' }: { defaultTab?: 'visits' | 'payments' }) {
   const { client } = useClientAuth();
   const isDemo = false; // Demo mode removed for security
   const queryClient = useQueryClient();

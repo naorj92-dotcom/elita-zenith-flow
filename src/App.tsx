@@ -13,7 +13,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 // Pages
 import { LoginPage } from "@/pages/LoginPage";
 import { Dashboard } from "@/pages/Dashboard";
-import ClientProfilePage from "@/pages/ClientProfilePage";
+import StaffClientProfilePage from "@/pages/ClientProfilePage";
 import { PayrollPage } from "@/pages/PayrollPage";
 import { SchedulePage } from "@/pages/SchedulePage";
 import { ClientsPage } from "@/pages/ClientsPage";
@@ -46,6 +46,7 @@ import { InventoryManagementPage } from "@/pages/admin/InventoryManagementPage";
 // Client Portal Pages
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
+import { ClientProfilePage } from "@/pages/portal/ClientProfilePage";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
 import { ClientPhotosPage } from "@/pages/portal/ClientPhotosPage";
 import { ClientRecommendationsPage } from "@/pages/portal/ClientRecommendationsPage";
@@ -140,7 +141,7 @@ function AppRoutes() {
       
       {/* ========== CLIENTS (All Staff) ========== */}
       <Route path="/clients" element={<StaffRoute><ClientsPage /></StaffRoute>} />
-      <Route path="/clients/:id" element={<StaffRoute><ClientProfilePage /></StaffRoute>} />
+      <Route path="/clients/:id" element={<StaffRoute><StaffClientProfilePage /></StaffRoute>} />
       <Route path="/client-packages" element={<StaffRoute><ClientPackagesManagementPage /></StaffRoute>} />
       <Route path="/photos" element={<StaffRoute><ClientPhotosManagementPage /></StaffRoute>} />
       <Route path="/messages" element={<OwnerRoute><MessagesManagementPage /></OwnerRoute>} />
@@ -193,10 +194,10 @@ function AppRoutes() {
         <Route path="forms" element={<ClientFormsPage />} />
         <Route path="memberships" element={<ClientMembershipsPage />} />
         <Route path="appointments" element={<ClientHistoryPage />} />
-        <Route path="benefits" element={<ClientMembershipsPage />} />
-        <Route path="payments" element={<ClientHistoryPage />} />
+        <Route path="benefits" element={<Navigate to="/portal/memberships" replace />} />
+        <Route path="payments" element={<ClientHistoryPage defaultTab="payments" />} />
         <Route path="gift-cards" element={<ClientGiftCardsPage />} />
-        <Route path="profile" element={<ClientDashboard />} />
+        <Route path="profile" element={<ClientProfilePage />} />
         <Route path="messages" element={<ClientMessagesPage />} />
         <Route path="skin-analysis" element={<ClientSkinAnalysisPage />} />
         <Route path="waitlist" element={<ClientWaitlistPage />} />

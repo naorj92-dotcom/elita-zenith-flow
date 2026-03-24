@@ -69,6 +69,8 @@ export interface Client {
   total_spent: number;
   visit_count: number;
   last_visit_date: string | null;
+  sms_opt_out: boolean;
+  email_opt_out: boolean;
   created_at: string;
   updated_at: string;
 }
