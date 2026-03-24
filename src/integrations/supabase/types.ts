@@ -1084,6 +1084,51 @@ export type Database = {
         }
         Relationships: []
       }
+      in_app_notifications: {
+        Row: {
+          action_url: string | null
+          body: string | null
+          category: string
+          created_at: string
+          icon: string | null
+          id: string
+          is_read: boolean
+          recipient_type: string
+          related_entity_id: string | null
+          related_entity_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          body?: string | null
+          category?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_read?: boolean
+          recipient_type?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          body?: string | null
+          category?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_read?: boolean
+          recipient_type?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       inventory_batches: {
         Row: {
           cost_per_unit: number | null
