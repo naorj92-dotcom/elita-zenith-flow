@@ -10,7 +10,8 @@ import {
   ShoppingBag, 
   Target,
   BarChart3,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react';
 import { SalesOverview } from '@/components/analytics/SalesOverview';
 import { MachineROITracker } from '@/components/analytics/MachineROITracker';
