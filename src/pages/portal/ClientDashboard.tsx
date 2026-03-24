@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { JourneyHero } from '@/components/portal/JourneyHero';
 import { PendingFormsBanner } from '@/components/portal/PendingFormsBanner';
 import { BirthdayGiftBanner } from '@/components/portal/BirthdayGiftBanner';
+import { DashboardDealsWidget } from '@/components/portal/DashboardDealsWidget';
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
