@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SignedImage } from '@/components/photos/SignedImage';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface TimelineVisit {
   id: string;
