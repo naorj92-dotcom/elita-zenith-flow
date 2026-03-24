@@ -40,6 +40,12 @@ export function LoginPage() {
       return;
     }
     setSubmitting(true);
+    // Store remember-me preference
+    if (rememberMe) {
+      localStorage.setItem('elita_remember_me', 'true');
+    } else {
+      localStorage.removeItem('elita_remember_me');
+    }
     const result = await signIn(email, password);
     if (result.error) {
       const newAttempts = failedAttempts + 1;
@@ -54,6 +60,17 @@ export function LoginPage() {
     } else {
       setFailedAttempts(0);
       setLockoutUntil(null);
+      // Log login event
+      try {
+        const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+        if (loggedInUser) {
+          await supabase.from('security_logs').insert({
+            user_id: loggedInUser.id,
+            event_type: 'login',
+            user_agent: navigator.userAgent,
+          });
+        }
+      } catch { /* non-critical */ }
     }
     setSubmitting(false);
   };
