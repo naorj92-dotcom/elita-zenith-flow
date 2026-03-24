@@ -480,6 +480,18 @@ export function POSPage() {
       setShowReceipt(true);
       toast.success('Sale completed successfully!');
 
+      // Prepare rebooking suggestions
+      const serviceCartItems = cart.filter(i => i.type === 'service');
+      const rebookable = serviceCartItems
+        .map(ci => {
+          const svc = services.find(s => s.id === ci.id);
+          return svc?.rebooking_interval_days
+            ? { serviceId: svc.id, serviceName: svc.name, rebookingIntervalDays: svc.rebooking_interval_days }
+            : null;
+        })
+        .filter(Boolean) as Array<{ serviceId: string; serviceName: string; rebookingIntervalDays: number }>;
+      setRebookServices(rebookable);
+
       // Send email receipt if enabled and client has email
       if (sendEmailReceipt && client?.email) {
         setSendingEmail(true);
