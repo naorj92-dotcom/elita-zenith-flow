@@ -40,6 +40,7 @@ import AuditLogPage from "@/pages/AuditLogPage";
 import { DealsManagementPage } from "@/pages/admin/DealsManagementPage";
 import { AftercareTipsManagementPage } from "@/pages/admin/AftercareTipsManagementPage";
 import CheckoutRulesPage from "@/pages/admin/CheckoutRulesPage";
+import { InventoryManagementPage } from "@/pages/admin/InventoryManagementPage";
 
 // Client Portal Pages
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
