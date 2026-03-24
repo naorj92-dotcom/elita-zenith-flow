@@ -31,7 +31,7 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-2xl grid-cols-5">
+        <TabsList className="grid w-full max-w-3xl grid-cols-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             General
@@ -52,7 +52,16 @@ export function SettingsPage() {
             <Shield className="w-4 h-4" />
             Policies
           </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Security
+          </TabsTrigger>
         </TabsList>
+
+        {/* Security Tab */}
+        <TabsContent value="security" className="space-y-6 mt-6">
+          <SecurityLogTab />
+        </TabsContent>
 
         {/* Goals Settings */}
         <TabsContent value="goals" className="space-y-6 mt-6">
@@ -455,6 +464,134 @@ function GoalsSettings() {
         </Button>
       </CardContent>
     </Card>
+  );
+}
+
+// ==================== Security Log Tab ====================
+import { useQuery } from '@tanstack/react-query';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+function SecurityLogTab() {
+  const [logType, setLogType] = React.useState<'security' | 'audit'>('security');
+
+  const { data: securityLogs = [] } = useQuery({
+    queryKey: ['security-logs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('security_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: logType === 'security',
+  });
+
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ['audit-logs-security'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: logType === 'audit',
+  });
+
+  const eventColor = (type: string) => {
+    if (type === 'login') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+    if (type === 'logout') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+    if (type === 'auto_logout') return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+    return 'bg-muted text-muted-foreground';
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Security & Audit Logs</CardTitle>
+          <CardDescription>
+            Monitor login events and data access across your team. Audit log entries can never be deleted.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Select value={logType} onValueChange={(v: 'security' | 'audit') => setLogType(v)}>
+            <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="security">Login / Logout Events</SelectItem>
+              <SelectItem value="audit">Audit Trail</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {logType === 'security' && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Event</TableHead>
+                  <TableHead>User ID</TableHead>
+                  <TableHead>User Agent</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {securityLogs.length === 0 && (
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No security events logged yet</TableCell></TableRow>
+                )}
+                {securityLogs.map((log: any) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="text-sm">{format(new Date(log.created_at), 'MMM d, yyyy h:mm a')}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={eventColor(log.event_type)}>
+                        {log.event_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs font-mono truncate max-w-[200px]">{log.user_id}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground truncate max-w-[200px]">{log.user_agent || '—'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+
+          {logType === 'audit' && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Entity</TableHead>
+                  <TableHead>User ID</TableHead>
+                  <TableHead>Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {auditLogs.length === 0 && (
+                  <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No audit events logged yet</TableCell></TableRow>
+                )}
+                {auditLogs.map((log: any) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="text-sm">{format(new Date(log.created_at), 'MMM d, yyyy h:mm a')}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">{log.action}</Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{log.entity_type}</TableCell>
+                    <TableCell className="text-xs font-mono truncate max-w-[150px]">{log.user_id}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground truncate max-w-[200px]">{log.reason || '—'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

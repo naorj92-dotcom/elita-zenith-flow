@@ -2119,6 +2119,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_logs: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       service_form_links: {
         Row: {
           created_at: string
@@ -2924,6 +2954,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_front_desk: { Args: { _user_id: string }; Returns: boolean }
+      is_provider: { Args: { _user_id: string }; Returns: boolean }
       register_client: {
         Args: {
           p_email: string

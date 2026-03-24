@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -13,6 +13,7 @@ import { StaffNotificationBell } from '@/components/layout/StaffNotificationBell
 import { cn } from '@/lib/utils';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
   getNavigationForRole, 
@@ -30,6 +31,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { 
     staff, 
+    user,
     role, 
     employeeType, 
     isOwner, 
@@ -37,13 +39,29 @@ export function AppLayout({ children }: AppLayoutProps) {
     signOut,
   } = useUnifiedAuth();
   
-  // Auto-logout after 15 minutes of inactivity
-  useSessionTimeout({
-    timeoutMs: 15 * 60 * 1000,
-    onTimeout: () => {
-      toast.warning('Session expired due to inactivity');
-      signOut();
-    },
+  const rememberMe = localStorage.getItem('elita_remember_me') === 'true';
+  const timeoutMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000; // 30 days or 60 min
+  const warningMs = rememberMe ? undefined : 5 * 60 * 1000; // 5 min warning if not remembered
+
+  const handleTimeout = useCallback(async () => {
+    // Log logout event
+    if (user) {
+      try {
+        await supabase.from('security_logs').insert({
+          user_id: user.id,
+          event_type: 'auto_logout',
+          user_agent: navigator.userAgent,
+        });
+      } catch { /* non-critical */ }
+    }
+    toast.warning('Session expired due to inactivity');
+    signOut();
+  }, [user, signOut]);
+
+  const { showWarning, dismissWarning } = useSessionTimeout({
+    timeoutMs,
+    warningMs,
+    onTimeout: handleTimeout,
     enabled: true,
   });
 
@@ -98,6 +116,16 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   const handleLogout = async () => {
+    // Log logout event
+    if (user) {
+      try {
+        await supabase.from('security_logs').insert({
+          user_id: user.id,
+          event_type: 'logout',
+          user_agent: navigator.userAgent,
+        });
+      } catch { /* non-critical */ }
+    }
     await signOut();
   };
 
@@ -309,6 +337,25 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </header>
 
+        {/* Inactivity Warning Banner */}
+        <AnimatePresence>
+          {showWarning && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-amber-500 text-white px-4 py-2.5 text-center text-sm font-medium flex items-center justify-center gap-3 overflow-hidden"
+            >
+              <span>You'll be logged out in 5 minutes due to inactivity.</span>
+              <button
+                onClick={dismissWarning}
+                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md text-xs font-semibold transition-colors"
+              >
+                Stay Logged In
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Mobile Header */}
         <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3">
           <div className="flex items-center justify-between">

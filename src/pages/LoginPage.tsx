@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ export function LoginPage() {
   const [forgotSending, setForgotSending] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
 
   if (isAuthenticated) {
     if (role === 'client') return <Navigate to="/portal" replace />;
@@ -38,6 +40,12 @@ export function LoginPage() {
       return;
     }
     setSubmitting(true);
+    // Store remember-me preference
+    if (rememberMe) {
+      localStorage.setItem('elita_remember_me', 'true');
+    } else {
+      localStorage.removeItem('elita_remember_me');
+    }
     const result = await signIn(email, password);
     if (result.error) {
       const newAttempts = failedAttempts + 1;
@@ -52,6 +60,17 @@ export function LoginPage() {
     } else {
       setFailedAttempts(0);
       setLockoutUntil(null);
+      // Log login event
+      try {
+        const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+        if (loggedInUser) {
+          await supabase.from('security_logs').insert({
+            user_id: loggedInUser.id,
+            event_type: 'login',
+            user_agent: navigator.userAgent,
+          });
+        }
+      } catch { /* non-critical */ }
     }
     setSubmitting(false);
   };
@@ -131,6 +150,17 @@ export function LoginPage() {
                 </div>
 
                 {error && <p className="text-sm text-destructive">{error}</p>}
+
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  />
+                  <Label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
+                    Remember me for 30 days
+                  </Label>
+                </div>
 
                 <Button type="submit" className="w-full h-[3.25rem] text-[13px] font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-300" disabled={submitting || isLoading}>
                   {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Signing in...</> : 'Sign In'}
