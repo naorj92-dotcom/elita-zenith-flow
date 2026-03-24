@@ -138,8 +138,7 @@ function VisitCard({ visit }: { visit: TimelineVisit }) {
         <DialogContent className="max-w-lg p-2 bg-black/90 border-none">
           {photoDialog && (
             <SignedImage
-              bucket="treatment-photos"
-              path={photoDialog}
+              src={photoDialog}
               alt="Treatment photo"
               className="w-full h-auto rounded-lg"
             />
