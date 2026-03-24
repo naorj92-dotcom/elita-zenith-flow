@@ -14,8 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Edit, Crown, Users, Sparkles } from 'lucide-react';
+import { Plus, Edit, Crown, Users, Sparkles, DollarSign, CalendarClock, XCircle } from 'lucide-react';
 import { Json } from '@/integrations/supabase/types';
+import { format, addDays } from 'date-fns';
 
 interface MembershipFormData {
   name: string;
