@@ -203,7 +203,9 @@ export const EMPLOYEE_NAVIGATION: NavCategory[] = [
     label: 'My Reports',
     icon: TrendingUp,
     items: [
-      { label: 'My Reports', href: '/my-reports', icon: TrendingUp },
+      { label: 'My Revenue', href: '/reports?tab=revenue', icon: DollarSign },
+      { label: 'My Performance', href: '/reports?tab=providers', icon: TrendingUp },
+      { label: 'Hours & Sales', href: '/my-reports', icon: TrendingUp },
     ],
   },
   {
