@@ -519,7 +519,16 @@ export function POSPage() {
       setShowReceipt(true);
       toast.success('Sale completed successfully!');
 
-      // Prepare rebooking suggestions
+      // Mark birthday gift as redeemed
+      if (birthdayGiftApplied) {
+        await supabase
+          .from('birthday_gifts')
+          .update({ redeemed: true, redeemed_at: new Date().toISOString() })
+          .eq('id', birthdayGiftApplied.id);
+        setBirthdayGiftApplied(null);
+        setBirthdayCode('');
+      }
+
       const serviceCartItems = cart.filter(i => i.type === 'service');
       const rebookable = serviceCartItems
         .map(ci => {
