@@ -39,6 +39,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import AuditLogPage from "@/pages/AuditLogPage";
 import { DealsManagementPage } from "@/pages/admin/DealsManagementPage";
 import { AftercareTipsManagementPage } from "@/pages/admin/AftercareTipsManagementPage";
+import CheckoutRulesPage from "@/pages/admin/CheckoutRulesPage";
 
 // Client Portal Pages
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
@@ -172,6 +173,7 @@ function AppRoutes() {
       
       {/* ========== SETTINGS (Owner Only) ========== */}
       <Route path="/settings" element={<OwnerRoute><SettingsPage /></OwnerRoute>} />
+      <Route path="/checkout-rules" element={<OwnerRoute><CheckoutRulesPage /></OwnerRoute>} />
       <Route path="/audit-log" element={<OwnerRoute><AuditLogPage /></OwnerRoute>} />
       
       {/* ========== CLIENT PORTAL (Separate Auth) ========== */}

@@ -14,6 +14,7 @@ import { Plus, Minus, Trash2, ShoppingCart, Receipt, CreditCard, DollarSign, Gif
 import { Switch } from '@/components/ui/switch';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
 import { LiveReceiptPreview } from '@/components/pos/LiveReceiptPreview';
+import { ElitaRecommendationsPanel } from '@/components/pos/ElitaRecommendationsPanel';
 import { 
   ReceiptData, 
   RetailItem, 
@@ -723,6 +724,16 @@ export function POSPage() {
             taxRate={taxRate}
           />
           
+          {/* Elita Recommendations */}
+          {cart.length > 0 && selectedClient && (
+            <ElitaRecommendationsPanel
+              cart={cart}
+              clientId={selectedClient}
+              staffId={selectedStaff}
+              onAddService={addToCart}
+            />
+          )}
+
           {/* Cart & Checkout Controls */}
           <Card>
             <CardHeader className="py-3">

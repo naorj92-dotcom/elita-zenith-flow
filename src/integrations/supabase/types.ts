@@ -390,6 +390,54 @@ export type Database = {
           },
         ]
       }
+      checkout_rules: {
+        Row: {
+          created_at: string
+          display_text: string
+          id: string
+          is_active: boolean
+          suggested_price: number | null
+          suggested_service_id: string
+          trigger_service_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_text?: string
+          id?: string
+          is_active?: boolean
+          suggested_price?: number | null
+          suggested_service_id: string
+          trigger_service_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_text?: string
+          id?: string
+          is_active?: boolean
+          suggested_price?: number | null
+          suggested_service_id?: string
+          trigger_service_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_rules_suggested_service_id_fkey"
+            columns: ["suggested_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkout_rules_trigger_service_id_fkey"
+            columns: ["trigger_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_forms: {
         Row: {
           appointment_id: string | null
@@ -2428,6 +2476,74 @@ export type Database = {
           {
             foreignKeyName: "treatment_chart_notes_provider_id_fkey"
             columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upsell_logs: {
+        Row: {
+          action: string
+          client_id: string | null
+          created_at: string
+          dollar_value: number | null
+          id: string
+          related_package_id: string | null
+          related_service_id: string | null
+          rule_type: string
+          staff_id: string | null
+          suggestion_text: string
+        }
+        Insert: {
+          action?: string
+          client_id?: string | null
+          created_at?: string
+          dollar_value?: number | null
+          id?: string
+          related_package_id?: string | null
+          related_service_id?: string | null
+          rule_type: string
+          staff_id?: string | null
+          suggestion_text: string
+        }
+        Update: {
+          action?: string
+          client_id?: string | null
+          created_at?: string
+          dollar_value?: number | null
+          id?: string
+          related_package_id?: string | null
+          related_service_id?: string | null
+          rule_type?: string
+          staff_id?: string | null
+          suggestion_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upsell_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_logs_related_package_id_fkey"
+            columns: ["related_package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_logs_related_service_id_fkey"
+            columns: ["related_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_logs_staff_id_fkey"
+            columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "staff"
             referencedColumns: ["id"]

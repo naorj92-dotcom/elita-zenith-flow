@@ -10,7 +10,8 @@ import {
   ShoppingBag, 
   Target,
   BarChart3,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react';
 import { SalesOverview } from '@/components/analytics/SalesOverview';
 import { MachineROITracker } from '@/components/analytics/MachineROITracker';
@@ -19,6 +20,7 @@ import { ProductPackageAnalytics } from '@/components/analytics/ProductPackageAn
 import { ExpertInsights } from '@/components/analytics/ExpertInsights';
 import { DateRangeFilter, DateRange } from '@/components/analytics/DateRangeFilter';
 import { PDFExportButton } from '@/components/analytics/PDFExportButton';
+import { UpsellPerformanceReport } from '@/components/analytics/UpsellPerformanceReport';
 
 export default function ManagerAnalyticsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -33,7 +35,7 @@ export default function ManagerAnalyticsPage() {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['machines', 'staff', 'products', 'insights'].includes(tab)) {
+    if (tab && ['machines', 'staff', 'products', 'insights', 'upsell'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -83,6 +85,10 @@ export default function ManagerAnalyticsPage() {
             <Target className="w-4 h-4 mr-2" />
             Expert Insights
           </TabsTrigger>
+          <TabsTrigger value="upsell" className="data-[state=active]:bg-background">
+            <Sparkles className="w-4 h-4 mr-2" />
+            Upsell Performance
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="machines" className="space-y-6">
@@ -99,6 +105,10 @@ export default function ManagerAnalyticsPage() {
 
         <TabsContent value="insights" className="space-y-6">
           <ExpertInsights dateRange={dateRange} />
+        </TabsContent>
+
+        <TabsContent value="upsell" className="space-y-6">
+          <UpsellPerformanceReport dateRange={dateRange} />
         </TabsContent>
       </Tabs>
     </div>
