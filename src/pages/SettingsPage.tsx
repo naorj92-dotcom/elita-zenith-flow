@@ -58,6 +58,11 @@ export function SettingsPage() {
           </TabsTrigger>
         </TabsList>
 
+        {/* Security Tab */}
+        <TabsContent value="security" className="space-y-6 mt-6">
+          <SecurityLogTab />
+        </TabsContent>
+
         {/* Goals Settings */}
         <TabsContent value="goals" className="space-y-6 mt-6">
           <GoalsSettings />
