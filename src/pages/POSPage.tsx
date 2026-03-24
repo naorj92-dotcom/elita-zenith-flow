@@ -1066,9 +1066,24 @@ export function POSPage() {
         <ReceiptPreview
           receipt={generatedReceipt}
           open={showReceipt}
-          onClose={() => setShowReceipt(false)}
+          onClose={() => {
+            setShowReceipt(false);
+            if (rebookServices.length > 0) {
+              setShowRebooking(true);
+            }
+          }}
         />
       )}
+
+      {/* Rebooking Suggestion Modal */}
+      <RebookingModal
+        open={showRebooking}
+        onClose={() => { setShowRebooking(false); setRebookServices([]); }}
+        clientId={selectedClient}
+        clientFirstName={clients.find(c => c.id === selectedClient)?.first_name || 'Client'}
+        staffId={selectedStaff}
+        services={rebookServices}
+      />
     </div>
   );
 }
