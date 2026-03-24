@@ -66,17 +66,31 @@ export function MembershipsManagementPage() {
     },
   });
 
-  const { data: clientMemberships } = useQuery({
-    queryKey: ['client-memberships-count'],
+  const { data: allClientMemberships } = useQuery({
+    queryKey: ['client-memberships-all'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_memberships')
-        .select('membership_id, status')
-        .eq('status', 'active');
+        .select('membership_id, status, next_billing_date, cancelled_at, memberships(price)')
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const clientMemberships = allClientMemberships?.filter(cm => cm.status === 'active');
+  const totalActiveMembers = clientMemberships?.length || 0;
+  const mrr = clientMemberships?.reduce((sum, cm) => sum + Number((cm.memberships as any)?.price || 0), 0) || 0;
+  const upcomingRenewals = clientMemberships?.filter(cm => {
+    if (!cm.next_billing_date) return false;
+    const d = new Date(cm.next_billing_date);
+    const now = new Date();
+    return d >= now && d <= addDays(now, 7);
+  }).length || 0;
+  const recentCancellations = allClientMemberships?.filter(cm => {
+    if (cm.status !== 'cancelled' || !cm.cancelled_at) return false;
+    return new Date(cm.cancelled_at) >= addDays(new Date(), -30);
+  }).length || 0;
 
   const createMutation = useMutation({
     mutationFn: async (data: MembershipFormData) => {
