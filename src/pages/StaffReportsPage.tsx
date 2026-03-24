@@ -24,7 +24,8 @@ type DatePreset = 'today' | 'this_week' | 'this_month' | 'custom';
 
 export default function StaffReportsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { role, staff } = useAuth();
+  const { staff } = useAuth();
+  const { role } = useUnifiedAuth();
   const isOwner = role === 'owner';
   const tabFromUrl = searchParams.get('tab') || 'revenue';
   const [activeTab, setActiveTab] = useState(tabFromUrl);

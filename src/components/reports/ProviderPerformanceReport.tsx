@@ -19,34 +19,26 @@ export default function ProviderPerformanceReport({ dateRange, staffId }: Props)
 
   const fetchData = async () => {
     setLoading(true);
-    const queries: Promise<any>[] = [
+    let apQ = supabase.from('appointments').select('id, staff_id, status, total_amount, scheduled_at')
+      .gte('scheduled_at', dateRange.start.toISOString()).lte('scheduled_at', dateRange.end.toISOString());
+    if (staffId) apQ = apQ.eq('staff_id', staffId);
+
+    let tcQ = supabase.from('time_clock').select('*')
+      .gte('clock_in', dateRange.start.toISOString()).lte('clock_in', dateRange.end.toISOString());
+    if (staffId) tcQ = tcQ.eq('staff_id', staffId);
+
+    let ulQ = supabase.from('upsell_logs').select('*')
+      .gte('created_at', dateRange.start.toISOString()).lte('created_at', dateRange.end.toISOString());
+    if (staffId) ulQ = ulQ.eq('staff_id', staffId);
+
+    let txQ = supabase.from('transactions').select('*')
+      .gte('transaction_date', dateRange.start.toISOString()).lte('transaction_date', dateRange.end.toISOString());
+    if (staffId) txQ = txQ.eq('staff_id', staffId);
+
+    const [stRes, apRes, tcRes, ulRes, txRes] = await Promise.all([
       supabase.from('staff').select('id, first_name, last_name, role'),
-      (() => {
-        let q = supabase.from('appointments').select('id, staff_id, status, total_amount, scheduled_at')
-          .gte('scheduled_at', dateRange.start.toISOString()).lte('scheduled_at', dateRange.end.toISOString());
-        if (staffId) q = q.eq('staff_id', staffId);
-        return q;
-      })(),
-      (() => {
-        let q = supabase.from('time_clock').select('*')
-          .gte('clock_in', dateRange.start.toISOString()).lte('clock_in', dateRange.end.toISOString());
-        if (staffId) q = q.eq('staff_id', staffId);
-        return q;
-      })(),
-      (() => {
-        let q = supabase.from('upsell_logs').select('*')
-          .gte('created_at', dateRange.start.toISOString()).lte('created_at', dateRange.end.toISOString());
-        if (staffId) q = q.eq('staff_id', staffId);
-        return q;
-      })(),
-      (() => {
-        let q = supabase.from('transactions').select('*')
-          .gte('transaction_date', dateRange.start.toISOString()).lte('transaction_date', dateRange.end.toISOString());
-        if (staffId) q = q.eq('staff_id', staffId);
-        return q;
-      })(),
-    ];
-    const [stRes, apRes, tcRes, ulRes, txRes] = await Promise.all(queries);
+      apQ, tcQ, ulQ, txQ,
+    ]);
     setStaffList(stRes.data || []);
     setAppointments(apRes.data || []);
     setTimeEntries(tcRes.data || []);
