@@ -1084,6 +1084,147 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_batches: {
+        Row: {
+          cost_per_unit: number | null
+          created_at: string
+          date_received: string
+          expiration_date: string
+          id: string
+          is_active: boolean
+          lot_number: string
+          product_id: string
+          quantity_received: number
+          quantity_remaining: number
+        }
+        Insert: {
+          cost_per_unit?: number | null
+          created_at?: string
+          date_received?: string
+          expiration_date: string
+          id?: string
+          is_active?: boolean
+          lot_number: string
+          product_id: string
+          quantity_received?: number
+          quantity_remaining?: number
+        }
+        Update: {
+          cost_per_unit?: number | null
+          created_at?: string
+          date_received?: string
+          expiration_date?: string
+          id?: string
+          is_active?: boolean
+          lot_number?: string
+          product_id?: string
+          quantity_received?: number
+          quantity_remaining?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_batches_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_deductions: {
+        Row: {
+          amount_deducted: number
+          appointment_id: string | null
+          batch_id: string
+          client_name: string | null
+          created_at: string
+          id: string
+          lot_number: string | null
+          product_id: string
+          provider_name: string | null
+        }
+        Insert: {
+          amount_deducted: number
+          appointment_id?: string | null
+          batch_id: string
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          lot_number?: string | null
+          product_id: string
+          provider_name?: string | null
+        }
+        Update: {
+          amount_deducted?: number
+          appointment_id?: string | null
+          batch_id?: string
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          lot_number?: string | null
+          product_id?: string
+          provider_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_deductions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_deductions_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_deductions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_products: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          reorder_threshold: number
+          unit_type: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          reorder_threshold?: number
+          unit_type?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          reorder_threshold?: number
+          unit_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       journey_stage_configs: {
         Row: {
           created_at: string
