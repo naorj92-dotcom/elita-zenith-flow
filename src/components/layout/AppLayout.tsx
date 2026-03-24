@@ -31,6 +31,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { 
     staff, 
+    user,
     role, 
     employeeType, 
     isOwner, 
@@ -38,13 +39,29 @@ export function AppLayout({ children }: AppLayoutProps) {
     signOut,
   } = useUnifiedAuth();
   
-  // Auto-logout after 15 minutes of inactivity
-  useSessionTimeout({
-    timeoutMs: 15 * 60 * 1000,
-    onTimeout: () => {
-      toast.warning('Session expired due to inactivity');
-      signOut();
-    },
+  const rememberMe = localStorage.getItem('elita_remember_me') === 'true';
+  const timeoutMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000; // 30 days or 60 min
+  const warningMs = rememberMe ? undefined : 5 * 60 * 1000; // 5 min warning if not remembered
+
+  const handleTimeout = useCallback(async () => {
+    // Log logout event
+    if (user) {
+      try {
+        await supabase.from('security_logs').insert({
+          user_id: user.id,
+          event_type: 'auto_logout',
+          user_agent: navigator.userAgent,
+        });
+      } catch { /* non-critical */ }
+    }
+    toast.warning('Session expired due to inactivity');
+    signOut();
+  }, [user, signOut]);
+
+  const { showWarning, dismissWarning } = useSessionTimeout({
+    timeoutMs,
+    warningMs,
+    onTimeout: handleTimeout,
     enabled: true,
   });
 
