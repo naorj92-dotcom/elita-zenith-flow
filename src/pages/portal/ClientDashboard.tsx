@@ -13,6 +13,7 @@ import { GOALS, CATEGORIES, getSimpleRecommendation, type ClientGoal, type Progr
 import { cn } from '@/lib/utils';
 import { JourneyHero } from '@/components/portal/JourneyHero';
 import { PendingFormsBanner } from '@/components/portal/PendingFormsBanner';
+import { BirthdayGiftBanner } from '@/components/portal/BirthdayGiftBanner';
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
