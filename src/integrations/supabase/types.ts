@@ -746,6 +746,7 @@ export type Database = {
           date_of_birth: string | null
           email: string | null
           email_notifications: boolean
+          email_opt_out: boolean
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           emergency_contact_relationship: string | null
@@ -761,6 +762,7 @@ export type Database = {
           pronouns: string | null
           referral_source: string | null
           scheduling_alert: string | null
+          sms_opt_out: boolean
           state: string | null
           text_notifications: boolean
           total_spent: number
@@ -778,6 +780,7 @@ export type Database = {
           date_of_birth?: string | null
           email?: string | null
           email_notifications?: boolean
+          email_opt_out?: boolean
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
@@ -793,6 +796,7 @@ export type Database = {
           pronouns?: string | null
           referral_source?: string | null
           scheduling_alert?: string | null
+          sms_opt_out?: boolean
           state?: string | null
           text_notifications?: boolean
           total_spent?: number
@@ -810,6 +814,7 @@ export type Database = {
           date_of_birth?: string | null
           email?: string | null
           email_notifications?: boolean
+          email_opt_out?: boolean
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
@@ -825,6 +830,7 @@ export type Database = {
           pronouns?: string | null
           referral_source?: string | null
           scheduling_alert?: string | null
+          sms_opt_out?: boolean
           state?: string | null
           text_notifications?: boolean
           total_spent?: number
@@ -1480,6 +1486,54 @@ export type Database = {
           type?: string
           updated_at?: string
           variables?: Json | null
+        }
+        Relationships: []
+      }
+      notification_triggers: {
+        Row: {
+          channels: string[]
+          created_at: string
+          description: string | null
+          email_body: string
+          email_subject: string | null
+          google_review_url: string | null
+          id: string
+          is_enabled: boolean
+          name: string
+          sms_body: string
+          timing_description: string | null
+          trigger_key: string
+          updated_at: string
+        }
+        Insert: {
+          channels?: string[]
+          created_at?: string
+          description?: string | null
+          email_body?: string
+          email_subject?: string | null
+          google_review_url?: string | null
+          id?: string
+          is_enabled?: boolean
+          name: string
+          sms_body?: string
+          timing_description?: string | null
+          trigger_key: string
+          updated_at?: string
+        }
+        Update: {
+          channels?: string[]
+          created_at?: string
+          description?: string | null
+          email_body?: string
+          email_subject?: string | null
+          google_review_url?: string | null
+          id?: string
+          is_enabled?: boolean
+          name?: string
+          sms_body?: string
+          timing_description?: string | null
+          trigger_key?: string
+          updated_at?: string
         }
         Relationships: []
       }
