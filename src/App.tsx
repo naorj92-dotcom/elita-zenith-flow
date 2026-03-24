@@ -40,6 +40,7 @@ import AuditLogPage from "@/pages/AuditLogPage";
 import { DealsManagementPage } from "@/pages/admin/DealsManagementPage";
 import { AftercareTipsManagementPage } from "@/pages/admin/AftercareTipsManagementPage";
 import CheckoutRulesPage from "@/pages/admin/CheckoutRulesPage";
+import { InventoryManagementPage } from "@/pages/admin/InventoryManagementPage";
 
 // Client Portal Pages
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
@@ -156,6 +157,7 @@ function AppRoutes() {
       
       {/* ========== OPERATIONS (Owner Only) ========== */}
       <Route path="/machines" element={<OwnerRoute><MachinesManagementPage /></OwnerRoute>} />
+      <Route path="/inventory" element={<OwnerRoute><InventoryManagementPage /></OwnerRoute>} />
       <Route path="/products" element={<OwnerRoute><ProductsManagementPage /></OwnerRoute>} />
       <Route path="/forms" element={<OwnerRoute><FormsManagementPage /></OwnerRoute>} />
       <Route path="/notifications" element={<OwnerRoute><NotificationsManagementPage /></OwnerRoute>} />
