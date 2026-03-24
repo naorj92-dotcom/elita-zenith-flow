@@ -84,8 +84,7 @@ function VisitCard({ visit }: { visit: TimelineVisit }) {
                 className="w-14 h-14 rounded-lg overflow-hidden border border-border/40 hover:ring-2 hover:ring-primary/30 transition-all"
               >
                 <SignedImage
-                  bucket="treatment-photos"
-                  path={visit.chartNote.before_photo_url}
+                  src={visit.chartNote.before_photo_url}
                   alt="Before"
                   className="w-full h-full object-cover"
                 />
@@ -97,8 +96,7 @@ function VisitCard({ visit }: { visit: TimelineVisit }) {
                 className="w-14 h-14 rounded-lg overflow-hidden border border-border/40 hover:ring-2 hover:ring-primary/30 transition-all"
               >
                 <SignedImage
-                  bucket="treatment-photos"
-                  path={visit.chartNote.after_photo_url}
+                  src={visit.chartNote.after_photo_url}
                   alt="After"
                   className="w-full h-full object-cover"
                 />
