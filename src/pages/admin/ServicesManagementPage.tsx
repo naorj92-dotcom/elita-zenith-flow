@@ -376,6 +376,7 @@ export function ServicesManagementPage() {
                   onChange={(e) => setFormData({ ...formData, rebooking_interval_days: e.target.value ? parseInt(e.target.value) : null })}
                 />
                 <p className="text-xs text-muted-foreground">Suggested days between sessions for rebooking prompts</p>
+              </div>
 
               <div className="flex items-center justify-between py-2">
                 <div className="space-y-0.5">
