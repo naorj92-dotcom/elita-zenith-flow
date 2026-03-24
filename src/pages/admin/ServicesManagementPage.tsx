@@ -188,6 +188,7 @@ export function ServicesManagementPage() {
       requires_consent: service.requires_consent,
       machine_type_id: service.machine_type_id || null,
       recovery_buffer_minutes: service.recovery_buffer_minutes || 0,
+      rebooking_interval_days: service.rebooking_interval_days ?? null,
     });
     setIsDialogOpen(true);
   };
