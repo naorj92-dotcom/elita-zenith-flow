@@ -13,6 +13,7 @@ import { StaffNotificationBell } from '@/components/layout/StaffNotificationBell
 import { cn } from '@/lib/utils';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
   getNavigationForRole, 
