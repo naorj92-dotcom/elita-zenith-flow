@@ -343,6 +343,11 @@ export function Dashboard() {
           </Card>
         </motion.div>
 
+        {/* Rebook Reminders */}
+        <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+          <RebookRemindersWidget />
+        </motion.div>
+
         {/* Operations */}
         <motion.div {...fadeUp} transition={{ delay: 0.17 }}>
           <TodayOpsWidget />
