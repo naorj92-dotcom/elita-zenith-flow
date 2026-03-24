@@ -65,6 +65,11 @@ export function POSPage() {
   const [showRebooking, setShowRebooking] = useState(false);
   const [rebookServices, setRebookServices] = useState<Array<{ serviceId: string; serviceName: string; rebookingIntervalDays: number }>>([]);
 
+  // Birthday code state
+  const [birthdayCode, setBirthdayCode] = useState('');
+  const [birthdayGiftApplied, setBirthdayGiftApplied] = useState<{ id: string; code: string; discount_percent: number | null; gift_type: string } | null>(null);
+  const [birthdayLookupLoading, setBirthdayLookupLoading] = useState(false);
+
   // Fetch clients
   const { data: clients = [] } = useQuery({
     queryKey: ['clients'],
