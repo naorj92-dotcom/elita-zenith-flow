@@ -151,6 +151,17 @@ export function LoginPage() {
 
                 {error && <p className="text-sm text-destructive">{error}</p>}
 
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  />
+                  <Label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
+                    Remember me for 30 days
+                  </Label>
+                </div>
+
                 <Button type="submit" className="w-full h-[3.25rem] text-[13px] font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-300" disabled={submitting || isLoading}>
                   {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Signing in...</> : 'Sign In'}
                 </Button>
