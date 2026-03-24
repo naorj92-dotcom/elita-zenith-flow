@@ -349,6 +349,54 @@ export function MembershipsManagementPage() {
         </Dialog>
       </div>
 
+      {/* Dashboard Stats */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="card-luxury">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
+              <div>
+                <p className="text-2xl font-heading font-semibold">{totalActiveMembers}</p>
+                <p className="text-xs text-muted-foreground">Active Members</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="card-luxury">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-success/10"><DollarSign className="h-5 w-5 text-success" /></div>
+              <div>
+                <p className="text-2xl font-heading font-semibold">${mrr.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Monthly Recurring Revenue</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="card-luxury">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-warning/10"><CalendarClock className="h-5 w-5 text-warning" /></div>
+              <div>
+                <p className="text-2xl font-heading font-semibold">{upcomingRenewals}</p>
+                <p className="text-xs text-muted-foreground">Renewals This Week</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="card-luxury">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-destructive/10"><XCircle className="h-5 w-5 text-destructive" /></div>
+              <div>
+                <p className="text-2xl font-heading font-semibold">{recentCancellations}</p>
+                <p className="text-xs text-muted-foreground">Cancellations (30d)</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Tier Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {memberships?.map((membership, index) => {
