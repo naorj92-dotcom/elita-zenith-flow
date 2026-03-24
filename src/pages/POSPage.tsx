@@ -60,6 +60,10 @@ export function POSPage() {
   // Email receipt state
   const [sendEmailReceipt, setSendEmailReceipt] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
+  
+  // Rebooking state
+  const [showRebooking, setShowRebooking] = useState(false);
+  const [rebookServices, setRebookServices] = useState<Array<{ serviceId: string; serviceName: string; rebookingIntervalDays: number }>>([]);
 
   // Fetch clients
   const { data: clients = [] } = useQuery({
