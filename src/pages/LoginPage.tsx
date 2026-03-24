@@ -24,6 +24,7 @@ export function LoginPage() {
   const [forgotSending, setForgotSending] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
 
   if (isAuthenticated) {
     if (role === 'client') return <Navigate to="/portal" replace />;
