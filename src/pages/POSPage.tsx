@@ -14,6 +14,7 @@ import { Plus, Minus, Trash2, ShoppingCart, Receipt, CreditCard, DollarSign, Gif
 import { Switch } from '@/components/ui/switch';
 import { ReceiptPreview } from '@/components/pos/ReceiptPreview';
 import { LiveReceiptPreview } from '@/components/pos/LiveReceiptPreview';
+import { ElitaRecommendationsPanel } from '@/components/pos/ElitaRecommendationsPanel';
 import { 
   ReceiptData, 
   RetailItem, 
