@@ -14,8 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Edit, Crown, Users, Sparkles } from 'lucide-react';
+import { Plus, Edit, Crown, Users, Sparkles, DollarSign, CalendarClock, XCircle } from 'lucide-react';
 import { Json } from '@/integrations/supabase/types';
+import { format, addDays } from 'date-fns';
 
 interface MembershipFormData {
   name: string;
@@ -65,17 +66,31 @@ export function MembershipsManagementPage() {
     },
   });
 
-  const { data: clientMemberships } = useQuery({
-    queryKey: ['client-memberships-count'],
+  const { data: allClientMemberships } = useQuery({
+    queryKey: ['client-memberships-all'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_memberships')
-        .select('membership_id, status')
-        .eq('status', 'active');
+        .select('membership_id, status, next_billing_date, cancelled_at, memberships(price)')
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
   });
+
+  const clientMemberships = allClientMemberships?.filter(cm => cm.status === 'active');
+  const totalActiveMembers = clientMemberships?.length || 0;
+  const mrr = clientMemberships?.reduce((sum, cm) => sum + Number((cm.memberships as any)?.price || 0), 0) || 0;
+  const upcomingRenewals = clientMemberships?.filter(cm => {
+    if (!cm.next_billing_date) return false;
+    const d = new Date(cm.next_billing_date);
+    const now = new Date();
+    return d >= now && d <= addDays(now, 7);
+  }).length || 0;
+  const recentCancellations = allClientMemberships?.filter(cm => {
+    if (cm.status !== 'cancelled' || !cm.cancelled_at) return false;
+    return new Date(cm.cancelled_at) >= addDays(new Date(), -30);
+  }).length || 0;
 
   const createMutation = useMutation({
     mutationFn: async (data: MembershipFormData) => {
@@ -332,6 +347,54 @@ export function MembershipsManagementPage() {
             </form>
           </DialogContent>
         </Dialog>
+      </div>
+
+      {/* Dashboard Stats */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="card-luxury">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
+              <div>
+                <p className="text-2xl font-heading font-semibold">{totalActiveMembers}</p>
+                <p className="text-xs text-muted-foreground">Active Members</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="card-luxury">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-success/10"><DollarSign className="h-5 w-5 text-success" /></div>
+              <div>
+                <p className="text-2xl font-heading font-semibold">${mrr.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Monthly Recurring Revenue</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="card-luxury">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-warning/10"><CalendarClock className="h-5 w-5 text-warning" /></div>
+              <div>
+                <p className="text-2xl font-heading font-semibold">{upcomingRenewals}</p>
+                <p className="text-xs text-muted-foreground">Renewals This Week</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="card-luxury">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-destructive/10"><XCircle className="h-5 w-5 text-destructive" /></div>
+              <div>
+                <p className="text-2xl font-heading font-semibold">{recentCancellations}</p>
+                <p className="text-xs text-muted-foreground">Cancellations (30d)</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tier Cards */}
