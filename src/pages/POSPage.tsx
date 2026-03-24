@@ -197,6 +197,40 @@ export function POSPage() {
     toast.success(`Applied $${amountToApply.toFixed(2)} from gift card`);
   };
 
+  // Birthday code lookup
+  const lookupBirthdayCode = async () => {
+    if (!birthdayCode.trim()) return;
+    setBirthdayLookupLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('birthday_gifts')
+        .select('id, code, gift_type, discount_percent, expiry_date, redeemed, client_id')
+        .eq('code', birthdayCode.trim().toUpperCase())
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) { toast.error('Birthday code not found'); return; }
+      if (data.redeemed) { toast.error('This code has already been redeemed'); return; }
+      if (new Date(data.expiry_date) < new Date()) { toast.error('This code has expired'); return; }
+      if (selectedClient && data.client_id !== selectedClient) { toast.error('This code belongs to a different client'); return; }
+
+      setBirthdayGiftApplied({ id: data.id, code: data.code, discount_percent: data.discount_percent ? Number(data.discount_percent) : null, gift_type: data.gift_type });
+
+      if (data.gift_type === 'discount' && data.discount_percent) {
+        const discountVal = (subtotal * Number(data.discount_percent)) / 100;
+        setDiscountAmount(prev => prev + discountVal);
+        toast.success(`Birthday discount applied: ${data.discount_percent}% off ($${discountVal.toFixed(2)})`);
+      } else {
+        toast.success('Birthday gift applied!');
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to lookup birthday code');
+    } finally {
+      setBirthdayLookupLoading(false);
+    }
+  };
+
   const applyLoyaltyPoints = () => {
     if (loyaltyPointsToRedeem <= 0) {
       toast.error('Please enter points to redeem');
