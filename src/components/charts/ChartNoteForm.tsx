@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { useVoiceDictation, isSpeechSupported, type AutoFillResult } from '@/hooks/useVoiceDictation';
+import { DictationButton, AutoFilledBadge } from './DictationButton';
 
 const ADVERSE_REACTIONS = [
   { value: 'none', label: 'None' },
@@ -50,9 +52,51 @@ export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOp
   const [afterPhoto, setAfterPhoto] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Auto-fill badges
+  const [autoFilled, setAutoFilled] = useState<Set<string>>(new Set());
+
+  const markAutoFilled = useCallback((field: string) => {
+    setAutoFilled(prev => new Set(prev).add(field));
+    setTimeout(() => setAutoFilled(prev => { const n = new Set(prev); n.delete(field); return n; }), 5000);
+  }, []);
+
+  const handleAutoFills = useCallback((fills: AutoFillResult[]) => {
+    for (const fill of fills) {
+      switch (fill.field) {
+        case 'amount_units':
+          setAmountUnits(prev => prev || fill.value);
+          markAutoFilled('amount_units');
+          break;
+        case 'lot_number':
+          setLotNumber(prev => prev || fill.value);
+          markAutoFilled('lot_number');
+          break;
+        case 'adverse_reaction':
+          setAdverseReaction(fill.value);
+          markAutoFilled('adverse_reaction');
+          break;
+        case 'product_used':
+          setProductUsed(prev => prev || fill.value);
+          markAutoFilled('product_used');
+          break;
+      }
+    }
+  }, [markAutoFilled]);
+
+  // Voice dictation for treatment areas
+  const treatmentDictation = useVoiceDictation({
+    onTranscript: (text) => setTreatmentAreas(prev => (prev ? prev + ' ' : '') + text.trim()),
+    onAutoFill: handleAutoFills,
+  });
+
+  // Voice dictation for provider notes
+  const notesDictation = useVoiceDictation({
+    onTranscript: (text) => setProviderNotes(prev => (prev ? prev + ' ' : '') + text.trim()),
+    onAutoFill: handleAutoFills,
+  });
+
   const providerName = staff ? `${staff.first_name} ${staff.last_name}` : 'Provider';
 
-  // Check if note already exists for this appointment
   const { data: existingNote } = useQuery({
     queryKey: ['chart-note', appointmentId],
     queryFn: async () => {
@@ -66,7 +110,7 @@ export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOp
     enabled: open,
   });
 
-  const isLocked = existingNote?.is_locked || 
+  const isLocked = existingNote?.is_locked ||
     (existingNote && new Date(existingNote.created_at) < new Date(Date.now() - 24 * 60 * 60 * 1000));
 
   const uploadPhoto = async (file: File, prefix: string): Promise<string | null> => {
@@ -85,12 +129,8 @@ export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOp
       let beforePhotoUrl = existingNote?.before_photo_url || null;
       let afterPhotoUrl = existingNote?.after_photo_url || null;
 
-      if (beforePhoto) {
-        beforePhotoUrl = await uploadPhoto(beforePhoto, 'before');
-      }
-      if (afterPhoto) {
-        afterPhotoUrl = await uploadPhoto(afterPhoto, 'after');
-      }
+      if (beforePhoto) beforePhotoUrl = await uploadPhoto(beforePhoto, 'before');
+      if (afterPhoto) afterPhotoUrl = await uploadPhoto(afterPhoto, 'after');
 
       const noteData = {
         appointment_id: appointmentId,
@@ -113,19 +153,13 @@ export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOp
       };
 
       if (existingNote && !isLocked) {
-        const { error } = await supabase
-          .from('treatment_chart_notes')
-          .update(noteData)
-          .eq('id', existingNote.id);
+        const { error } = await supabase.from('treatment_chart_notes').update(noteData).eq('id', existingNote.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('treatment_chart_notes')
-          .insert(noteData);
+        const { error } = await supabase.from('treatment_chart_notes').insert(noteData);
         if (error) throw error;
       }
 
-      // Also create before/after photo entry for the gallery
       if (beforePhotoUrl || afterPhotoUrl) {
         await supabase.from('before_after_photos').upsert({
           client_id: clientId,
@@ -153,7 +187,6 @@ export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOp
     },
   });
 
-  // Populate form if editing existing note
   React.useEffect(() => {
     if (existingNote) {
       setServicePerformed(existingNote.service_performed);
@@ -195,14 +228,20 @@ export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOp
 
           {/* 2. Product used */}
           <div>
-            <Label className="text-xs font-medium">Product Used</Label>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs font-medium">Product Used</Label>
+              {autoFilled.has('product_used') && <AutoFilledBadge />}
+            </div>
             <Input value={productUsed} onChange={(e) => setProductUsed(e.target.value)} placeholder='e.g. "Botox", "Juvederm Ultra"' disabled={isLocked} className="mt-1" />
           </div>
 
           {/* 3 & 4. Lot number + Expiration date */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs font-medium">Lot Number</Label>
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium">Lot Number</Label>
+                {autoFilled.has('lot_number') && <AutoFilledBadge />}
+              </div>
               <Input value={lotNumber} onChange={(e) => setLotNumber(e.target.value)} disabled={isLocked} className="mt-1" />
             </div>
             <div>
@@ -223,19 +262,35 @@ export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOp
 
           {/* 5. Amount / units */}
           <div>
-            <Label className="text-xs font-medium">Amount / Units Used</Label>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs font-medium">Amount / Units Used</Label>
+              {autoFilled.has('amount_units') && <AutoFilledBadge />}
+            </div>
             <Input value={amountUnits} onChange={(e) => setAmountUnits(e.target.value)} placeholder='e.g. "20 units", "1 syringe"' disabled={isLocked} className="mt-1" />
           </div>
 
-          {/* 6. Treatment areas */}
+          {/* 6. Treatment areas — with dictation */}
           <div>
-            <Label className="text-xs font-medium">Treatment Areas</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">Treatment Areas</Label>
+              {isSpeechSupported && !isLocked && (
+                <DictationButton
+                  isListening={treatmentDictation.isListening}
+                  showDone={treatmentDictation.showDone}
+                  onToggle={treatmentDictation.toggle}
+                  disabled={isLocked}
+                />
+              )}
+            </div>
             <Textarea value={treatmentAreas} onChange={(e) => setTreatmentAreas(e.target.value)} placeholder='e.g. "Forehead 10u, Glabella 10u"' rows={3} disabled={isLocked} className="mt-1" />
           </div>
 
           {/* 7 & 8. Adverse reactions */}
           <div>
-            <Label className="text-xs font-medium">Adverse Reactions</Label>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs font-medium">Adverse Reactions</Label>
+              {autoFilled.has('adverse_reaction') && <AutoFilledBadge />}
+            </div>
             <Select value={adverseReaction} onValueChange={setAdverseReaction} disabled={isLocked}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
@@ -251,9 +306,19 @@ export function ChartNoteForm({ appointmentId, clientId, serviceName, open, onOp
             )}
           </div>
 
-          {/* 9. Provider clinical notes */}
+          {/* 9. Provider clinical notes — with dictation */}
           <div>
-            <Label className="text-xs font-medium">Provider Clinical Notes</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium">Provider Clinical Notes</Label>
+              {isSpeechSupported && !isLocked && (
+                <DictationButton
+                  isListening={notesDictation.isListening}
+                  showDone={notesDictation.showDone}
+                  onToggle={notesDictation.toggle}
+                  disabled={isLocked}
+                />
+              )}
+            </div>
             <Textarea value={providerNotes} onChange={(e) => setProviderNotes(e.target.value)} rows={4} disabled={isLocked} className="mt-1" />
           </div>
 
