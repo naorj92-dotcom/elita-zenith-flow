@@ -46,6 +46,7 @@ import { InventoryManagementPage } from "@/pages/admin/InventoryManagementPage";
 // Client Portal Pages
 import { ClientAuthPage } from "@/pages/portal/ClientAuthPage";
 import { ClientDashboard } from "@/pages/portal/ClientDashboard";
+import { ClientProfilePage } from "@/pages/portal/ClientProfilePage";
 import { ClientPackagesPage } from "@/pages/portal/ClientPackagesPage";
 import { ClientPhotosPage } from "@/pages/portal/ClientPhotosPage";
 import { ClientRecommendationsPage } from "@/pages/portal/ClientRecommendationsPage";
