@@ -173,6 +173,7 @@ function AppRoutes() {
       
       {/* ========== REPORTS ========== */}
       <Route path="/my-reports" element={<StaffRoute><MyReportsPage /></StaffRoute>} />
+      <Route path="/reports" element={<StaffRoute><StaffReportsPage /></StaffRoute>} />
       <Route path="/analytics" element={<OwnerRoute><ManagerAnalyticsPage /></OwnerRoute>} />
       
       {/* ========== SETTINGS (Owner Only) ========== */}
