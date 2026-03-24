@@ -20,6 +20,7 @@ import { ProductPackageAnalytics } from '@/components/analytics/ProductPackageAn
 import { ExpertInsights } from '@/components/analytics/ExpertInsights';
 import { DateRangeFilter, DateRange } from '@/components/analytics/DateRangeFilter';
 import { PDFExportButton } from '@/components/analytics/PDFExportButton';
+import { UpsellPerformanceReport } from '@/components/analytics/UpsellPerformanceReport';
 
 export default function ManagerAnalyticsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
