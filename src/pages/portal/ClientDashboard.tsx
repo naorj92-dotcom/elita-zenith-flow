@@ -220,6 +220,11 @@ export function ClientDashboard() {
   return (
     <div className="max-w-xl mx-auto pb-36 page-atmosphere">
 
+      {/* ═══ BIRTHDAY GIFT BANNER ═══ */}
+      <div className="mt-4 sm:mt-6 px-1">
+        <BirthdayGiftBanner />
+      </div>
+
       {/* ═══ PENDING FORMS BANNER ═══ */}
       <div className="mt-4 sm:mt-6 px-1">
         <PendingFormsBanner />
