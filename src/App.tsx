@@ -35,6 +35,7 @@ import NotificationsManagementPage from "@/pages/admin/NotificationsManagementPa
 import MessagesManagementPage from "@/pages/admin/MessagesManagementPage";
 import ManagerAnalyticsPage from "@/pages/ManagerAnalyticsPage";
 import MyReportsPage from "@/pages/MyReportsPage";
+import StaffReportsPage from "@/pages/StaffReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AuditLogPage from "@/pages/AuditLogPage";
 import { DealsManagementPage } from "@/pages/admin/DealsManagementPage";
@@ -172,6 +173,7 @@ function AppRoutes() {
       
       {/* ========== REPORTS ========== */}
       <Route path="/my-reports" element={<StaffRoute><MyReportsPage /></StaffRoute>} />
+      <Route path="/reports" element={<StaffRoute><StaffReportsPage /></StaffRoute>} />
       <Route path="/analytics" element={<OwnerRoute><ManagerAnalyticsPage /></OwnerRoute>} />
       
       {/* ========== SETTINGS (Owner Only) ========== */}

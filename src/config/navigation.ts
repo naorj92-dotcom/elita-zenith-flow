@@ -64,6 +64,17 @@ export const OWNER_NAVIGATION: NavCategory[] = [
     label: 'Reports',
     icon: BarChart3,
     items: [
+      { label: 'Revenue', href: '/reports?tab=revenue', icon: DollarSign },
+      { label: 'Client Retention', href: '/reports?tab=retention', icon: Users },
+      { label: 'Service Performance', href: '/reports?tab=services', icon: BarChart3 },
+      { label: 'Provider Performance', href: '/reports?tab=providers', icon: Target },
+      { label: 'Packages & Memberships', href: '/reports?tab=packages', icon: Package },
+    ],
+  },
+  {
+    label: 'Analytics',
+    icon: TrendingUp,
+    items: [
       { label: 'Business', href: '/analytics?tab=sales', icon: BarChart3 },
       { label: 'Staff Performance', href: '/analytics?tab=staff', icon: Target },
       { label: 'Machine ROI', href: '/analytics?tab=machines', icon: Cpu },
@@ -192,7 +203,9 @@ export const EMPLOYEE_NAVIGATION: NavCategory[] = [
     label: 'My Reports',
     icon: TrendingUp,
     items: [
-      { label: 'My Reports', href: '/my-reports', icon: TrendingUp },
+      { label: 'My Revenue', href: '/reports?tab=revenue', icon: DollarSign },
+      { label: 'My Performance', href: '/reports?tab=providers', icon: TrendingUp },
+      { label: 'Hours & Sales', href: '/my-reports', icon: TrendingUp },
     ],
   },
   {
