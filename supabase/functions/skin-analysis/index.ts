@@ -17,7 +17,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const { imageBase64, clientName, concerns, analysisArea } = await req.json();
+    const { imageBase64, clientId, clientName } = await req.json();
 
     if (!imageBase64) {
       return new Response(
@@ -26,62 +26,36 @@ serve(async (req) => {
       );
     }
 
-    // Fetch real services from the database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: services } = await supabase
-      .from("services")
-      .select("id, name, description, category, price, duration_minutes")
-      .eq("is_active", true)
-      .order("name");
+    // Check 30-day cooldown
+    if (clientId) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const { data: recent } = await supabase
+        .from("skin_analyses")
+        .select("id, created_at")
+        .eq("client_id", clientId)
+        .gte("created_at", thirtyDaysAgo.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-    const serviceList = (services || [])
-      .map((s: any) => `- ${s.name} ($${s.price}, ${s.duration_minutes}min, category: ${s.category})${s.description ? `: ${s.description}` : ""}`)
-      .join("\n");
-
-    const area = analysisArea || "face";
-    const areaLabel = area === "body" ? "body skin" : "facial skin";
-
-    const systemPrompt = `You are a professional MedSpa skin analysis consultant at Elita MedSpa.
-Analyze the provided photo of the client's ${areaLabel} and give personalized skincare/treatment recommendations.
-
-IMPORTANT: You MUST only recommend treatments from our actual service menu below. Match the client's concerns to the most relevant services we offer. Use the exact service names from our menu.
-
-OUR SERVICE MENU:
-${serviceList || "No services configured yet — recommend general MedSpa treatments."}
-
-Respond in this exact JSON format:
-{
-  "analysis_area": "${area}",
-  "skin_type": "oily/dry/combination/normal/sensitive",
-  "concerns": ["list of observed concerns"],
-  "score": 75,
-  "recommendations": [
-    {
-      "treatment": "Exact Service Name from our menu",
-      "reason": "Why this treatment helps this specific concern",
-      "priority": "high/medium/low",
-      "price": 150
+      if (recent && recent.length > 0) {
+        return new Response(
+          JSON.stringify({ error: "You can only run one analysis per 30 days.", cooldown: true, lastAnalysis: recent[0].created_at }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
-  ],
-  "daily_tips": ["tip 1", "tip 2", "tip 3"],
-  "summary": "A friendly, encouraging 2-3 sentence summary about the ${areaLabel} analysis"
-}
 
-Guidelines:
-- For FACE: Focus on facial concerns like wrinkles, acne, pigmentation, pores, hydration, fine lines, sagging
-- For BODY: Focus on body concerns like cellulite, stretch marks, skin texture, body contouring, scarring, uneven tone, hair removal
-- Keep recommendations to 3-5 max, prioritized by urgency
-- Use exact service names and prices from our menu
-- Be encouraging, professional, and specific about what you observe
-- The score should reflect overall skin health (100 = excellent)`;
+    const systemPrompt = `You are an aesthetic skincare analysis AI for Elita Medical Spa in Maryland. Analyze the uploaded facial photo and identify the top 3 visible skin concerns from: fine lines/wrinkles, forehead lines, crow's feet, volume loss (cheeks/lips), skin laxity/sagging, hyperpigmentation/dark spots, enlarged pores, skin texture/roughness, under-eye concerns (hollowing/circles), lip thinning, jawline definition loss. For each concern: name, severity (Mild/Moderate/Significant), one warm non-alarming sentence describing what you see, and which facial area. Then recommend 2-3 treatments from this list: Botox Full Face, Botox Targeted, Lip Filler, Cheek Filler, Jawline Filler, Under Eye Filler, HydraGlow Facial, Chemical Peel, Microneedling, Vacuum + RF, CryoSculpt, LED Therapy. Return ONLY valid JSON, no markdown, in this exact format: { "overall_summary": "string", "skin_score": 75, "concerns": [{"name": "string", "severity": "Mild|Moderate|Significant", "description": "string", "area": "string"}], "recommendations": [{"service_name": "string", "reason": "string", "priority": "high|medium", "cta": "string"}], "next_steps": "string" }`;
 
     const userContent: any[] = [
       {
         type: "text",
-        text: `Please analyze this ${areaLabel} photo for skin concerns and recommend treatments from our service menu.${concerns ? ` The client mentioned these concerns: ${concerns}` : ""}${clientName ? ` Client name: ${clientName}` : ""}`,
+        text: `Please analyze this facial photo for skin concerns and recommend treatments.${clientName ? ` Client name: ${clientName}` : ""}`,
       },
       {
         type: "image_url",
@@ -132,7 +106,19 @@ Guidelines:
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
     } catch {
-      analysis = { summary: content, recommendations: [], concerns: [], daily_tips: [], analysis_area: area };
+      analysis = { overall_summary: content, skin_score: 0, concerns: [], recommendations: [], next_steps: "" };
+    }
+
+    // Save to DB
+    if (clientId && analysis) {
+      await supabase.from("skin_analyses").insert({
+        client_id: clientId,
+        skin_score: analysis.skin_score || 0,
+        overall_summary: analysis.overall_summary || "",
+        concerns: analysis.concerns || [],
+        recommendations: analysis.recommendations || [],
+        next_steps: analysis.next_steps || "",
+      });
     }
 
     return new Response(

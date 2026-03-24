@@ -1,38 +1,85 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Camera, Upload, Sparkles, Loader2, CheckCircle2, Sun, User, ArrowRight } from 'lucide-react';
+import { Camera, Upload, Sparkles, Loader2, ArrowRight, Share2, RotateCcw, ChevronRight, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { SkinScoreRing } from '@/components/skin-analysis/SkinScoreRing';
+import { FaceGuideOverlay } from '@/components/skin-analysis/FaceGuideOverlay';
+import { format, differenceInDays } from 'date-fns';
 
-type AnalysisArea = 'face' | 'body';
+type Step = 'intro' | 'capture' | 'loading' | 'results';
 
-interface SkinAnalysis {
-  analysis_area: string;
-  skin_type: string;
-  concerns: string[];
-  score: number;
-  recommendations: { treatment: string; reason: string; priority: string; price?: number }[];
-  daily_tips: string[];
-  summary: string;
+interface SkinConcern {
+  name: string;
+  severity: 'Mild' | 'Moderate' | 'Significant';
+  description: string;
+  area: string;
+}
+
+interface SkinRecommendation {
+  service_name: string;
+  reason: string;
+  priority: 'high' | 'medium';
+  cta: string;
+}
+
+interface AnalysisResult {
+  overall_summary: string;
+  skin_score: number;
+  concerns: SkinConcern[];
+  recommendations: SkinRecommendation[];
+  next_steps: string;
+}
+
+interface SavedAnalysis {
+  id: string;
+  client_id: string;
+  skin_score: number;
+  overall_summary: string;
+  concerns: SkinConcern[];
+  recommendations: SkinRecommendation[];
+  next_steps: string;
+  shared_with_provider: boolean;
+  created_at: string;
 }
 
 export function ClientSkinAnalysisPage() {
   const { client } = useClientAuth();
-  const [analysisArea, setAnalysisArea] = useState<AnalysisArea>('face');
+  const queryClient = useQueryClient();
+  const [step, setStep] = useState<Step>('intro');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [concerns, setConcerns] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<SkinAnalysis | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [comparingTo, setComparingTo] = useState<SavedAnalysis | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { data: pastAnalyses, isLoading: loadingPast } = useQuery({
+    queryKey: ['skin-analyses', client?.id],
+    queryFn: async () => {
+      if (!client?.id) return [];
+      const { data } = await supabase
+        .from('skin_analyses')
+        .select('*')
+        .eq('client_id', client.id)
+        .order('created_at', { ascending: false });
+      return (data || []) as unknown as SavedAnalysis[];
+    },
+    enabled: !!client?.id,
+  });
+
+  const latestAnalysis = pastAnalyses?.[0];
+  const canAnalyze = !latestAnalysis || differenceInDays(new Date(), new Date(latestAnalysis.created_at)) >= 30;
+  const daysSinceLast = latestAnalysis ? differenceInDays(new Date(), new Date(latestAnalysis.created_at)) : null;
+  const daysUntilNext = latestAnalysis ? Math.max(0, 30 - (daysSinceLast || 0)) : 0;
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -42,308 +89,426 @@ export function ClientSkinAnalysisPage() {
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
-      setAnalysis(null);
+      setStep('capture');
     };
     reader.readAsDataURL(file);
-  };
+  }, []);
 
   const handleAnalyze = async () => {
-    if (!imagePreview) return;
-    setIsAnalyzing(true);
+    if (!imagePreview || !client?.id) return;
+    setStep('loading');
     try {
       const { data, error } = await supabase.functions.invoke('skin-analysis', {
         body: {
           imageBase64: imagePreview,
-          clientName: client?.first_name,
-          concerns,
-          analysisArea,
+          clientId: client.id,
+          clientName: client.first_name,
         },
       });
       if (error) throw error;
       if (data?.error) {
+        if (data.cooldown) {
+          toast.error('You can only run one analysis per 30 days.');
+          setStep('intro');
+          return;
+        }
         toast.error(data.error);
+        setStep('capture');
         return;
       }
       setAnalysis(data.analysis);
+      queryClient.invalidateQueries({ queryKey: ['skin-analyses', client.id] });
+      setStep('results');
     } catch {
       toast.error('Analysis failed. Please try again.');
-    } finally {
-      setIsAnalyzing(false);
+      setStep('capture');
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-destructive/10 text-destructive border-destructive/20';
-      case 'medium': return 'bg-warning/10 text-warning border-warning/20';
-      default: return 'bg-info/10 text-info border-info/20';
+  const handleShareWithProvider = async () => {
+    if (!latestAnalysis && !analysis) return;
+    const targetId = latestAnalysis?.id;
+    if (!targetId) {
+      toast.error('No analysis to share');
+      return;
+    }
+    const { error } = await supabase
+      .from('skin_analyses')
+      .update({ shared_with_provider: true, shared_at: new Date().toISOString() })
+      .eq('id', targetId);
+    if (error) {
+      toast.error('Failed to share');
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['skin-analyses', client?.id] });
+    toast.success('Analysis shared with your provider!');
+  };
+
+  const handleViewPast = (a: SavedAnalysis) => {
+    setAnalysis({
+      overall_summary: a.overall_summary || '',
+      skin_score: a.skin_score,
+      concerns: a.concerns || [],
+      recommendations: a.recommendations || [],
+      next_steps: a.next_steps || '',
+    });
+    setStep('results');
+  };
+
+  const severityColor = (s: string) => {
+    switch (s) {
+      case 'Mild': return 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400';
+      case 'Moderate': return 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400';
+      case 'Significant': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
-  const areaConfig = {
-    face: {
-      icon: '🧑',
-      label: 'Face',
-      description: 'Analyze facial skin for wrinkles, acne, pigmentation, and more',
-      uploadHint: 'Take a clear, well-lit photo of your face',
-      capture: 'user' as const,
-    },
-    body: {
-      icon: '🦵',
-      label: 'Body',
-      description: 'Analyze body skin for cellulite, stretch marks, texture, and more',
-      uploadHint: 'Take a clear photo of the area you want analyzed',
-      capture: 'environment' as const,
-    },
+  const compareChange = (current: SkinConcern, previous: SavedAnalysis) => {
+    const prevConcern = previous.concerns?.find((c: SkinConcern) => c.name === current.name);
+    if (!prevConcern) return 'new';
+    const levels = ['Mild', 'Moderate', 'Significant'];
+    const cur = levels.indexOf(current.severity);
+    const prev = levels.indexOf(prevConcern.severity);
+    if (cur < prev) return 'improved';
+    if (cur > prev) return 'worsened';
+    return 'same';
   };
 
-  const config = areaConfig[analysisArea];
+  // STEP 1: INTRO
+  if (step === 'intro') {
+    return (
+      <div className="space-y-5 max-w-lg mx-auto">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-3 pt-6">
+          <div className="mx-auto w-16 h-16 rounded-full bg-[hsl(35,72%,56%)]/10 flex items-center justify-center">
+            <Sparkles className="h-8 w-8 text-[hsl(35,72%,56%)]" />
+          </div>
+          <h1 className="text-2xl font-heading font-semibold">Your AI Skin Analysis</h1>
+          <p className="text-muted-foreground text-sm">
+            Get a personalized skin assessment and treatment recommendations in 60 seconds
+          </p>
+        </motion.div>
 
-  return (
-    <div className="space-y-5 max-w-2xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-heading font-semibold">AI Skin Analysis</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Upload a photo to get personalized treatment recommendations from our menu
-        </p>
-      </div>
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            <div className="bg-secondary/50 rounded-xl p-4 text-center">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Take a selfie in natural lighting, no makeup, facing directly forward for the most accurate analysis.
+              </p>
+            </div>
 
-      {/* Area Selector */}
-      <div className="grid grid-cols-2 gap-3">
-        {(['face', 'body'] as AnalysisArea[]).map((area) => {
-          const ac = areaConfig[area];
-          const isActive = analysisArea === area;
-          return (
-            <button
-              key={area}
-              onClick={() => { setAnalysisArea(area); setAnalysis(null); }}
-              className={cn(
-                "relative p-4 rounded-xl border-2 text-left transition-all",
-                isActive
-                  ? "border-primary bg-primary/5 shadow-sm"
-                  : "border-border hover:border-primary/30 bg-card"
-              )}
-            >
-              <span className="text-2xl">{ac.icon}</span>
-              <h3 className={cn("font-semibold mt-1.5", isActive ? "text-primary" : "text-foreground")}>{ac.label}</h3>
-              <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{ac.description}</p>
-              {isActive && (
-                <motion.div
-                  layoutId="area-indicator"
-                  className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary"
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
+            {latestAnalysis && (
+              <div className="text-center space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Last analyzed: {format(new Date(latestAnalysis.created_at), 'MMM d, yyyy')}
+                </p>
+                <div className="flex gap-2 justify-center">
+                  <Button variant="outline" size="sm" onClick={() => handleViewPast(latestAnalysis)}>
+                    View Last Results
+                  </Button>
+                </div>
+              </div>
+            )}
 
-      {/* Upload Section */}
-      <Card>
-        <CardContent className="p-5">
-          <div className="space-y-4">
-            {!imagePreview ? (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-xl p-10 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all"
+            {canAnalyze ? (
+              <Button
+                className="w-full gap-2 bg-[hsl(25,30%,28%)] hover:bg-[hsl(25,30%,22%)] text-white"
+                size="lg"
+                onClick={() => {
+                  setImagePreview(null);
+                  setAnalysis(null);
+                  setComparingTo(null);
+                  setStep('capture');
+                }}
               >
-                <Camera className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                <h3 className="font-semibold mb-1">Upload {config.label} Photo</h3>
-                <p className="text-xs text-muted-foreground">{config.uploadHint}</p>
-                <Button className="mt-3" variant="outline" size="sm">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Choose Photo
-                </Button>
+                <Camera className="h-5 w-5" />
+                Start My Analysis
+              </Button>
+            ) : (
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">
+                  Next analysis available in {daysUntilNext} day{daysUntilNext !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Past analyses list */}
+        {pastAnalyses && pastAnalyses.length > 1 && (
+          <Card>
+            <CardContent className="p-5">
+              <h3 className="font-heading font-semibold text-sm mb-3">Past Analyses</h3>
+              <div className="space-y-2">
+                {pastAnalyses.map((a) => (
+                  <button
+                    key={a.id}
+                    className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors text-left"
+                    onClick={() => handleViewPast(a)}
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{format(new Date(a.created_at), 'MMM d, yyyy')}</p>
+                      <p className="text-xs text-muted-foreground">Score: {a.skin_score}/100</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  // STEP 2: CAPTURE
+  if (step === 'capture') {
+    return (
+      <div className="space-y-5 max-w-lg mx-auto">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setStep('intro')}>← Back</Button>
+          <h2 className="font-heading font-semibold">Take Your Photo</h2>
+        </div>
+
+        <Card>
+          <CardContent className="p-5 space-y-4">
+            {!imagePreview ? (
+              <div className="space-y-3">
+                <div
+                  className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all"
+                  style={{ aspectRatio: '3/4' }}
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
+                    <Camera className="h-10 w-10 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground font-medium">Tap to take a selfie</p>
+                  </div>
+                  <FaceGuideOverlay />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1 gap-2" onClick={() => cameraInputRef.current?.click()}>
+                    <Camera className="h-4 w-4" />
+                    Camera
+                  </Button>
+                  <Button variant="outline" className="flex-1 gap-2" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-4 w-4" />
+                    Upload
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div className="space-y-3">
-                <div className="relative max-w-sm mx-auto">
-                  <img
-                    src={imagePreview}
-                    alt="Your photo"
-                    className="rounded-xl w-full object-cover max-h-72"
-                  />
-                  <div className="absolute top-2 left-2">
-                    <Badge className="bg-card/90 text-foreground border border-border text-xs">
-                      {config.icon} {config.label}
-                    </Badge>
-                  </div>
+              <div className="space-y-4">
+                <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+                  <img src={imagePreview} alt="Your photo" className="w-full h-full object-cover" />
+                  <FaceGuideOverlay />
+                </div>
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="absolute top-2 right-2 h-7 text-xs bg-card/90"
-                    onClick={() => { setImagePreview(null); setAnalysis(null); }}
+                    className="flex-1 gap-2"
+                    onClick={() => setImagePreview(null)}
                   >
-                    Change
+                    <RotateCcw className="h-4 w-4" />
+                    Retake
+                  </Button>
+                  <Button
+                    className="flex-1 gap-2 bg-[hsl(25,30%,28%)] hover:bg-[hsl(25,30%,22%)] text-white"
+                    onClick={handleAnalyze}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Confirm Photo
                   </Button>
                 </div>
-
-                <Textarea
-                  placeholder={analysisArea === 'face'
-                    ? "Any concerns? (e.g., acne, fine lines, uneven skin tone...)"
-                    : "Any concerns? (e.g., cellulite, stretch marks, scarring, skin texture...)"
-                  }
-                  value={concerns}
-                  onChange={(e) => setConcerns(e.target.value)}
-                  className="resize-none text-sm"
-                  rows={2}
-                />
-
-                <Button
-                  className="w-full gap-2"
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Analyzing your {config.label.toLowerCase()}...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4" />
-                      Analyze My {config.label}
-                    </>
-                  )}
-                </Button>
               </div>
             )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture={config.capture}
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Results */}
-      <AnimatePresence>
-        {analysis && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
-          >
-            {/* Summary Card */}
-            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-              <CardContent className="p-5">
-                <div className="flex items-start gap-3">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Sparkles className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                      <h3 className="font-heading font-semibold text-base">
-                        {analysisArea === 'face' ? 'Facial' : 'Body'} Skin Profile
-                      </h3>
-                      {analysis.skin_type && (
-                        <Badge variant="outline" className="capitalize text-xs">{analysis.skin_type}</Badge>
-                      )}
-                      {analysis.score > 0 && (
-                        <Badge className="bg-primary text-primary-foreground text-xs">{analysis.score}/100</Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{analysis.summary}</p>
-                  </div>
-                </div>
+            <input ref={cameraInputRef} type="file" accept="image/*" capture="user" onChange={handleFileChange} className="hidden" />
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-                {analysis.concerns && analysis.concerns.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {analysis.concerns.map((concern, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
-                        {concern}
-                      </Badge>
-                    ))}
+  // STEP 3: LOADING
+  if (step === 'loading') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+        <motion.div
+          animate={{ scale: [1, 1.08, 1] }}
+          transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          className="w-20 h-20 rounded-full bg-[hsl(35,72%,56%)]/10 flex items-center justify-center"
+        >
+          <Sparkles className="h-10 w-10 text-[hsl(35,72%,56%)]" />
+        </motion.div>
+        <div className="text-center space-y-2">
+          <h2 className="text-xl font-heading font-semibold">Analyzing your skin...</h2>
+          <p className="text-sm text-muted-foreground">This takes about 15 seconds</p>
+        </div>
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // STEP 5: RESULTS
+  if (step === 'results' && analysis) {
+    const previousAnalysis = pastAnalyses && pastAnalyses.length > 1
+      ? (comparingTo || pastAnalyses[1])
+      : null;
+
+    return (
+      <div className="space-y-5 max-w-lg mx-auto">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => { setStep('intro'); setComparingTo(null); }}>← Back</Button>
+          <h2 className="font-heading font-semibold">Your Results</h2>
+        </div>
+
+        {/* Score */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="border-[hsl(35,72%,56%)]/20">
+            <CardContent className="p-6 flex flex-col items-center gap-4">
+              <p className="text-sm font-medium text-muted-foreground">Your Skin Score</p>
+              <div className="flex items-center gap-6">
+                <SkinScoreRing score={analysis.skin_score} />
+                {comparingTo && (
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      vs {format(new Date(comparingTo.created_at), 'MMM d')}
+                    </p>
+                    <SkinScoreRing score={comparingTo.skin_score} size={90} />
+                    <Badge variant="outline" className="mt-1 text-[10px]">
+                      {analysis.skin_score > comparingTo.skin_score ? '↑' : analysis.skin_score < comparingTo.skin_score ? '↓' : '='}{' '}
+                      {Math.abs(analysis.skin_score - comparingTo.skin_score)} pts
+                    </Badge>
                   </div>
                 )}
+              </div>
+              <p className="text-sm text-muted-foreground italic text-center leading-relaxed font-serif">
+                {analysis.overall_summary}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Compare button */}
+        {pastAnalyses && pastAnalyses.length > 1 && !comparingTo && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-2"
+            onClick={() => setComparingTo(pastAnalyses[1])}
+          >
+            <RefreshCw className="h-4 w-4" />
+            Compare to {format(new Date(pastAnalyses[1].created_at), 'MMM d, yyyy')}
+          </Button>
+        )}
+
+        {/* Concerns */}
+        {analysis.concerns?.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card>
+              <CardContent className="p-5 space-y-3">
+                <h3 className="font-heading font-semibold text-sm">Skin Concerns</h3>
+                {analysis.concerns.map((c, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className="p-3 bg-secondary/30 rounded-lg space-y-1.5"
+                  >
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-semibold text-sm">{c.name}</h4>
+                      <Badge variant="outline" className={cn("text-[10px] border", severityColor(c.severity))}>
+                        {c.severity}
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px]">{c.area}</Badge>
+                      {comparingTo && (
+                        <Badge variant="outline" className={cn("text-[10px]", {
+                          'text-emerald-600': compareChange(c, comparingTo) === 'improved',
+                          'text-amber-600': compareChange(c, comparingTo) === 'same',
+                          'text-red-600': compareChange(c, comparingTo) === 'worsened',
+                          'text-blue-600': compareChange(c, comparingTo) === 'new',
+                        })}>
+                          {compareChange(c, comparingTo)}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{c.description}</p>
+                  </motion.div>
+                ))}
               </CardContent>
             </Card>
-
-            {/* Recommended Treatments from our menu */}
-            {analysis.recommendations && analysis.recommendations.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-heading flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                    Recommended Services
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground">Based on your analysis — from our service menu</p>
-                </CardHeader>
-                <CardContent className="space-y-2.5">
-                  {analysis.recommendations.map((rec, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="flex items-start gap-3 p-3 bg-secondary/30 rounded-lg"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="text-sm font-bold text-primary">{i + 1}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-semibold text-sm">{rec.treatment}</h4>
-                          <Badge variant="outline" className={cn("text-[10px]", getPriorityColor(rec.priority))}>
-                            {rec.priority}
-                          </Badge>
-                          {rec.price && (
-                            <span className="text-xs font-medium text-primary">${rec.price}</span>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{rec.reason}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                  <Button className="w-full mt-2 gap-2" asChild>
-                    <Link to="/portal/book">
-                      Book a Treatment
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Daily Tips */}
-            {analysis.daily_tips && analysis.daily_tips.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-heading flex items-center gap-2">
-                    <Sun className="h-4 w-4 text-primary" />
-                    Daily Tips
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1.5">
-                  {analysis.daily_tips.map((tip, i) => (
-                    <div key={i} className="flex items-start gap-2 text-sm">
-                      <span className="text-primary mt-0.5">•</span>
-                      <span className="text-muted-foreground">{tip}</span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Analyze another area */}
-            <div className="text-center pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => { setImagePreview(null); setAnalysis(null); setConcerns(''); }}
-                className="gap-2"
-              >
-                <Camera className="h-4 w-4" />
-                Analyze Another Area
-              </Button>
-            </div>
           </motion.div>
         )}
-      </AnimatePresence>
-    </div>
-  );
+
+        {/* Recommendations */}
+        {analysis.recommendations?.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+            <Card>
+              <CardContent className="p-5 space-y-3">
+                <h3 className="font-heading font-semibold text-sm">Recommended Treatments</h3>
+                {analysis.recommendations.map((r, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + i * 0.1 }}
+                    className="p-3 bg-secondary/30 rounded-lg space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-sm">{r.service_name}</h4>
+                      <Badge variant="outline" className={cn("text-[10px]",
+                        r.priority === 'high' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                      )}>
+                        {r.priority}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{r.reason}</p>
+                    <Button
+                      size="sm"
+                      className="w-full gap-2 bg-[hsl(25,30%,28%)] hover:bg-[hsl(25,30%,22%)] text-white"
+                      asChild
+                    >
+                      <Link to="/portal/book">
+                        Book {r.service_name}
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </motion.div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Next Steps */}
+        {analysis.next_steps && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+            <p className="text-sm text-muted-foreground italic text-center px-4 font-serif">
+              {analysis.next_steps}
+            </p>
+          </motion.div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          {latestAnalysis && !latestAnalysis.shared_with_provider && (
+            <Button variant="outline" className="flex-1 gap-2" onClick={handleShareWithProvider}>
+              <Share2 className="h-4 w-4" />
+              Share with Provider
+            </Button>
+          )}
+          {latestAnalysis?.shared_with_provider && (
+            <div className="flex-1 text-center text-xs text-muted-foreground py-2">
+              ✓ Shared with your provider
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
