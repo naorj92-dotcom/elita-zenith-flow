@@ -55,6 +55,7 @@ import { ClientMessagesPage } from "@/pages/portal/ClientMessagesPage";
 import { ClientSkinAnalysisPage } from "@/pages/portal/ClientSkinAnalysisPage";
 import { ClientWaitlistPage } from "@/pages/portal/ClientWaitlistPage";
 import { ClientRewardsStorePage } from "@/pages/portal/ClientRewardsStorePage";
+import { ClientGiftCardsPage } from "@/pages/portal/ClientGiftCardsPage";
 import { ClientReviewsPage } from "@/pages/portal/ClientReviewsPage";
 import { ClientFamilyPage } from "@/pages/portal/ClientFamilyPage";
 import NotFound from "./pages/NotFound";
