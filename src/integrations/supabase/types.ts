@@ -322,6 +322,63 @@ export type Database = {
           },
         ]
       }
+      birthday_gifts: {
+        Row: {
+          client_id: string
+          code: string
+          created_at: string
+          custom_message: string | null
+          discount_percent: number | null
+          expiry_date: string
+          free_addon_service_id: string | null
+          gift_type: string
+          id: string
+          redeemed: boolean
+          redeemed_at: string | null
+        }
+        Insert: {
+          client_id: string
+          code: string
+          created_at?: string
+          custom_message?: string | null
+          discount_percent?: number | null
+          expiry_date: string
+          free_addon_service_id?: string | null
+          gift_type?: string
+          id?: string
+          redeemed?: boolean
+          redeemed_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          code?: string
+          created_at?: string
+          custom_message?: string | null
+          discount_percent?: number | null
+          expiry_date?: string
+          free_addon_service_id?: string | null
+          gift_type?: string
+          id?: string
+          redeemed?: boolean
+          redeemed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "birthday_gifts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "birthday_gifts_free_addon_service_id_fkey"
+            columns: ["free_addon_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_settings: {
         Row: {
           created_at: string
@@ -788,6 +845,7 @@ export type Database = {
           address: string | null
           allergies: string | null
           avatar_url: string | null
+          birthday_gift_sent_year: number | null
           city: string | null
           client_tags: string[] | null
           created_at: string
@@ -822,6 +880,7 @@ export type Database = {
           address?: string | null
           allergies?: string | null
           avatar_url?: string | null
+          birthday_gift_sent_year?: number | null
           city?: string | null
           client_tags?: string[] | null
           created_at?: string
@@ -856,6 +915,7 @@ export type Database = {
           address?: string | null
           allergies?: string | null
           avatar_url?: string | null
+          birthday_gift_sent_year?: number | null
           city?: string | null
           client_tags?: string[] | null
           created_at?: string
