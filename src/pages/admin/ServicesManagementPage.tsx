@@ -34,6 +34,7 @@ interface ServiceFormData {
   requires_consent: boolean;
   machine_type_id: string | null;
   recovery_buffer_minutes: number;
+  rebooking_interval_days: number | null;
 }
 
 const initialFormData: ServiceFormData = {
@@ -46,6 +47,7 @@ const initialFormData: ServiceFormData = {
   requires_consent: false,
   machine_type_id: null,
   recovery_buffer_minutes: 0,
+  rebooking_interval_days: null,
 };
 
 const categories = [
