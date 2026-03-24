@@ -415,6 +415,7 @@ export function ClientDashboard() {
           {[
             { label: 'Messages', href: '/portal/messages', icon: '💬', span: 'col-span-2' },
             { label: 'Photos', href: '/portal/photos', icon: '📸', span: '' },
+            { label: 'Gift Cards', href: '/portal/gift-cards', icon: '🎁', span: '' },
             { label: 'Care Tips', href: '/portal/skin-analysis', icon: '✨', span: '' },
             { label: 'Visit History', href: '/portal/history', icon: '📋', span: 'col-span-2' },
           ].map((item) => (

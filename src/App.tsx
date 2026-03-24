@@ -55,6 +55,7 @@ import { ClientMessagesPage } from "@/pages/portal/ClientMessagesPage";
 import { ClientSkinAnalysisPage } from "@/pages/portal/ClientSkinAnalysisPage";
 import { ClientWaitlistPage } from "@/pages/portal/ClientWaitlistPage";
 import { ClientRewardsStorePage } from "@/pages/portal/ClientRewardsStorePage";
+import { ClientGiftCardsPage } from "@/pages/portal/ClientGiftCardsPage";
 import { ClientReviewsPage } from "@/pages/portal/ClientReviewsPage";
 import { ClientFamilyPage } from "@/pages/portal/ClientFamilyPage";
 import NotFound from "./pages/NotFound";
@@ -190,7 +191,7 @@ function AppRoutes() {
         <Route path="appointments" element={<ClientHistoryPage />} />
         <Route path="benefits" element={<ClientMembershipsPage />} />
         <Route path="payments" element={<ClientHistoryPage />} />
-        <Route path="gift-cards" element={<ClientPackagesPage />} />
+        <Route path="gift-cards" element={<ClientGiftCardsPage />} />
         <Route path="profile" element={<ClientDashboard />} />
         <Route path="messages" element={<ClientMessagesPage />} />
         <Route path="skin-analysis" element={<ClientSkinAnalysisPage />} />
