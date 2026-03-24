@@ -94,7 +94,7 @@ export function POSPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('services')
-        .select('id, name, price, machine_type_id, machines(name)')
+        .select('id, name, price, machine_type_id, rebooking_interval_days, machines(name)')
         .eq('is_active', true)
         .order('name');
       if (error) throw error;
