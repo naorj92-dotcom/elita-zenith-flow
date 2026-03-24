@@ -10,6 +10,7 @@ import {
   CalendarIcon, ChevronLeft, ChevronRight, Download
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { format, startOfMonth, endOfMonth, startOfDay, endOfDay, startOfWeek, endOfWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
 import RevenueReport from '@/components/reports/RevenueReport';
