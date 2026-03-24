@@ -337,6 +337,25 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </header>
 
+        {/* Inactivity Warning Banner */}
+        <AnimatePresence>
+          {showWarning && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-amber-500 text-white px-4 py-2.5 text-center text-sm font-medium flex items-center justify-center gap-3 overflow-hidden"
+            >
+              <span>You'll be logged out in 5 minutes due to inactivity.</span>
+              <button
+                onClick={dismissWarning}
+                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md text-xs font-semibold transition-colors"
+              >
+                Stay Logged In
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Mobile Header */}
         <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3">
           <div className="flex items-center justify-between">
