@@ -116,6 +116,16 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   const handleLogout = async () => {
+    // Log logout event
+    if (user) {
+      try {
+        await supabase.from('security_logs').insert({
+          user_id: user.id,
+          event_type: 'logout',
+          user_agent: navigator.userAgent,
+        });
+      } catch { /* non-critical */ }
+    }
     await signOut();
   };
 
