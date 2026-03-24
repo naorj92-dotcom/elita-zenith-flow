@@ -270,6 +270,7 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
       { label: 'Reviews', href: '/portal/reviews', icon: Star },
       { label: 'Family', href: '/portal/family', icon: Users },
       { label: 'Rewards Store', href: '/portal/rewards', icon: Gift },
+      { label: 'Deals', href: '/portal/deals', icon: Gift },
     ],
   },
 ];

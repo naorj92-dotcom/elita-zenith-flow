@@ -61,6 +61,7 @@ const ClientRewardsStorePage = React.lazy(() => import("@/pages/portal/ClientRew
 const ClientGiftCardsPage = React.lazy(() => import("@/pages/portal/ClientGiftCardsPage").then(m => ({ default: m.ClientGiftCardsPage })));
 const ClientReviewsPage = React.lazy(() => import("@/pages/portal/ClientReviewsPage").then(m => ({ default: m.ClientReviewsPage })));
 const ClientFamilyPage = React.lazy(() => import("@/pages/portal/ClientFamilyPage").then(m => ({ default: m.ClientFamilyPage })));
+const ClientDealsPage = React.lazy(() => import("@/pages/portal/ClientDealsPage").then(m => ({ default: m.ClientDealsPage })));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const IntakeFormPage = React.lazy(() => import("./pages/IntakeFormPage"));
 const SetupPage = React.lazy(() => import("./pages/SetupPage").then(m => ({ default: m.SetupPage })));
@@ -209,6 +210,7 @@ function AppRoutes() {
         <Route path="rewards" element={<ClientRewardsStorePage />} />
         <Route path="reviews" element={<ClientReviewsPage />} />
         <Route path="family" element={<ClientFamilyPage />} />
+        <Route path="deals" element={<ClientDealsPage />} />
       </Route>
       
       {/* ========== 404 ========== */}

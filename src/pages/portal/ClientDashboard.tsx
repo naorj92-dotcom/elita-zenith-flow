@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { JourneyHero } from '@/components/portal/JourneyHero';
 import { PendingFormsBanner } from '@/components/portal/PendingFormsBanner';
 import { BirthdayGiftBanner } from '@/components/portal/BirthdayGiftBanner';
+import { DashboardDealsWidget } from '@/components/portal/DashboardDealsWidget';
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -413,6 +414,9 @@ export function ClientDashboard() {
           </div>
         </motion.div>
       )}
+
+      {/* ═══ TODAY'S DEALS ═══ */}
+      <DashboardDealsWidget />
 
       {/* ═══ QUICK ACTIONS — subdued, asymmetric grid ═══ */}
       <motion.div {...fadeUp} transition={{ delay: 0.18 }} className="mt-24 relative z-10 sm:-ml-1">
