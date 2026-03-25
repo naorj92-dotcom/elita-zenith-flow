@@ -18,6 +18,7 @@ import RetentionReport from '@/components/reports/RetentionReport';
 import ServicePerformanceReport from '@/components/reports/ServicePerformanceReport';
 import ProviderPerformanceReport from '@/components/reports/ProviderPerformanceReport';
 import PackagesMembershipsReport from '@/components/reports/PackagesMembershipsReport';
+import PerformanceScorecard from '@/components/reports/PerformanceScorecard';
 
 export type ReportDateRange = { start: Date; end: Date };
 type DatePreset = 'today' | 'this_week' | 'this_month' | 'custom';
