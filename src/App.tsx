@@ -222,7 +222,7 @@ function AppRoutes() {
   );
 }
 
-const App = React.forwardRef<HTMLDivElement>(function App(_props, _ref) {
+function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -242,6 +242,6 @@ const App = React.forwardRef<HTMLDivElement>(function App(_props, _ref) {
       </QueryClientProvider>
     </ErrorBoundary>
   );
-});
+}
 
 export default App;
