@@ -100,8 +100,8 @@ export function ClientReferralPage() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'completed': return { label: 'Visit Complete', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' };
-      case 'booked': return { label: 'Booked', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' };
+      case 'completed': return { label: 'Visit Complete', color: 'bg-success/10 text-success border-success/20' };
+      case 'booked': return { label: 'Booked', color: 'bg-primary/10 text-primary border-primary/20' };
       default: return { label: 'Link Shared', color: 'bg-muted text-muted-foreground border-border/50' };
     }
   };
@@ -231,7 +231,7 @@ export function ClientReferralPage() {
                       </Badge>
                     </div>
                     {ref.reward_credited && (
-                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-[10px]">
+                      <Badge className="bg-success/10 text-success border-success/20 text-[10px]">
                         <Sparkles className="h-2.5 w-2.5 mr-0.5" />
                         {referrerReward}
                       </Badge>
