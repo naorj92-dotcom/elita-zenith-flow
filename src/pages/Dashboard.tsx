@@ -362,8 +362,25 @@ export function Dashboard() {
               { label: 'Add Client', href: '/clients/new', icon: Users },
               { label: 'View Schedule', href: '/schedule', icon: Clock },
               { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
-            ].map((action) => (
-              <Link key={action.label} to={action.href}>
+              { label: 'Launch Kiosk', href: '/kiosk', icon: Play, external: true },
+            ].map((action: any) => (
+              action.external ? (
+                <a key={action.label} href="/kiosk" target="_blank" rel="noopener noreferrer">
+                  <motion.div
+                    whileHover={{ y: -3, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex items-center gap-4 p-6 rounded-2xl card-minimal hover:shadow-sm"
+                  >
+                    <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center"
+                         style={{ boxShadow: '0 0 16px hsl(34 48% 60% / 0.06)' }}>
+                      <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground">{action.label}</span>
+                  </motion.div>
+                </a>
+              ) : (
+              <Link key={action.label} to={action.href}>)
                 <motion.div
                   whileHover={{ y: -3, scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
