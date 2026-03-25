@@ -8,6 +8,7 @@ import { useCalendarSync, GoogleCalendarEvent } from '@/hooks/useCalendarSync';
 import { ScheduleHeader, CalendarView } from '@/components/schedule/ScheduleHeader';
 import { CalendarTimeGrid } from '@/components/schedule/CalendarTimeGrid';
 import { RescheduleDialog } from '@/components/schedule/RescheduleDialog';
+import { NewAppointmentDialog } from '@/components/schedule/NewAppointmentDialog';
 import { toast } from 'sonner';
 
 export interface ScheduleAppointment {
