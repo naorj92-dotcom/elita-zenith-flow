@@ -45,6 +45,25 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
             p_email: user.email,
           });
         if (!rpcError && clientId) {
+          // If signed up via referral link, link the referral
+          if (meta?.referral_code) {
+            const { data: referrer } = await supabase
+              .from('clients')
+              .select('id')
+              .eq('referral_code', meta.referral_code)
+              .maybeSingle();
+            if (referrer?.id) {
+              // Set referring_client_id
+              await supabase.from('clients').update({ referring_client_id: referrer.id } as any).eq('id', clientId);
+              // Create referral record
+              await supabase.from('referrals').insert({
+                referrer_client_id: referrer.id,
+                referred_client_id: clientId,
+                referral_code: meta.referral_code,
+                status: 'booked',
+              } as any);
+            }
+          }
           // Re-fetch the newly created profile
           const { data: newProfile } = await supabase
             .from('client_profiles')
