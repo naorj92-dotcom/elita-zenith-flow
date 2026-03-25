@@ -41,11 +41,12 @@ export function ClientReferralPage() {
       // Check if client already has a code
       const { data: clientData } = await supabase
         .from('clients')
-        .select('referral_code')
+        .select('*')
         .eq('id', client.id)
         .single();
 
-      if (clientData?.referral_code) return clientData.referral_code;
+      const existing = (clientData as any)?.referral_code;
+      if (existing) return existing as string;
 
       // Generate and save
       const code = generateReferralCode(client.first_name);

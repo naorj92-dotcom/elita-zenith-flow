@@ -266,7 +266,7 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
       { label: 'Payments', href: '/portal/payments', icon: Wallet },
       { label: 'AI Skin Analysis', href: '/portal/skin-analysis', icon: Sparkles },
       { label: 'Recommendations', href: '/portal/recommendations', icon: Heart },
-      { label: 'Refer a Friend', href: '/portal', icon: Gift },
+      { label: 'Refer a Friend', href: '/portal/refer', icon: Gift },
       { label: 'Reviews', href: '/portal/reviews', icon: Star },
       { label: 'Family', href: '/portal/family', icon: Users },
       { label: 'Rewards Store', href: '/portal/rewards', icon: Gift },
