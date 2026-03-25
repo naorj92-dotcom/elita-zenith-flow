@@ -380,7 +380,7 @@ export function Dashboard() {
                   </motion.div>
                 </a>
               ) : (
-              <Link key={action.label} to={action.href}>)
+              <Link key={action.label} to={action.href}>
                 <motion.div
                   whileHover={{ y: -3, scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
@@ -394,7 +394,8 @@ export function Dashboard() {
                   <span className="text-sm font-medium text-foreground">{action.label}</span>
                 </motion.div>
               </Link>
-            ))}
+              )))}
+
           </div>
         </motion.div>
       </div>
