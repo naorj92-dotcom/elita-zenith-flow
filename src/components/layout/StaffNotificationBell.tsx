@@ -55,6 +55,7 @@ export function StaffNotificationBell() {
       const { data } = await supabase
         .from('in_app_notifications')
         .select('*')
+        .eq('user_id', userId)
         .eq('recipient_type', 'staff')
         .order('created_at', { ascending: false })
         .limit(50);
