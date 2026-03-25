@@ -67,7 +67,6 @@ const ClientDealsPage = React.lazy(() => import("@/pages/portal/ClientDealsPage"
 const ClientReferralPage = React.lazy(() => import("@/pages/portal/ClientReferralPage").then(m => ({ default: m.ClientReferralPage })));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const IntakeFormPage = React.lazy(() => import("./pages/IntakeFormPage"));
-const SetupPage = React.lazy(() => import("./pages/SetupPage").then(m => ({ default: m.SetupPage })));
 const ResetPasswordPage = React.lazy(() => import("./pages/ResetPasswordPage"));
 const CheckInKioskPage = React.lazy(() => import("./pages/CheckInKioskPage"));
 const ClientPackagesManagementPage = React.lazy(() => import("./pages/ClientPackagesManagementPage").then(m => ({ default: m.ClientPackagesManagementPage })));
@@ -91,7 +90,7 @@ function StaffRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!role) {
-    return <Navigate to="/setup" replace />;
+    return <Navigate to="/login" replace />;
   }
   
   // Redirect clients to portal
@@ -119,7 +118,7 @@ function OwnerRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!role) {
-    return <Navigate to="/setup" replace />;
+    return <Navigate to="/login" replace />;
   }
   
   if (!isOwner) {
@@ -139,7 +138,6 @@ function AppRoutes() {
     <Routes>
       {/* ========== PUBLIC FORMS ========== */}
       <Route path="/intake" element={<IntakeFormPage />} />
-      <Route path="/setup" element={<SetupPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/kiosk" element={<CheckInKioskPage />} />
       

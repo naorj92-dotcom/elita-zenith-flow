@@ -26,10 +26,9 @@ export function LoginPage() {
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
 
-  if (isAuthenticated) {
+  if (isAuthenticated && role) {
     if (role === 'client') return <Navigate to="/portal" replace />;
     if (role === 'owner' || role === 'employee') return <Navigate to="/dashboard" replace />;
-    return <Navigate to="/setup" replace />;
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
