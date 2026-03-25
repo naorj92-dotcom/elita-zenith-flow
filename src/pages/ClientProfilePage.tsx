@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { JourneyPlanTab } from '@/components/admin/JourneyPlanTab';
 import { ChartHistoryTab } from '@/components/charts/ChartHistoryTab';
+import { AIClientInsightsPanel } from '@/components/client/AIClientInsightsPanel';
 
 export default function ClientProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -269,6 +270,7 @@ export default function ClientProfilePage() {
             <div className="p-6">
               {/* OVERVIEW */}
               <TabsContent value="overview" className="mt-0 space-y-6">
+                <AIClientInsightsPanel clientId={id!} />
                 <OverviewTab
                   client={client}
                   appointments={appointments}
