@@ -28,7 +28,8 @@ export function LoginPage() {
 
   if (isAuthenticated) {
     if (role === 'client') return <Navigate to="/portal" replace />;
-    return <Navigate to="/dashboard" replace />;
+    if (role === 'owner' || role === 'employee') return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/setup" replace />;
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
