@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -32,8 +32,10 @@ const signupSchema = z.object({
 export function ClientAuthPage() {
   const { signIn, signUp, isAuthenticated, isLoading: authLoading } = useClientAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get('ref') || '';
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('signin');
+  const [activeTab, setActiveTab] = useState(refCode ? 'signup' : 'signin');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSending, setForgotSending] = useState(false);
