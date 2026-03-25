@@ -167,6 +167,8 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
       setUser(newSession?.user ?? null);
       
       if (newSession?.user) {
+        // Keep loading true while we fetch the role — prevents premature redirect to /setup
+        setIsLoading(true);
         // Use setTimeout to avoid Supabase auth deadlock
         setTimeout(() => {
           fetchUserRole(newSession.user.id).finally(() => {
