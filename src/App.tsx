@@ -87,6 +87,12 @@ function StaffRoute({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
+  // If user is authenticated but role is not provisioned yet,
+  // keep them out of staff routes to avoid blank/crashing states.
+  if (!role) {
+    return <Navigate to="/setup" replace />;
+  }
   
   // Redirect clients to portal
   if (role === 'client') {
@@ -98,7 +104,7 @@ function StaffRoute({ children }: { children: React.ReactNode }) {
 
 // Owner-only route wrapper
 function OwnerRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isOwner, isLoading } = useUnifiedAuth();
+  const { isAuthenticated, isOwner, role, isLoading } = useUnifiedAuth();
   
   if (isLoading) {
     return (
@@ -110,6 +116,10 @@ function OwnerRoute({ children }: { children: React.ReactNode }) {
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!role) {
+    return <Navigate to="/setup" replace />;
   }
   
   if (!isOwner) {
