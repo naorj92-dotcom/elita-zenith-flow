@@ -240,10 +240,12 @@ function App() {
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <OfflineBanner />
                 <ErrorBoundary>
                   <AppRoutes />
                 </ErrorBoundary>
               </BrowserRouter>
+              <InstallPrompt />
             </ClientAuthProvider>
           </UnifiedAuthProvider>
         </TooltipProvider>
