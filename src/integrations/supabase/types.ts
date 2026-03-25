@@ -2687,6 +2687,44 @@ export type Database = {
           },
         ]
       }
+      staff_weekly_goals: {
+        Row: {
+          appointments_goal: number
+          created_at: string
+          id: string
+          revenue_goal: number
+          staff_id: string
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          appointments_goal?: number
+          created_at?: string
+          id?: string
+          revenue_goal?: number
+          staff_id: string
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          appointments_goal?: number
+          created_at?: string
+          id?: string
+          revenue_goal?: number
+          staff_id?: string
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_weekly_goals_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_clock: {
         Row: {
           break_minutes: number

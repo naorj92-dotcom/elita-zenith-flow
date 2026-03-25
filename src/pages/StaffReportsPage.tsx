@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DollarSign, Users, BarChart3, UserCheck, Package,
-  CalendarIcon, ChevronLeft, ChevronRight, Download
+  CalendarIcon, ChevronLeft, ChevronRight, Download, Award
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
@@ -18,6 +18,7 @@ import RetentionReport from '@/components/reports/RetentionReport';
 import ServicePerformanceReport from '@/components/reports/ServicePerformanceReport';
 import ProviderPerformanceReport from '@/components/reports/ProviderPerformanceReport';
 import PackagesMembershipsReport from '@/components/reports/PackagesMembershipsReport';
+import PerformanceScorecard from '@/components/reports/PerformanceScorecard';
 
 export type ReportDateRange = { start: Date; end: Date };
 type DatePreset = 'today' | 'this_week' | 'this_month' | 'custom';
@@ -27,7 +28,7 @@ export default function StaffReportsPage() {
   const { staff } = useAuth();
   const { role } = useUnifiedAuth();
   const isOwner = role === 'owner';
-  const tabFromUrl = searchParams.get('tab') || 'revenue';
+  const tabFromUrl = searchParams.get('tab') || (isOwner ? 'revenue' : 'scorecard');
   const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [preset, setPreset] = useState<DatePreset>('this_month');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -83,6 +84,7 @@ export default function StaffReportsPage() {
         { value: 'packages', label: 'Packages & Memberships', icon: Package },
       ]
     : [
+        { value: 'scorecard', label: 'My Scorecard', icon: Award },
         { value: 'revenue', label: 'My Revenue', icon: DollarSign },
         { value: 'providers', label: 'My Performance', icon: UserCheck },
       ];
@@ -171,6 +173,7 @@ export default function StaffReportsPage() {
           ))}
         </TabsList>
 
+        {!isOwner && <TabsContent value="scorecard"><PerformanceScorecard /></TabsContent>}
         <TabsContent value="revenue"><RevenueReport dateRange={dateRange} staffId={staffId} /></TabsContent>
         {isOwner && <TabsContent value="retention"><RetentionReport dateRange={dateRange} /></TabsContent>}
         {isOwner && <TabsContent value="services"><ServicePerformanceReport dateRange={dateRange} /></TabsContent>}
