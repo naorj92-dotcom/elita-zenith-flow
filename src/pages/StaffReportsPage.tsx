@@ -28,7 +28,7 @@ export default function StaffReportsPage() {
   const { staff } = useAuth();
   const { role } = useUnifiedAuth();
   const isOwner = role === 'owner';
-  const tabFromUrl = searchParams.get('tab') || 'revenue';
+  const tabFromUrl = searchParams.get('tab') || (isOwner ? 'revenue' : 'scorecard');
   const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [preset, setPreset] = useState<DatePreset>('this_month');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -173,6 +173,7 @@ export default function StaffReportsPage() {
           ))}
         </TabsList>
 
+        {!isOwner && <TabsContent value="scorecard"><PerformanceScorecard /></TabsContent>}
         <TabsContent value="revenue"><RevenueReport dateRange={dateRange} staffId={staffId} /></TabsContent>
         {isOwner && <TabsContent value="retention"><RetentionReport dateRange={dateRange} /></TabsContent>}
         {isOwner && <TabsContent value="services"><ServicePerformanceReport dateRange={dateRange} /></TabsContent>}
