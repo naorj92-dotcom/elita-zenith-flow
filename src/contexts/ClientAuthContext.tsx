@@ -9,7 +9,7 @@ interface ClientAuthContextType {
   client: Client | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, firstName: string, lastName: string, referralCode?: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -93,7 +93,7 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [fetchClientProfile]);
 
-  const signUp = async (email: string, password: string, firstName: string, lastName: string): Promise<{ error: string | null }> => {
+  const signUp = async (email: string, password: string, firstName: string, lastName: string, referralCode?: string): Promise<{ error: string | null }> => {
     try {
       const redirectUrl = `${window.location.origin}/portal`;
       
@@ -105,6 +105,7 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
           data: {
             first_name: firstName,
             last_name: lastName,
+            ...(referralCode ? { referral_code: referralCode } : {}),
           }
         }
       });
