@@ -68,6 +68,10 @@ export function SettingsPage() {
           <SecurityLogTab />
         </TabsContent>
 
+        {/* Referral Program Settings */}
+        <TabsContent value="referrals" className="space-y-6 mt-6">
+          <ReferralProgramSettings />
+
         {/* Goals Settings */}
         <TabsContent value="goals" className="space-y-6 mt-6">
           <GoalsSettings />
