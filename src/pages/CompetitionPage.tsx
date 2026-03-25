@@ -246,9 +246,9 @@ export function CompetitionPage() {
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
-      case 1: return <Trophy className="w-7 h-7 text-yellow-500" />;
-      case 2: return <Medal className="w-6 h-6 text-gray-400" />;
-      case 3: return <Medal className="w-6 h-6 text-amber-600" />;
+      case 1: return <Trophy className="w-7 h-7 text-warning" />;
+      case 2: return <Medal className="w-6 h-6 text-muted-foreground" />;
+      case 3: return <Medal className="w-6 h-6 text-primary" />;
       default: return <span className="text-xl font-heading font-bold text-muted-foreground">#{rank}</span>;
     }
   };
