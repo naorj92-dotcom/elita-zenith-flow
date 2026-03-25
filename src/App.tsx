@@ -9,6 +9,8 @@ import { ClientAuthProvider } from "@/contexts/ClientAuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ClientPortalLayout } from "@/components/layout/ClientPortalLayout";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { OfflineBanner } from "@/components/pwa/OfflineBanner";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
 // Pages (lazy-loaded for code splitting)
 const LoginPage = React.lazy(() => import("@/pages/LoginPage").then(m => ({ default: m.LoginPage })));
@@ -240,10 +242,12 @@ function App() {
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <OfflineBanner />
                 <ErrorBoundary>
                   <AppRoutes />
                 </ErrorBoundary>
               </BrowserRouter>
+              <InstallPrompt />
             </ClientAuthProvider>
           </UnifiedAuthProvider>
         </TooltipProvider>
