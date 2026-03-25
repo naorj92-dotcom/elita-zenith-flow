@@ -84,6 +84,7 @@ export default function StaffReportsPage() {
         { value: 'packages', label: 'Packages & Memberships', icon: Package },
       ]
     : [
+        { value: 'scorecard', label: 'My Scorecard', icon: Award },
         { value: 'revenue', label: 'My Revenue', icon: DollarSign },
         { value: 'providers', label: 'My Performance', icon: UserCheck },
       ];
