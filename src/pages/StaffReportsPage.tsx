@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DollarSign, Users, BarChart3, UserCheck, Package,
-  CalendarIcon, ChevronLeft, ChevronRight, Download
+  CalendarIcon, ChevronLeft, ChevronRight, Download, Award
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
