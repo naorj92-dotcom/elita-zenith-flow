@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -32,8 +32,10 @@ const signupSchema = z.object({
 export function ClientAuthPage() {
   const { signIn, signUp, isAuthenticated, isLoading: authLoading } = useClientAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get('ref') || '';
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('signin');
+  const [activeTab, setActiveTab] = useState(refCode ? 'signup' : 'signin');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSending, setForgotSending] = useState(false);
@@ -71,7 +73,7 @@ export function ClientAuthPage() {
     const result = signupSchema.safeParse({ firstName: signupFirstName, lastName: signupLastName, email: signupEmail, password: signupPassword, confirmPassword: signupConfirmPassword });
     if (!result.success) { toast({ title: 'Validation Error', description: result.error.errors[0].message, variant: 'destructive' }); return; }
     setIsLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupFirstName, signupLastName);
+    const { error } = await signUp(signupEmail, signupPassword, signupFirstName, signupLastName, refCode || undefined);
     setIsLoading(false);
     if (error) toast({ title: 'Sign Up Failed', description: error, variant: 'destructive' });
     else toast({ title: 'Welcome!', description: 'Your account has been created successfully.' });

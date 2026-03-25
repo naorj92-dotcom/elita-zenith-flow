@@ -866,7 +866,9 @@ export type Database = {
           notes: string | null
           phone: string | null
           pronouns: string | null
+          referral_code: string | null
           referral_source: string | null
+          referring_client_id: string | null
           scheduling_alert: string | null
           sms_opt_out: boolean
           state: string | null
@@ -901,7 +903,9 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           pronouns?: string | null
+          referral_code?: string | null
           referral_source?: string | null
+          referring_client_id?: string | null
           scheduling_alert?: string | null
           sms_opt_out?: boolean
           state?: string | null
@@ -936,7 +940,9 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           pronouns?: string | null
+          referral_code?: string | null
           referral_source?: string | null
+          referring_client_id?: string | null
           scheduling_alert?: string | null
           sms_opt_out?: boolean
           state?: string | null
@@ -946,7 +952,15 @@ export type Database = {
           visit_count?: number
           zip?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clients_referring_client_id_fkey"
+            columns: ["referring_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exclusive_deals: {
         Row: {

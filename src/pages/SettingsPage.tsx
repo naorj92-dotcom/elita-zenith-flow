@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Settings, CreditCard, Shield, Building, Clock, Bell, Paintbrush, Target } from 'lucide-react';
+import { Settings, CreditCard, Shield, Building, Clock, Bell, Paintbrush, Target, Gift } from 'lucide-react';
 import { BrandingSettings } from '@/components/settings/BrandingSettings';
+import { ReferralProgramSettings } from '@/components/settings/ReferralProgramSettings';
 import { supabase } from '@/integrations/supabase/client';
 
 export function SettingsPage() {
@@ -31,7 +32,7 @@ export function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-3xl grid-cols-6">
+        <TabsList className="grid w-full max-w-4xl grid-cols-7">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             General
@@ -52,6 +53,10 @@ export function SettingsPage() {
             <Shield className="w-4 h-4" />
             Policies
           </TabsTrigger>
+          <TabsTrigger value="referrals" className="flex items-center gap-2">
+            <Gift className="w-4 h-4" />
+            Referrals
+          </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Shield className="w-4 h-4" />
             Security
@@ -61,6 +66,11 @@ export function SettingsPage() {
         {/* Security Tab */}
         <TabsContent value="security" className="space-y-6 mt-6">
           <SecurityLogTab />
+        </TabsContent>
+
+        {/* Referral Program Settings */}
+        <TabsContent value="referrals" className="space-y-6 mt-6">
+          <ReferralProgramSettings />
         </TabsContent>
 
         {/* Goals Settings */}

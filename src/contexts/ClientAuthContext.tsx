@@ -9,7 +9,7 @@ interface ClientAuthContextType {
   client: Client | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, firstName: string, lastName: string, referralCode?: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -45,6 +45,25 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
             p_email: user.email,
           });
         if (!rpcError && clientId) {
+          // If signed up via referral link, link the referral
+          if (meta?.referral_code) {
+            const { data: referrer } = await supabase
+              .from('clients')
+              .select('id')
+              .eq('referral_code', meta.referral_code)
+              .maybeSingle();
+            if (referrer?.id) {
+              // Set referring_client_id
+              await supabase.from('clients').update({ referring_client_id: referrer.id } as any).eq('id', clientId);
+              // Create referral record
+              await supabase.from('referrals').insert({
+                referrer_client_id: referrer.id,
+                referred_client_id: clientId,
+                referral_code: meta.referral_code,
+                status: 'booked',
+              } as any);
+            }
+          }
           // Re-fetch the newly created profile
           const { data: newProfile } = await supabase
             .from('client_profiles')
@@ -93,7 +112,7 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [fetchClientProfile]);
 
-  const signUp = async (email: string, password: string, firstName: string, lastName: string): Promise<{ error: string | null }> => {
+  const signUp = async (email: string, password: string, firstName: string, lastName: string, referralCode?: string): Promise<{ error: string | null }> => {
     try {
       const redirectUrl = `${window.location.origin}/portal`;
       
@@ -105,6 +124,7 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
           data: {
             first_name: firstName,
             last_name: lastName,
+            ...(referralCode ? { referral_code: referralCode } : {}),
           }
         }
       });
