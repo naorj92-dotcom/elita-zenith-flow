@@ -156,6 +156,11 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize auth state
   useEffect(() => {
+    // Fail-safe: never keep protected routes on an infinite spinner
+    const loadingFailSafe = window.setTimeout(() => {
+      setIsLoading(false);
+    }, 4000);
+
     // IMPORTANT: Set up listener BEFORE getSession per Supabase best practices
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       setSession(newSession);
@@ -164,7 +169,10 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
       if (newSession?.user) {
         // Use setTimeout to avoid Supabase auth deadlock
         setTimeout(() => {
-          fetchUserRole(newSession.user.id).finally(() => setIsLoading(false));
+          fetchUserRole(newSession.user.id).finally(() => {
+            window.clearTimeout(loadingFailSafe);
+            setIsLoading(false);
+          });
         }, 0);
       } else {
         // Clear all state on sign out
@@ -173,6 +181,7 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
         setStaff(null);
         setClient(null);
         setClockStatus(null);
+        window.clearTimeout(loadingFailSafe);
         setIsLoading(false);
       }
     });
@@ -193,13 +202,17 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         console.error('Auth init error:', err);
       } finally {
+        window.clearTimeout(loadingFailSafe);
         setIsLoading(false);
       }
     };
 
     initAuth();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.clearTimeout(loadingFailSafe);
+      subscription.unsubscribe();
+    };
   }, [fetchUserRole]);
 
   // Sign in with email/password
