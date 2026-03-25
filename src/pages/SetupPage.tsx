@@ -35,17 +35,15 @@ export function SetupPage() {
 
   const checkAndLoad = async () => {
     try {
-      // Use the bootstrap function to check — if owner exists it returns 403
-      // Instead, just load staff list via RPC since anon can't read staff table
-      // We'll check owner existence when they submit
-      
-      // Fetch staff list using the edge function approach
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      
-      // For initial setup, we use a direct query via the anon key
-      // Staff table requires auth, so we'll let the user pick from admin staff
-      // Actually, we need to fetch staff without auth - let's use the edge function
+      // Probe the bootstrap endpoint with a dummy request to check if owner exists
+      const { data, error } = await supabase.functions.invoke('bootstrap-owner', {
+        body: { email: '', password: '', staffId: '' },
+      });
+
+      // If we get a 403-style "already exists" response, owner is set up
+      if (data?.error?.includes('already exists')) {
+        setOwnerExists(true);
+      }
       setIsCheckingOwner(false);
     } catch (err) {
       console.error('Setup check error:', err);
