@@ -39,7 +39,8 @@ const DEFAULT_SETTINGS: CompetitionSettings = {
 };
 
 export function CompetitionPage() {
-  const { staffId } = useUnifiedAuth();
+  const { staff: currentStaff } = useUnifiedAuth();
+  const staffId = currentStaff?.id;
   const [leaderboard, setLeaderboard] = useState<StaffSales[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), 'yyyy-MM'));
