@@ -255,9 +255,9 @@ export function CompetitionPage() {
 
   const getRankStyles = (rank: number) => {
     switch (rank) {
-      case 1: return 'bg-gradient-to-r from-yellow-500/15 to-amber-500/15 border-yellow-500/30';
-      case 2: return 'bg-gradient-to-r from-gray-300/15 to-gray-400/15 border-gray-400/30';
-      case 3: return 'bg-gradient-to-r from-amber-600/15 to-orange-600/15 border-amber-600/30';
+      case 1: return 'bg-warning/10 border-warning/30';
+      case 2: return 'bg-muted/50 border-border';
+      case 3: return 'bg-primary/10 border-primary/30';
       default: return 'bg-card border-border/50';
     }
   };
