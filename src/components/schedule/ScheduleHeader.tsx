@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -26,6 +25,8 @@ interface ScheduleHeaderProps {
   onSelectedStaffChange?: (ids: string[]) => void;
   isFullCalendar?: boolean;
   onFullCalendarChange?: (val: boolean) => void;
+  showStaffFilter?: boolean;
+  onNewAppointment?: () => void;
 }
 
 export function ScheduleHeader({
@@ -42,6 +43,8 @@ export function ScheduleHeader({
   onSelectedStaffChange,
   isFullCalendar = false,
   onFullCalendarChange,
+  showStaffFilter = true,
+  onNewAppointment,
 }: ScheduleHeaderProps) {
   const formatHeaderDate = () => {
     if (view === 'day') {
@@ -98,7 +101,7 @@ export function ScheduleHeader({
 
       <div className="flex items-center gap-2 flex-wrap">
         {/* Staff Filter */}
-        {staffList.length > 0 && (
+        {showStaffFilter && staffList.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -214,12 +217,10 @@ export function ScheduleHeader({
           Sync
         </Button>
 
-        <Link to="/schedule/new">
-          <Button size="sm" className="gap-2">
+          <Button size="sm" className="gap-2" onClick={onNewAppointment}>
             <Plus className="w-4 h-4" />
             New Appt
           </Button>
-        </Link>
       </div>
     </motion.div>
   );

@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { AppointmentStatus } from '@/types';
+import { useSearchParams } from 'react-router-dom';
 import { useCalendarSync, GoogleCalendarEvent } from '@/hooks/useCalendarSync';
 import { ScheduleHeader, CalendarView } from '@/components/schedule/ScheduleHeader';
 import { CalendarTimeGrid } from '@/components/schedule/CalendarTimeGrid';
 import { RescheduleDialog } from '@/components/schedule/RescheduleDialog';
+import { NewAppointmentDialog } from '@/components/schedule/NewAppointmentDialog';
 import { toast } from 'sonner';
 
 export interface ScheduleAppointment {
@@ -33,7 +36,9 @@ export interface ScheduleStaff {
 
 export function SchedulePage() {
   const { staff } = useAuth();
+  const { isOwner, isProvider, staff: authStaff } = useUnifiedAuth();
   const { pullEvents } = useCalendarSync();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -48,6 +53,9 @@ export function SchedulePage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isFullCalendar, setIsFullCalendar] = useState(false);
   const [clientDetailsMap, setClientDetailsMap] = useState<Record<string, any>>({});
+  // New appointment dialog
+  const [showNewAppt, setShowNewAppt] = useState(false);
+  const [newApptClientId, setNewApptClientId] = useState<string | null>(null);
 
   // Reschedule dialog state
   const [rescheduleApt, setRescheduleApt] = useState<ScheduleAppointment | null>(null);
@@ -65,11 +73,28 @@ export function SchedulePage() {
         .order('first_name', { ascending: true });
       if (data) {
         setStaffList(data);
-        setSelectedStaffIds(data.map((s) => s.id));
+        // Providers only see their own calendar
+        if (isProvider && authStaff) {
+          setSelectedStaffIds([authStaff.id]);
+        } else {
+          setSelectedStaffIds(data.map((s) => s.id));
+        }
       }
     };
     fetchStaff();
-  }, []);
+  }, [isProvider, authStaff]);
+
+  // Handle /schedule/new route and ?client= param
+  useEffect(() => {
+    const clientParam = searchParams.get('client');
+    if (clientParam) {
+      setNewApptClientId(clientParam);
+    }
+    // Check if path ends with /new (the :id param will be 'new')
+    if (window.location.pathname.endsWith('/new')) {
+      setShowNewAppt(true);
+    }
+  }, [searchParams]);
 
   const getDates = useCallback((): Date[] => {
     const count = view === 'day' ? 1 : view === '4day' ? 4 : 7;
@@ -287,7 +312,17 @@ export function SchedulePage() {
     setSelectedDate(d);
   };
 
-  const filteredStaff = isFullCalendar ? staffList : staffList.filter((s) => selectedStaffIds.includes(s.id));
+  // Providers only see their own staff column
+  const filteredStaff = isProvider && authStaff
+    ? staffList.filter((s) => s.id === authStaff.id)
+    : isFullCalendar
+      ? staffList
+      : staffList.filter((s) => selectedStaffIds.includes(s.id));
+
+  // Filter appointments for providers
+  const filteredAppointments = isProvider && authStaff
+    ? appointments.filter(a => a.staff_id === authStaff.id)
+    : appointments;
 
   return (
     <div className="p-4 md:p-6 max-w-full">
@@ -305,10 +340,12 @@ export function SchedulePage() {
         onSelectedStaffChange={setSelectedStaffIds}
         isFullCalendar={isFullCalendar}
         onFullCalendarChange={setIsFullCalendar}
+        showStaffFilter={isOwner}
+        onNewAppointment={() => { setNewApptClientId(null); setShowNewAppt(true); }}
       />
       <CalendarTimeGrid
         dates={getDates()}
-        appointments={appointments}
+        appointments={filteredAppointments}
         googleEvents={googleEvents}
         isLoading={isLoading}
         staffList={filteredStaff}
@@ -327,6 +364,28 @@ export function SchedulePage() {
         onConfirm={handleRescheduleConfirm}
         isLoading={isRescheduling}
       />
+      {/* Lazy-load dialog to keep bundle light */}
+      {showNewAppt && (
+        <React.Suspense fallback={null}>
+          <NewAppointmentDialog
+            open={showNewAppt}
+            onOpenChange={(open) => {
+              setShowNewAppt(open);
+              if (!open) {
+                setNewApptClientId(null);
+                // Clean up URL if it was /schedule/new
+                if (window.location.pathname.endsWith('/new')) {
+                  window.history.replaceState({}, '', '/schedule');
+                }
+              }
+            }}
+            onCreated={fetchData}
+            defaultClientId={newApptClientId}
+            defaultDate={selectedDate}
+            defaultStaffId={isProvider && authStaff ? authStaff.id : undefined}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 }
