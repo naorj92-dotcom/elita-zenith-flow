@@ -223,11 +223,15 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
+        setIsLoading(false);
         return { error: error.message };
       }
+      // Don't set isLoading=false here — onAuthStateChange will handle it
+      // after the role is fetched, preventing premature redirect to /setup
       return { error: null };
-    } finally {
+    } catch (err: any) {
       setIsLoading(false);
+      return { error: err.message || 'Sign in failed' };
     }
   }, []);
 
