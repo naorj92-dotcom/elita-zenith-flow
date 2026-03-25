@@ -73,7 +73,7 @@ export function ClientAuthPage() {
     const result = signupSchema.safeParse({ firstName: signupFirstName, lastName: signupLastName, email: signupEmail, password: signupPassword, confirmPassword: signupConfirmPassword });
     if (!result.success) { toast({ title: 'Validation Error', description: result.error.errors[0].message, variant: 'destructive' }); return; }
     setIsLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupFirstName, signupLastName);
+    const { error } = await signUp(signupEmail, signupPassword, signupFirstName, signupLastName, refCode || undefined);
     setIsLoading(false);
     if (error) toast({ title: 'Sign Up Failed', description: error, variant: 'destructive' });
     else toast({ title: 'Welcome!', description: 'Your account has been created successfully.' });
