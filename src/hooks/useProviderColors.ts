@@ -29,11 +29,6 @@ export function useProviderColors() {
     return colorMap[staffId] || DEFAULT_COLORS[index % DEFAULT_COLORS.length];
   }, [colorMap]);
 
-  // Always returns a color (used for appointment backgrounds)
-  const getColorAlways = useCallback((staffId: string, index: number): string => {
-    return colorMap[staffId] || DEFAULT_COLORS[index % DEFAULT_COLORS.length];
-  }, [colorMap]);
-
   const setColor = useCallback((staffId: string, color: string) => {
     setColorMap(prev => {
       const next = { ...prev, [staffId]: color };
