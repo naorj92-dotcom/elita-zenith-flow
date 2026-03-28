@@ -160,8 +160,8 @@ export const OWNER_NAVIGATION: NavCategory[] = [
   },
 ];
 
-// Employee Navigation - Operational access only
-export const EMPLOYEE_NAVIGATION: NavCategory[] = [
+// Provider Navigation - Operational access only
+export const PROVIDER_NAVIGATION: NavCategory[] = [
   {
     label: 'Home',
     icon: LayoutDashboard,
@@ -217,10 +217,55 @@ export const EMPLOYEE_NAVIGATION: NavCategory[] = [
   },
 ];
 
-// Front Desk Employee - Additional access
-export const FRONT_DESK_ADDITIONAL: NavItem[] = [
-  { label: 'Receipts', href: '/receipts', icon: Receipt },
+// Front Desk Navigation - Schedule-first, no sales reports
+export const FRONT_DESK_NAVIGATION: NavCategory[] = [
+  {
+    label: 'Home',
+    icon: LayoutDashboard,
+    items: [
+      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'Schedule',
+    icon: Calendar,
+    items: [
+      { label: 'Calendar', href: '/schedule', icon: Calendar },
+      { label: 'Waitlist', href: '/waitlist', icon: ClipboardList },
+    ],
+  },
+  {
+    label: 'Clients',
+    icon: Users,
+    items: [
+      { label: 'Client List', href: '/clients', icon: Users },
+      { label: 'Client Packages', href: '/client-packages', icon: Package },
+    ],
+  },
+  {
+    label: 'Messages',
+    icon: MessageCircle,
+    items: [
+      { label: 'Messages', href: '/messages', icon: MessageCircle },
+    ],
+  },
+  {
+    label: 'POS',
+    icon: ShoppingCart,
+    items: [
+      { label: 'Checkout', href: '/pos', icon: ShoppingCart },
+      { label: 'Receipts', href: '/receipts', icon: Receipt },
+    ],
+  },
+  {
+    label: 'Time Clock',
+    icon: Clock,
+    items: [
+      { label: 'Time Clock', href: '/timeclock', icon: Clock },
+    ],
+  },
 ];
+
 
 // Client Portal Navigation — 5 consolidated sections
 export const CLIENT_NAVIGATION: NavCategory[] = [
@@ -306,16 +351,10 @@ export function getNavigationForRole(role: AppRole | null, employeeType?: Employ
     case 'owner':
       return OWNER_NAVIGATION;
     case 'employee':
-      // Add front desk specific items
       if (employeeType === 'front_desk') {
-        const nav = [...EMPLOYEE_NAVIGATION];
-        const posCategory = nav.find(c => c.label === 'POS');
-        if (posCategory) {
-          posCategory.items = [...posCategory.items, ...FRONT_DESK_ADDITIONAL];
-        }
-        return nav;
+        return FRONT_DESK_NAVIGATION;
       }
-      return EMPLOYEE_NAVIGATION;
+      return PROVIDER_NAVIGATION;
     case 'client':
       return CLIENT_NAVIGATION;
     default:
