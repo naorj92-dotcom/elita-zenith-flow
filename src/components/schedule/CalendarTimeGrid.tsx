@@ -546,6 +546,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
 interface ProviderColumnProps {
   date: Date;
   staffId?: string;
+  staffIndex?: number;
   appointments: ScheduleAppointment[];
   googleEvents: GoogleCalendarEvent[];
   isLast: boolean;
@@ -561,9 +562,11 @@ interface ProviderColumnProps {
   isDropTarget?: boolean;
   dropShadow?: { top: number; height: number; timeLabel: string } | null;
   formStatusMap?: Record<string, 'complete' | 'pending' | 'none'>;
+  providerColorFn?: (staffId: string, index: number) => string;
+  allStaff?: ScheduleStaff[];
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow, formStatusMap }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow, formStatusMap, providerColorFn, allStaff }: ProviderColumnProps) {
   return (
     <div
       data-staff-col={staffId}
