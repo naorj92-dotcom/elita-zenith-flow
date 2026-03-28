@@ -362,7 +362,7 @@ export function Dashboard() {
               { label: 'Add Client', href: '/clients/new', icon: Users },
               { label: 'View Schedule', href: '/schedule', icon: Clock },
               { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
-              { label: 'Launch Kiosk', href: '/kiosk', icon: Play, external: true },
+              ...(staff?.role === 'admin' ? [{ label: 'Launch Kiosk', href: '/kiosk', icon: Play, external: true }] : []),
             ].map((action: any) => (
               action.external ? (
                 <a key={action.label} href="/kiosk" target="_blank" rel="noopener noreferrer">
