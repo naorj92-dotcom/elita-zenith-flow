@@ -576,9 +576,6 @@ export function CompetitionPage() {
                       </motion.div>
                     );
                   })}
-                      </motion.div>
-                    );
-                  })}
                 </AnimatePresence>
               </div>
             </LayoutGroup>
