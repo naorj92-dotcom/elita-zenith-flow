@@ -29,6 +29,16 @@ export interface RolePermissions {
   canAccessPOS: boolean;
   canManageAppointments: boolean;
   canViewOwnData: boolean;
+  canViewChartNotes: boolean;
+  canCreateChartNotes: boolean;
+  canViewHealthHistory: boolean;
+  canIssueRefunds: boolean;
+  canApplyDiscounts: boolean;
+  maxDiscountPercent: number;
+  canExportClientData: boolean;
+  canMessageClients: boolean;
+  canViewAuditLog: boolean;
+  hasCustomPermissions: boolean;
 }
 
 // Role-based permission mapping
@@ -47,6 +57,16 @@ export const ROLE_PERMISSIONS: Record<AppRole, RolePermissions> = {
     canAccessPOS: true,
     canManageAppointments: true,
     canViewOwnData: true,
+    canViewChartNotes: true,
+    canCreateChartNotes: true,
+    canViewHealthHistory: true,
+    canIssueRefunds: true,
+    canApplyDiscounts: true,
+    maxDiscountPercent: 100,
+    canExportClientData: true,
+    canMessageClients: true,
+    canViewAuditLog: true,
+    hasCustomPermissions: false,
   },
   employee: {
     canViewAnalytics: false,
@@ -62,6 +82,16 @@ export const ROLE_PERMISSIONS: Record<AppRole, RolePermissions> = {
     canAccessPOS: true,
     canManageAppointments: true,
     canViewOwnData: true,
+    canViewChartNotes: false,
+    canCreateChartNotes: false,
+    canViewHealthHistory: false,
+    canIssueRefunds: false,
+    canApplyDiscounts: true,
+    maxDiscountPercent: 10,
+    canExportClientData: false,
+    canMessageClients: false,
+    canViewAuditLog: false,
+    hasCustomPermissions: false,
   },
   client: {
     canViewAnalytics: false,
@@ -77,6 +107,16 @@ export const ROLE_PERMISSIONS: Record<AppRole, RolePermissions> = {
     canAccessPOS: false,
     canManageAppointments: false,
     canViewOwnData: true,
+    canViewChartNotes: false,
+    canCreateChartNotes: false,
+    canViewHealthHistory: false,
+    canIssueRefunds: false,
+    canApplyDiscounts: false,
+    maxDiscountPercent: 0,
+    canExportClientData: false,
+    canMessageClients: false,
+    canViewAuditLog: false,
+    hasCustomPermissions: false,
   },
 };
 
@@ -86,10 +126,22 @@ export const EMPLOYEE_TYPE_PERMISSIONS: Record<EmployeeType, Partial<RolePermiss
     canViewAllClients: true,
     canManageAppointments: true,
     canAccessPOS: true,
+    canViewChartNotes: false,
+    canCreateChartNotes: false,
+    canViewHealthHistory: false,
+    canMessageClients: true,
+    canApplyDiscounts: true,
+    maxDiscountPercent: 10,
   },
   provider: {
     canViewAllClients: true,
     canManageAppointments: true,
     canAccessPOS: true,
+    canViewChartNotes: true,
+    canCreateChartNotes: true,
+    canViewHealthHistory: true,
+    canMessageClients: true,
+    canApplyDiscounts: true,
+    maxDiscountPercent: 20,
   },
 };
