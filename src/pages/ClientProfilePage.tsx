@@ -17,7 +17,7 @@ import {
   Mail, Calendar, MoreHorizontal, User, Phone, Save, Loader2,
   Clock, Camera, Package, CreditCard, Sparkles, ClipboardList,
   Image as ImageIcon, FolderOpen, AlertTriangle, Pill, ShieldAlert,
-  Upload, Eye, EyeOff, Plus
+  Upload, Eye, EyeOff, Plus, Flame
 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -198,6 +198,7 @@ export default function ClientProfilePage() {
                     <Crown className="h-3 w-3" /> VIP
                   </Badge>
                 )}
+                <ClientStreakBadge clientId={client.id} />
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
                 <MapPin className="h-3.5 w-3.5" />
@@ -1193,5 +1194,28 @@ function ContactSidebar({ client }: { client: any }) {
         </Button>
       </div>
     </ScrollArea>
+  );
+}
+
+function ClientStreakBadge({ clientId }: { clientId: string }) {
+  const { data: streak } = useQuery({
+    queryKey: ['client-streak-badge', clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('visit_streaks')
+        .select('current_streak')
+        .eq('client_id', clientId)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const current = (streak as any)?.current_streak ?? 0;
+  if (current < 1) return null;
+
+  return (
+    <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1 text-xs">
+      <Flame className="h-3 w-3" /> {current} month streak
+    </Badge>
   );
 }
