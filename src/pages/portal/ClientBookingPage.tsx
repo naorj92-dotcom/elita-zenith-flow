@@ -101,7 +101,13 @@ export function ClientBookingPage() {
       return data;
     },
     onSuccess: (data) => {
-      if (data?.id) syncAppointment(data.id);
+      if (data?.id) {
+        syncAppointment(data.id);
+        // Fire confirmation notification (non-blocking)
+        supabase.functions.invoke('send-appointment-confirmation', {
+          body: { appointment_id: data.id },
+        }).catch(err => console.error('Confirmation send error:', err));
+      }
       setShowCelebration(true);
       toast({ title: 'Appointment Booked! 🎉', description: 'We look forward to seeing you.' });
       queryClient.invalidateQueries({ queryKey: ['client-next-appointment'] });

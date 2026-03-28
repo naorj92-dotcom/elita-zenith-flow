@@ -96,7 +96,7 @@ export function NewAppointmentDialog({ open, onOpenChange, onCreated, defaultCli
     const scheduledAt = new Date(`${date}T${time}:00`);
     const service = services.find(s => s.id === serviceId);
 
-    const { error } = await supabase.from('appointments').insert({
+    const { data: newApt, error } = await supabase.from('appointments').insert({
       client_id: clientId,
       service_id: serviceId,
       staff_id: staffId,
@@ -106,12 +106,18 @@ export function NewAppointmentDialog({ open, onOpenChange, onCreated, defaultCli
       total_amount: service?.price || 0,
       status: 'scheduled',
       notes: notes || null,
-    });
+    }).select('id').single();
 
     if (error) {
       toast.error('Failed to create appointment: ' + error.message);
     } else {
       toast.success('Appointment created successfully');
+      // Fire confirmation notification (non-blocking)
+      if (newApt?.id) {
+        supabase.functions.invoke('send-appointment-confirmation', {
+          body: { appointment_id: newApt.id },
+        }).catch(err => console.error('Confirmation send error:', err));
+      }
       onOpenChange(false);
       onCreated?.();
     }
