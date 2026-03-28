@@ -208,6 +208,28 @@ export function Dashboard() {
               onClockOut={async () => { const ok = await clockOut(); if (ok) toast({ title: "Clocked Out", description: "Have a great rest of your day." }); }}
             />
 
+          {/* Launch Kiosk — prominent for front desk & admin */}
+          {['admin', 'front_desk'].includes(staff?.role || '') && (
+            <div className="mt-8">
+              <a href="/kiosk" target="_blank" rel="noopener noreferrer" className="block">
+                <motion.div
+                  whileHover={{ y: -2, scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-4 p-5 rounded-2xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all"
+                >
+                  <div className="w-11 h-11 rounded-2xl bg-primary/20 flex items-center justify-center">
+                    <Play className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">Launch Check-In Kiosk</p>
+                    <p className="text-[11px] text-muted-foreground">Open full-screen client self-check-in</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </motion.div>
+              </a>
+            </div>
+          )}
+
           <div className="divider-luxe mt-12 mb-10" />
 
           {/* Period Toggle */}
