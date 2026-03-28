@@ -437,6 +437,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       key={s.id}
                       date={date}
                       staffId={s.id}
+                      staffIndex={sIdx}
                       appointments={getApptsForDateAndStaff(date, s.id)}
                       googleEvents={sIdx === 0 ? dayGoogle : []}
                       isLast={sIdx === visibleStaff.length - 1}
@@ -451,6 +452,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       isDropTarget={!!draggingApt && dragTargetStaffId === s.id && dragOriginStaffId !== s.id}
                       dropShadow={computeDropShadow(s.id)}
                       formStatusMap={formStatusMap}
+                      providerColorFn={providerColorFn}
+                      allStaff={visibleStaff}
                     />
                   ))}
                 </div>
@@ -474,6 +477,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                   dragGhostTop={dragGhostTop}
                   dropShadow={computeDropShadow()}
                   formStatusMap={formStatusMap}
+                  providerColorFn={providerColorFn}
+                  allStaff={visibleStaff}
                 />
               </div>
             );
