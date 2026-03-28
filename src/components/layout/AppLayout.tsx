@@ -78,6 +78,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     [role]
   );
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(() => {
     const current = new Set<string>();
     navigation.forEach(cat => {
