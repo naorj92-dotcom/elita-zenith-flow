@@ -81,7 +81,7 @@ function googleEventToAppointment(event: GoogleCalendarEvent): ScheduleAppointme
   };
 }
 
-export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onClientChanged, onStatusChange, clientDetailsMap, formStatusMap }: CalendarTimeGridProps & { formStatusMap?: Record<string, 'complete' | 'pending' | 'none'> }) {
+export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onClientChanged, onStatusChange, clientDetailsMap, formStatusMap, providerColorFn }: CalendarTimeGridProps & { formStatusMap?: Record<string, 'complete' | 'pending' | 'none'> }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const [selectedApt, setSelectedApt] = useState<ScheduleAppointment | null>(null);
