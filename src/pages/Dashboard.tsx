@@ -80,13 +80,16 @@ export function Dashboard() {
       const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       const lastMonthEnd = new Date(monthStart); lastMonthEnd.setMilliseconds(-1);
 
-      // Fetch all appointments for the month (covers all periods)
-      const { data: monthApts } = await supabase
+      // Fetch appointments — front desk sees ALL, providers see only theirs
+      let monthQuery = supabase
         .from('appointments')
-        .select('id, scheduled_at, duration_minutes, status, total_amount, clients (first_name, last_name), services (name)')
-        .eq('staff_id', staff.id)
+        .select('id, scheduled_at, duration_minutes, status, total_amount, staff_id, clients (first_name, last_name), services (name), staff (first_name)')
         .gte('scheduled_at', monthStart.toISOString())
         .order('scheduled_at', { ascending: true });
+      if (!isFrontDesk) {
+        monthQuery = monthQuery.eq('staff_id', staff.id);
+      }
+      const { data: monthApts } = await monthQuery;
 
       // Previous month appointments for comparison
       const { data: prevMonthApts } = await supabase
