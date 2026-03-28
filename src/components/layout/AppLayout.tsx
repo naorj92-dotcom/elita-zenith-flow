@@ -363,42 +363,143 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Mobile Header */}
         <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3">
           <div className="flex items-center justify-between">
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <button className="p-2 -ml-2 rounded-lg text-foreground hover:bg-accent">
+                  <Menu className="w-5 h-5" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-0 bg-card">
+                <div className="px-5 py-5 border-b border-border/40 flex justify-center">
+                  <img src={elitaLogo} alt="Elita" className="h-12 w-auto object-contain" />
+                </div>
+                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto max-h-[calc(100vh-10rem)]">
+                  {navigation.map((category) => {
+                    const isExpanded = expandedCategories.has(category.label);
+                    const isActive = isCategoryActive(category);
+                    const Icon = category.icon;
+                    const visibleItems = category.items;
+
+                    if (visibleItems.length === 1) {
+                      const item = visibleItems[0];
+                      const ItemIcon = item.icon;
+                      const itemActive = isItemActive(item.href);
+                      return (
+                        <Link
+                          key={category.label}
+                          to={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200",
+                            itemActive
+                              ? "bg-primary/10 text-primary font-semibold shadow-sm"
+                              : "text-foreground/70 hover:bg-accent hover:text-foreground"
+                          )}
+                        >
+                          <ItemIcon className={cn("w-[19px] h-[19px]", itemActive ? "text-primary" : "text-muted-foreground")} />
+                          <span className="text-[13px]">{category.label}</span>
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <div key={category.label}>
+                        <button
+                          onClick={() => toggleCategory(category.label)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200",
+                            isActive ? "bg-accent text-foreground" : "text-foreground/70 hover:bg-accent hover:text-foreground"
+                          )}
+                        >
+                          <Icon className={cn("w-[19px] h-[19px]", isActive ? "text-primary" : "text-muted-foreground")} />
+                          <span className="text-[13px] font-medium">{category.label}</span>
+                          <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.15 }} className="ml-auto">
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          </motion.div>
+                        </button>
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.15 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="pl-4 pt-1 space-y-0.5">
+                                {visibleItems.map((item) => {
+                                  const SubIcon = item.icon;
+                                  const itemActive = isItemActive(item.href);
+                                  return (
+                                    <Link
+                                      key={item.href}
+                                      to={item.href}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className={cn(
+                                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
+                                        itemActive ? "bg-primary/10 text-primary font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                                      )}
+                                    >
+                                      <SubIcon className="w-[16px] h-[16px]" />
+                                      <span className="text-[13px]">{item.label}</span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+                </nav>
+                {/* Mobile drawer user section */}
+                <div className="px-4 py-4 border-t border-border/40 mt-auto">
+                  <div className="flex items-center gap-3 px-2 py-2">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-primary font-semibold text-xs">
+                        {staff?.first_name?.[0]}{staff?.last_name?.[0]}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-[13px] text-foreground truncate">
+                        {staff?.first_name} {staff?.last_name}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">{getRoleDisplay()}</p>
+                    </div>
+                    <button onClick={handleLogout} className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                      <LogOut className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+
             <Link to={role === 'client' ? '/portal' : '/dashboard'}>
-              <img 
-                src={elitaLogo} 
-                alt="Elita" 
-                className="h-7 w-auto object-contain"
-              />
+              <img src={elitaLogo} alt="Elita" className="h-7 w-auto object-contain" />
             </Link>
             <div className="flex items-center gap-2">
               {clockStatus?.is_clocked_in && (
                 <div className="w-2 h-2 rounded-full bg-success" />
               )}
               {role !== 'client' && <StaffNotificationBell />}
-              <button
-                onClick={handleLogout}
-                className="p-2 rounded-lg text-muted-foreground hover:text-destructive"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </header>
 
-        {/* Mobile Bottom Nav */}
+        {/* Mobile Bottom Nav — 4 items + Menu burger replaced by Chat */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-2 flex justify-around">
           {mobileNavItems.map((item) => {
-            const isActive = location.pathname === item.href || 
+            const active = location.pathname === item.href || 
                             location.pathname.startsWith(item.href + '/');
             const Icon = item.icon;
-            
             return (
               <Link
                 key={item.href}
                 to={item.href}
                 className={cn(
                   "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px]",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  active ? "text-primary" : "text-muted-foreground"
                 )}
               >
                 <Icon className="w-5 h-5" />
