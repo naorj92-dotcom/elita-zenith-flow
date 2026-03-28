@@ -8,6 +8,8 @@ import {
   Plus,
   CreditCard,
   UserPlus,
+  Menu,
+  X,
 } from 'lucide-react';
 import { StaffNotificationBell } from '@/components/layout/StaffNotificationBell';
 import { cn } from '@/lib/utils';
@@ -21,6 +23,7 @@ import {
   NavCategory,
 } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import elitaLogo from '@/assets/elita-logo.png';
 
 interface AppLayoutProps {
