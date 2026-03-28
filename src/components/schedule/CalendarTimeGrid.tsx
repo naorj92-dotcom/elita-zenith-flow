@@ -33,6 +33,35 @@ const STATUS_COLORS: Record<string, string> = {
   no_show: 'bg-destructive/10 border-destructive/20 text-muted-foreground',
 };
 
+function withAlpha(color: string, alpha: number): string {
+  const normalized = color.trim();
+
+  if (normalized.startsWith('#')) {
+    let hex = normalized.slice(1);
+    if (hex.length === 3) {
+      hex = hex.split('').map((c) => c + c).join('');
+    }
+    if (hex.length >= 6) {
+      const r = Number.parseInt(hex.slice(0, 2), 16);
+      const g = Number.parseInt(hex.slice(2, 4), 16);
+      const b = Number.parseInt(hex.slice(4, 6), 16);
+      if ([r, g, b].every((v) => Number.isFinite(v))) {
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+    }
+  }
+
+  if (normalized.startsWith('rgb(')) {
+    return normalized.replace('rgb(', 'rgba(').replace(')', `, ${alpha})`);
+  }
+
+  if (normalized.startsWith('hsl(')) {
+    return normalized.replace('hsl(', 'hsla(').replace(')', `, ${alpha})`);
+  }
+
+  return color;
+}
+
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
@@ -355,7 +384,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       >
                         <AvatarImage src={s.avatar_url || undefined} />
                         <AvatarFallback className={cn('text-primary', isWeekView ? 'text-[8px]' : 'text-[10px]')}
-                          style={{ backgroundColor: providerColorFn ? `${providerColorFn(s.id, sIdx)}20` : undefined }}
+                          style={{ backgroundColor: providerColorFn ? withAlpha(providerColorFn(s.id, sIdx), 0.18) : undefined }}
                         >
                           {s.first_name[0]}{s.last_name[0]}
                         </AvatarFallback>
@@ -616,6 +645,8 @@ function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, goo
 
         const aptStaffIdx = allStaff ? allStaff.findIndex(s => s.id === apt.staff_id) : -1;
         const providerColor = providerColorFn && apt.staff_id ? providerColorFn(apt.staff_id, aptStaffIdx >= 0 ? aptStaffIdx : 0) : undefined;
+        const providerBackground = providerColor ? withAlpha(providerColor, 0.22) : undefined;
+        const providerOutline = providerColor ? withAlpha(providerColor, 0.42) : undefined;
 
         return (
           <div
@@ -630,10 +661,11 @@ function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, goo
               top: isDragging && dragGhostTop !== null ? dragGhostTop : top,
               height,
               ...(providerColor ? {
-                backgroundColor: `${providerColor}30`,
+                backgroundColor: providerBackground,
                 borderLeftColor: providerColor,
                 borderLeftWidth: '4px',
-                color: 'var(--foreground)',
+                boxShadow: `inset 0 0 0 1px ${providerOutline}`,
+                color: 'hsl(var(--foreground))',
               } : {}),
             }}
             onClick={(e) => onAptClick?.(apt, e)}
