@@ -156,6 +156,7 @@ export function Dashboard() {
           id: apt.id, time: new Date(apt.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown',
           service_name: apt.services?.name || 'Unknown', status: apt.status as AppointmentStatus, duration: apt.duration_minutes,
+          provider_name: apt.staff?.first_name || undefined,
         }));
       setAppointments(todayFormatted);
     };
