@@ -217,6 +217,8 @@ export function CompetitionPage() {
         upsell_count: upsellMap[s.id] || 0,
         weekly_trend: trendMap[s.id] || [0, 0, 0, 0],
         prev_total_sales: prevSalesMap[s.id] || 0,
+        revenue_goal: goalsMap[s.id]?.revenue_goal ?? null,
+        appointments_goal: goalsMap[s.id]?.appointments_goal ?? null,
       }));
 
       board.sort((a, b) => getSortValue(b) - getSortValue(a));
