@@ -609,16 +609,24 @@ function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, goo
         const isDragging = draggingApt === apt.id;
         const isCheckedIn = apt.status === 'checked_in';
 
+        const aptStaffIdx = allStaff ? allStaff.findIndex(s => s.id === apt.staff_id) : -1;
+        const borderColor = providerColorFn && apt.staff_id ? providerColorFn(apt.staff_id, aptStaffIdx >= 0 ? aptStaffIdx : 0) : undefined;
+
         return (
           <div
             key={apt.id}
             className={cn(
-              'absolute left-0.5 right-0.5 rounded-md border-l-[3px] px-1 py-0.5 overflow-hidden cursor-grab transition-shadow select-none',
+              'absolute left-0.5 right-0.5 rounded-md px-1 py-0.5 overflow-hidden cursor-grab transition-shadow select-none',
               STATUS_COLORS[apt.status] || STATUS_COLORS.scheduled,
               isDragging && 'opacity-50 cursor-grabbing shadow-lg z-20',
-              isCheckedIn && 'ring-2 ring-sky-400/50'
+              isCheckedIn && 'ring-2 ring-sky-400/50',
+              !borderColor && 'border-l-[3px]'
             )}
-            style={{ top: isDragging && dragGhostTop !== null ? dragGhostTop : top, height }}
+            style={{
+              top: isDragging && dragGhostTop !== null ? dragGhostTop : top,
+              height,
+              ...(borderColor ? { borderLeft: `3px solid ${borderColor}` } : {}),
+            }}
             onClick={(e) => onAptClick?.(apt, e)}
             onMouseDown={(e) => {
               if (e.button === 0) onDragStart?.(apt, date, e);
