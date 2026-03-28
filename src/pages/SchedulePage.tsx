@@ -344,6 +344,7 @@ export function SchedulePage() {
         onFullCalendarChange={setIsFullCalendar}
         showStaffFilter={isOwner || (!isProvider && !isOwner)}
         onNewAppointment={() => { setNewApptClientId(null); setShowNewAppt(true); }}
+        providerColors={providerColors}
       />
       <CalendarTimeGrid
         dates={getDates()}
@@ -355,6 +356,7 @@ export function SchedulePage() {
         onStatusChange={handleStatusChange}
         onClientChanged={fetchData}
         clientDetailsMap={clientDetailsMap}
+        providerColorFn={providerColors.getColor}
       />
       <RescheduleDialog
         open={!!rescheduleApt}
