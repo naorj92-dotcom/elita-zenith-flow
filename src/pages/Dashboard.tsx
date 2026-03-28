@@ -26,6 +26,7 @@ interface TodayAppointment {
   time: string;
   client_name: string;
   service_name: string;
+  provider_name?: string;
   status: AppointmentStatus;
   duration: number;
 }
