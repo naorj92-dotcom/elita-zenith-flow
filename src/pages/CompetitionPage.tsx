@@ -112,7 +112,9 @@ export function CompetitionPage() {
         ? endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 })
         : endOfMonth(subMonths(monthStart, 1));
 
-      const [txRes, prevTxRes, aptRes, upsellRes, staffRes, weeklyTxRes] = await Promise.all([
+      const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+
+      const [txRes, prevTxRes, aptRes, upsellRes, staffRes, weeklyTxRes, goalsRes] = await Promise.all([
         supabase.from('transactions').select('staff_id, amount, transaction_type')
           .gte('transaction_date', rangeStart.toISOString())
           .lte('transaction_date', rangeEnd.toISOString())
@@ -135,6 +137,10 @@ export function CompetitionPage() {
           .gte('transaction_date', subWeeks(new Date(), 4).toISOString())
           .lte('transaction_date', new Date().toISOString())
           .in('transaction_type', ['service', 'retail']),
+        // Weekly goals for current week
+        supabase.from('staff_weekly_goals')
+          .select('staff_id, revenue_goal, appointments_goal')
+          .eq('week_start', format(currentWeekStart, 'yyyy-MM-dd')),
       ]);
 
       const transactions = txRes.data || [];
