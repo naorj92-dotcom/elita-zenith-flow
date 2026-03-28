@@ -21,8 +21,10 @@ interface StaffSales {
   total_sales: number;
   appointment_count: number;
   upsell_count: number;
-  weekly_trend: number[]; // 4 weeks of revenue
-  prev_total_sales: number; // for "most improved"
+  weekly_trend: number[];
+  prev_total_sales: number;
+  revenue_goal: number | null;
+  appointments_goal: number | null;
 }
 
 interface CompetitionSettings {
