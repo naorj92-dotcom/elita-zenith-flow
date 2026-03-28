@@ -614,3 +614,64 @@ export function CompetitionPage() {
     </div>
   );
 }
+
+function SetGoalInline({ staffId, onSaved }: { staffId: string; onSaved: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [revGoal, setRevGoal] = useState('');
+  const [aptGoal, setAptGoal] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  if (!open) {
+    return (
+      <div className="mt-2 ml-[52px]">
+        <button
+          onClick={() => setOpen(true)}
+          className="text-[11px] text-primary hover:underline font-medium"
+        >
+          Set goal →
+        </button>
+      </div>
+    );
+  }
+
+  const handleSave = async () => {
+    setSaving(true);
+    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const { error } = await supabase.from('staff_weekly_goals').upsert({
+      staff_id: staffId,
+      week_start: weekStart,
+      revenue_goal: Number(revGoal) || 0,
+      appointments_goal: Number(aptGoal) || 0,
+    }, { onConflict: 'staff_id,week_start' });
+    setSaving(false);
+    if (!error) {
+      setOpen(false);
+      onSaved();
+    }
+  };
+
+  return (
+    <div className="mt-3 ml-[52px] flex items-center gap-2 flex-wrap">
+      <Input
+        type="number"
+        placeholder="Revenue goal"
+        value={revGoal}
+        onChange={e => setRevGoal(e.target.value)}
+        className="w-28 h-8 text-xs"
+      />
+      <Input
+        type="number"
+        placeholder="Appts goal"
+        value={aptGoal}
+        onChange={e => setAptGoal(e.target.value)}
+        className="w-24 h-8 text-xs"
+      />
+      <Button size="sm" className="h-8 gap-1 text-xs" onClick={handleSave} disabled={saving}>
+        <Check className="w-3 h-3" /> Save
+      </Button>
+      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setOpen(false)}>
+        Cancel
+      </Button>
+    </div>
+  );
+}
