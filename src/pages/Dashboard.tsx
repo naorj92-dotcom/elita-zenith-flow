@@ -7,6 +7,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,6 +46,7 @@ const fadeUp = {
 
 export function Dashboard() {
   const { staff, clockStatus, clockIn, clockOut, isLoading } = useAuth();
+  const { isFrontDesk } = useUnifiedAuth();
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<TodayAppointment[]>([]);
   const [metricPeriod, setMetricPeriod] = useState<MetricPeriod>('today');
@@ -230,6 +232,8 @@ export function Dashboard() {
             </div>
           )}
 
+          {!isFrontDesk && (
+          <>
           <div className="divider-luxe mt-12 mb-10" />
 
           {/* Period Toggle */}
@@ -319,6 +323,8 @@ export function Dashboard() {
               </div>
             );
           })()}
+          </>
+          )}
         </div>
       </motion.div>
 

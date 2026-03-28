@@ -16,6 +16,7 @@ interface CalendarTimeGridProps {
   onClientChanged?: () => void;
   onStatusChange?: (id: string, status: string) => void;
   clientDetailsMap?: Record<string, { phone?: string | null; email?: string | null; visit_count?: number; total_spent?: number; date_of_birth?: string | null }>;
+  providerColorFn?: (staffId: string, index: number) => string;
 }
 
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 7);
@@ -80,7 +81,7 @@ function googleEventToAppointment(event: GoogleCalendarEvent): ScheduleAppointme
   };
 }
 
-export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onClientChanged, onStatusChange, clientDetailsMap, formStatusMap }: CalendarTimeGridProps & { formStatusMap?: Record<string, 'complete' | 'pending' | 'none'> }) {
+export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading, staffList, onAppointmentDrop, onClientChanged, onStatusChange, clientDetailsMap, formStatusMap, providerColorFn }: CalendarTimeGridProps & { formStatusMap?: Record<string, 'complete' | 'pending' | 'none'> }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerScrollRef = useRef<HTMLDivElement>(null);
   const [selectedApt, setSelectedApt] = useState<ScheduleAppointment | null>(null);
@@ -349,9 +350,13 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       )}
                       style={{ width: staffColWidth, minWidth: staffColWidth }}
                     >
-                      <Avatar className={cn('border-2 border-background', isWeekView ? 'h-6 w-6' : 'h-7 w-7')}>
+                      <Avatar className={cn('border-2', isWeekView ? 'h-6 w-6' : 'h-7 w-7')}
+                        style={{ borderColor: providerColorFn ? providerColorFn(s.id, sIdx) : undefined }}
+                      >
                         <AvatarImage src={s.avatar_url || undefined} />
-                        <AvatarFallback className={cn('bg-primary/10 text-primary', isWeekView ? 'text-[8px]' : 'text-[10px]')}>
+                        <AvatarFallback className={cn('text-primary', isWeekView ? 'text-[8px]' : 'text-[10px]')}
+                          style={{ backgroundColor: providerColorFn ? `${providerColorFn(s.id, sIdx)}20` : undefined }}
+                        >
                           {s.first_name[0]}{s.last_name[0]}
                         </AvatarFallback>
                       </Avatar>
@@ -432,6 +437,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       key={s.id}
                       date={date}
                       staffId={s.id}
+                      staffIndex={sIdx}
                       appointments={getApptsForDateAndStaff(date, s.id)}
                       googleEvents={sIdx === 0 ? dayGoogle : []}
                       isLast={sIdx === visibleStaff.length - 1}
@@ -446,6 +452,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       isDropTarget={!!draggingApt && dragTargetStaffId === s.id && dragOriginStaffId !== s.id}
                       dropShadow={computeDropShadow(s.id)}
                       formStatusMap={formStatusMap}
+                      providerColorFn={providerColorFn}
+                      allStaff={visibleStaff}
                     />
                   ))}
                 </div>
@@ -469,6 +477,8 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                   dragGhostTop={dragGhostTop}
                   dropShadow={computeDropShadow()}
                   formStatusMap={formStatusMap}
+                  providerColorFn={providerColorFn}
+                  allStaff={visibleStaff}
                 />
               </div>
             );
@@ -541,6 +551,7 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
 interface ProviderColumnProps {
   date: Date;
   staffId?: string;
+  staffIndex?: number;
   appointments: ScheduleAppointment[];
   googleEvents: GoogleCalendarEvent[];
   isLast: boolean;
@@ -556,9 +567,11 @@ interface ProviderColumnProps {
   isDropTarget?: boolean;
   dropShadow?: { top: number; height: number; timeLabel: string } | null;
   formStatusMap?: Record<string, 'complete' | 'pending' | 'none'>;
+  providerColorFn?: (staffId: string, index: number) => string;
+  allStaff?: ScheduleStaff[];
 }
 
-function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow, formStatusMap }: ProviderColumnProps) {
+function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow, formStatusMap, providerColorFn, allStaff }: ProviderColumnProps) {
   return (
     <div
       data-staff-col={staffId}
@@ -601,16 +614,24 @@ function ProviderColumn({ date, staffId, appointments: dayAppts, googleEvents: d
         const isDragging = draggingApt === apt.id;
         const isCheckedIn = apt.status === 'checked_in';
 
+        const aptStaffIdx = allStaff ? allStaff.findIndex(s => s.id === apt.staff_id) : -1;
+        const borderColor = providerColorFn && apt.staff_id ? providerColorFn(apt.staff_id, aptStaffIdx >= 0 ? aptStaffIdx : 0) : undefined;
+
         return (
           <div
             key={apt.id}
             className={cn(
-              'absolute left-0.5 right-0.5 rounded-md border-l-[3px] px-1 py-0.5 overflow-hidden cursor-grab transition-shadow select-none',
+              'absolute left-0.5 right-0.5 rounded-md px-1 py-0.5 overflow-hidden cursor-grab transition-shadow select-none',
               STATUS_COLORS[apt.status] || STATUS_COLORS.scheduled,
               isDragging && 'opacity-50 cursor-grabbing shadow-lg z-20',
-              isCheckedIn && 'ring-2 ring-sky-400/50'
+              isCheckedIn && 'ring-2 ring-sky-400/50',
+              !borderColor && 'border-l-[3px]'
             )}
-            style={{ top: isDragging && dragGhostTop !== null ? dragGhostTop : top, height }}
+            style={{
+              top: isDragging && dragGhostTop !== null ? dragGhostTop : top,
+              height,
+              ...(borderColor ? { borderLeft: `3px solid ${borderColor}` } : {}),
+            }}
             onClick={(e) => onAptClick?.(apt, e)}
             onMouseDown={(e) => {
               if (e.button === 0) onDragStart?.(apt, date, e);

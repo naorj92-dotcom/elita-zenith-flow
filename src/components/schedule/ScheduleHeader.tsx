@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays } from 'lucide-react';
+import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -27,6 +27,7 @@ interface ScheduleHeaderProps {
   onFullCalendarChange?: (val: boolean) => void;
   showStaffFilter?: boolean;
   onNewAppointment?: () => void;
+  providerColors?: { getColor: (id: string, idx: number) => string; setColor: (id: string, color: string) => void; availableColors: string[] };
 }
 
 export function ScheduleHeader({
@@ -45,6 +46,7 @@ export function ScheduleHeader({
   onFullCalendarChange,
   showStaffFilter = true,
   onNewAppointment,
+  providerColors,
 }: ScheduleHeaderProps) {
   const formatHeaderDate = () => {
     if (view === 'day') {
@@ -157,27 +159,56 @@ export function ScheduleHeader({
                     Select All
                   </button>
                 </div>
-                {staffList.map((s) => (
-                  <label
-                    key={s.id}
-                    className={cn(
-                      'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors',
-                      !isFullCalendar && selectedStaffIds.includes(s.id) ? 'bg-primary/5' : 'hover:bg-muted'
+                {staffList.map((s, sIdx) => (
+                  <div key={s.id} className="flex items-center gap-1">
+                    <label
+                      className={cn(
+                        'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors flex-1',
+                        !isFullCalendar && selectedStaffIds.includes(s.id) ? 'bg-primary/5' : 'hover:bg-muted'
+                      )}
+                      onClick={() => { if (isFullCalendar) onFullCalendarChange?.(false); }}
+                    >
+                      <Checkbox
+                        checked={!isFullCalendar && selectedStaffIds.includes(s.id)}
+                        onCheckedChange={() => { if (isFullCalendar) onFullCalendarChange?.(false); toggleStaff(s.id); }}
+                      />
+                      <div
+                        className="w-3 h-3 rounded-full shrink-0 border border-border"
+                        style={{ backgroundColor: providerColors?.getColor(s.id, sIdx) || '#3b82f6' }}
+                      />
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={s.avatar_url || undefined} />
+                        <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                          {s.first_name[0]}{s.last_name[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">{s.first_name} {s.last_name}</span>
+                    </label>
+                    {providerColors && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="p-1 rounded hover:bg-muted" title="Change color">
+                            <Palette className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-2" align="end" side="right">
+                          <div className="grid grid-cols-5 gap-1.5">
+                            {providerColors.availableColors.map((color) => (
+                              <button
+                                key={color}
+                                className={cn(
+                                  'w-6 h-6 rounded-full border-2 transition-transform hover:scale-110',
+                                  providerColors.getColor(s.id, sIdx) === color ? 'border-foreground scale-110' : 'border-transparent'
+                                )}
+                                style={{ backgroundColor: color }}
+                                onClick={() => providerColors.setColor(s.id, color)}
+                              />
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     )}
-                    onClick={() => { if (isFullCalendar) onFullCalendarChange?.(false); }}
-                  >
-                    <Checkbox
-                      checked={!isFullCalendar && selectedStaffIds.includes(s.id)}
-                      onCheckedChange={() => { if (isFullCalendar) onFullCalendarChange?.(false); toggleStaff(s.id); }}
-                    />
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={s.avatar_url || undefined} />
-                      <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
-                        {s.first_name[0]}{s.last_name[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm">{s.first_name} {s.last_name}</span>
-                  </label>
+                  </div>
                 ))}
               </div>
             </PopoverContent>

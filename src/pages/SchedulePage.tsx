@@ -5,6 +5,7 @@ import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { AppointmentStatus } from '@/types';
 import { useSearchParams } from 'react-router-dom';
 import { useCalendarSync, GoogleCalendarEvent } from '@/hooks/useCalendarSync';
+import { useProviderColors } from '@/hooks/useProviderColors';
 import { ScheduleHeader, CalendarView } from '@/components/schedule/ScheduleHeader';
 import { CalendarTimeGrid } from '@/components/schedule/CalendarTimeGrid';
 import { RescheduleDialog } from '@/components/schedule/RescheduleDialog';
@@ -38,6 +39,7 @@ export function SchedulePage() {
   const { staff } = useAuth();
   const { isOwner, isProvider, staff: authStaff } = useUnifiedAuth();
   const { pullEvents } = useCalendarSync();
+  const providerColors = useProviderColors();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date();
@@ -340,8 +342,9 @@ export function SchedulePage() {
         onSelectedStaffChange={setSelectedStaffIds}
         isFullCalendar={isFullCalendar}
         onFullCalendarChange={setIsFullCalendar}
-        showStaffFilter={isOwner}
+        showStaffFilter={isOwner || (!isProvider && !isOwner)}
         onNewAppointment={() => { setNewApptClientId(null); setShowNewAppt(true); }}
+        providerColors={providerColors}
       />
       <CalendarTimeGrid
         dates={getDates()}
@@ -353,6 +356,7 @@ export function SchedulePage() {
         onStatusChange={handleStatusChange}
         onClientChanged={fetchData}
         clientDetailsMap={clientDetailsMap}
+        providerColorFn={providerColors.getColor}
       />
       <RescheduleDialog
         open={!!rescheduleApt}
