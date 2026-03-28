@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays } from 'lucide-react';
+import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -27,6 +27,7 @@ interface ScheduleHeaderProps {
   onFullCalendarChange?: (val: boolean) => void;
   showStaffFilter?: boolean;
   onNewAppointment?: () => void;
+  providerColors?: { getColor: (id: string, idx: number) => string; setColor: (id: string, color: string) => void; availableColors: string[] };
 }
 
 export function ScheduleHeader({
@@ -45,6 +46,7 @@ export function ScheduleHeader({
   onFullCalendarChange,
   showStaffFilter = true,
   onNewAppointment,
+  providerColors,
 }: ScheduleHeaderProps) {
   const formatHeaderDate = () => {
     if (view === 'day') {
