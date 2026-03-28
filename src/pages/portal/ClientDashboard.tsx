@@ -3,7 +3,7 @@ import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Target, Sparkles, ChevronRight, Star } from 'lucide-react';
+import { Target, Sparkles, ChevronRight, Star, Flame } from 'lucide-react';
 import { addDays, startOfDay } from 'date-fns';
 import { matchServiceToCategory } from '@/lib/elitaMethod';
 import { motion } from 'framer-motion';
@@ -244,6 +244,9 @@ export function ClientDashboard() {
           stageAppointments={stageAppointments}
         />
       </div>
+
+      {/* ═══ VISIT STREAK BADGE ═══ */}
+      <StreakBadge clientId={client?.id} />
 
       {/* ═══ LOYALTY POINTS CARD ═══ */}
       <motion.div {...fadeUp} transition={{ delay: 0.07 }} className="mt-8 relative z-10 px-1">
