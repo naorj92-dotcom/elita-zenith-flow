@@ -630,8 +630,9 @@ function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, goo
               top: isDragging && dragGhostTop !== null ? dragGhostTop : top,
               height,
               ...(providerColor ? {
-                backgroundColor: `${providerColor}20`,
+                backgroundColor: `${providerColor}30`,
                 borderLeftColor: providerColor,
+                borderLeftWidth: '4px',
                 color: 'var(--foreground)',
               } : {}),
             }}
