@@ -376,6 +376,11 @@ export function Dashboard() {
               </Card>
             </motion.div>
 
+            {/* Rebook Reminders for front desk */}
+            <motion.div {...fadeUp} transition={{ delay: 0.11 }}>
+              <RebookRemindersWidget />
+            </motion.div>
+
             {/* Front Desk Quick Actions */}
             <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
               <p className="text-[9px] font-semibold text-muted-foreground/45 uppercase tracking-[0.35em] mb-6">Quick Actions</p>

@@ -41,7 +41,21 @@ export function RebookRemindersWidget() {
     },
   });
 
+  const actionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('rebook_reminders')
+        .update({ status: 'actioned' })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rebook-reminders-due'] });
+    },
+  });
+
   const handleBook = (reminder: any) => {
+    actionMutation.mutate(reminder.id);
     const params = new URLSearchParams({
       client: reminder.client_id,
       service: reminder.service_id,
