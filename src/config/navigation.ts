@@ -328,11 +328,18 @@ export const OWNER_MOBILE_NAV: NavItem[] = [
   { label: 'POS', href: '/pos', icon: ShoppingCart },
 ];
 
-export const EMPLOYEE_MOBILE_NAV: NavItem[] = [
+export const PROVIDER_MOBILE_NAV: NavItem[] = [
   { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Schedule', href: '/schedule', icon: Calendar },
   { label: 'Chat', href: '/messages', icon: MessageCircle },
   { label: 'POS', href: '/pos', icon: ShoppingCart },
+];
+
+export const FRONT_DESK_MOBILE_NAV: NavItem[] = [
+  { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Schedule', href: '/schedule', icon: Calendar },
+  { label: 'Chat', href: '/messages', icon: MessageCircle },
+  { label: 'Clients', href: '/clients', icon: Users },
 ];
 
 export const CLIENT_MOBILE_NAV: NavItem[] = [
@@ -363,14 +370,17 @@ export function getNavigationForRole(role: AppRole | null, employeeType?: Employ
 }
 
 // Get mobile nav for role
-export function getMobileNavForRole(role: AppRole | null): NavItem[] {
+export function getMobileNavForRole(role: AppRole | null, employeeType?: EmployeeType | null): NavItem[] {
   if (!role) return [];
   
   switch (role) {
     case 'owner':
       return OWNER_MOBILE_NAV;
     case 'employee':
-      return EMPLOYEE_MOBILE_NAV;
+      if (employeeType === 'front_desk') {
+        return FRONT_DESK_MOBILE_NAV;
+      }
+      return PROVIDER_MOBILE_NAV;
     case 'client':
       return CLIENT_MOBILE_NAV;
     default:

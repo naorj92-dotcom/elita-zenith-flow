@@ -74,8 +74,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   );
   
   const mobileNavItems = useMemo(() => 
-    getMobileNavForRole(role), 
-    [role]
+    getMobileNavForRole(role, employeeType), 
+    [role, employeeType]
   );
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

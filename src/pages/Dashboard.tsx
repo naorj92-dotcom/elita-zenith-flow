@@ -26,6 +26,7 @@ interface TodayAppointment {
   time: string;
   client_name: string;
   service_name: string;
+  provider_name?: string;
   status: AppointmentStatus;
   duration: number;
 }
@@ -80,13 +81,16 @@ export function Dashboard() {
       const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       const lastMonthEnd = new Date(monthStart); lastMonthEnd.setMilliseconds(-1);
 
-      // Fetch all appointments for the month (covers all periods)
-      const { data: monthApts } = await supabase
+      // Fetch appointments — front desk sees ALL, providers see only theirs
+      let monthQuery = supabase
         .from('appointments')
-        .select('id, scheduled_at, duration_minutes, status, total_amount, clients (first_name, last_name), services (name)')
-        .eq('staff_id', staff.id)
+        .select('id, scheduled_at, duration_minutes, status, total_amount, staff_id, clients (first_name, last_name), services (name), staff (first_name)')
         .gte('scheduled_at', monthStart.toISOString())
         .order('scheduled_at', { ascending: true });
+      if (!isFrontDesk) {
+        monthQuery = monthQuery.eq('staff_id', staff.id);
+      }
+      const { data: monthApts } = await monthQuery;
 
       // Previous month appointments for comparison
       const { data: prevMonthApts } = await supabase
@@ -152,6 +156,7 @@ export function Dashboard() {
           id: apt.id, time: new Date(apt.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           client_name: apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown',
           service_name: apt.services?.name || 'Unknown', status: apt.status as AppointmentStatus, duration: apt.duration_minutes,
+          provider_name: apt.staff?.first_name || undefined,
         }));
       setAppointments(todayFormatted);
     };
@@ -329,103 +334,153 @@ export function Dashboard() {
       </motion.div>
 
       <div className="space-y-20 relative z-10">
-        {/* Today's Action Items */}
-        <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
-          <TodaysFocusWidget />
-        </motion.div>
+        {/* Front Desk gets a streamlined operations view */}
+        {isFrontDesk ? (
+          <>
+            {/* Today's Schedule — Full view for front desk */}
+            <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
+              <Card className="card-premium">
+                <CardHeader className="flex flex-row items-center justify-between px-8 pt-8 pb-2">
+                  <CardTitle className="text-xl">Today's Schedule</CardTitle>
+                  <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
+                    Full Calendar <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </CardHeader>
+                <CardContent className="space-y-3 px-8 pb-8">
+                  {appointments.length === 0 ? (
+                    <EmptyState icon={Calendar} title="No appointments today" description="The schedule is clear for today." actionLabel="Open Calendar" actionHref="/schedule" compact />
+                  ) : (
+                    appointments.map((apt) => (
+                      <Link key={apt.id} to={`/schedule/${apt.id}`}>
+                        <motion.div
+                          whileHover={{ y: -2 }}
+                          transition={{ duration: 0.3 }}
+                          className="flex items-center gap-4 p-5 rounded-2xl bg-muted/15 hover:bg-muted/30 hover:shadow-sm transition-all duration-400"
+                        >
+                          <div className="text-center min-w-[52px]">
+                            <p className="text-sm font-semibold text-foreground">{apt.time}</p>
+                            <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-foreground text-sm truncate">{apt.client_name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {apt.service_name}{apt.provider_name ? ` · ${apt.provider_name}` : ''}
+                            </p>
+                          </div>
+                          <StatusBadge status={apt.status} />
+                        </motion.div>
+                      </Link>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
-        {/* Today's Schedule — DOMINANT */}
-        <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
-          <Card className="card-premium">
-            <CardHeader className="flex flex-row items-center justify-between px-8 pt-8 pb-2">
-              <CardTitle className="text-xl">Today's Schedule</CardTitle>
-              <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
-                View All <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </CardHeader>
-            <CardContent className="space-y-3 px-8 pb-8">
-              {appointments.length === 0 ? (
-                <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
-              ) : (
-                appointments.slice(0, 5).map((apt) => (
-                  <Link key={apt.id} to={`/schedule/${apt.id}`}>
+            {/* Front Desk Quick Actions */}
+            <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
+              <p className="text-[9px] font-semibold text-muted-foreground/45 uppercase tracking-[0.35em] mb-6">Quick Actions</p>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Open Calendar', href: '/schedule', icon: Calendar },
+                  { label: 'Add Client', href: '/clients/new', icon: Users },
+                  { label: 'Checkout', href: '/pos', icon: DollarSign },
+                  { label: 'Messages', href: '/messages', icon: Clock },
+                ].map((action) => (
+                  <Link key={action.label} to={action.href}>
                     <motion.div
-                      whileHover={{ y: -2 }}
-                      transition={{ duration: 0.3 }}
-                      className="flex items-center gap-4 p-5 rounded-2xl bg-muted/15 hover:bg-muted/30 hover:shadow-sm transition-all duration-400"
+                      whileHover={{ y: -3, scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.4 }}
+                      className="flex items-center gap-4 p-6 rounded-2xl card-minimal hover:shadow-sm"
                     >
-                      <div className="text-center min-w-[52px]">
-                        <p className="text-sm font-semibold text-foreground">{apt.time}</p>
-                        <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
+                      <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center">
+                        <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground text-sm truncate">{apt.client_name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
-                      </div>
-                      <StatusBadge status={apt.status} />
+                      <span className="text-sm font-medium text-foreground">{action.label}</span>
                     </motion.div>
                   </Link>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        ) : (
+          <>
+            {/* Provider/Owner Dashboard */}
+            <motion.div {...fadeUp} transition={{ delay: 0.09 }}>
+              <TodaysFocusWidget />
+            </motion.div>
 
-        {/* Rebook Reminders */}
-        <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
-          <RebookRemindersWidget />
-        </motion.div>
+            <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
+              <Card className="card-premium">
+                <CardHeader className="flex flex-row items-center justify-between px-8 pt-8 pb-2">
+                  <CardTitle className="text-xl">Today's Schedule</CardTitle>
+                  <Link to="/schedule" className="text-xs text-elita-camel hover:text-elita-camel/80 flex items-center gap-0.5 font-medium transition-colors">
+                    View All <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </CardHeader>
+                <CardContent className="space-y-3 px-8 pb-8">
+                  {appointments.length === 0 ? (
+                    <EmptyState icon={Calendar} title="No appointments today" description="Your schedule is clear." actionLabel="Schedule Appointment" actionHref="/schedule/new" compact />
+                  ) : (
+                    appointments.slice(0, 5).map((apt) => (
+                      <Link key={apt.id} to={`/schedule/${apt.id}`}>
+                        <motion.div
+                          whileHover={{ y: -2 }}
+                          transition={{ duration: 0.3 }}
+                          className="flex items-center gap-4 p-5 rounded-2xl bg-muted/15 hover:bg-muted/30 hover:shadow-sm transition-all duration-400"
+                        >
+                          <div className="text-center min-w-[52px]">
+                            <p className="text-sm font-semibold text-foreground">{apt.time}</p>
+                            <p className="text-[10px] text-muted-foreground">{apt.duration}m</p>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-foreground text-sm truncate">{apt.client_name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
+                          </div>
+                          <StatusBadge status={apt.status} />
+                        </motion.div>
+                      </Link>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
 
-        {/* Operations */}
-        <motion.div {...fadeUp} transition={{ delay: 0.17 }}>
-          <TodayOpsWidget />
-        </motion.div>
+            <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+              <RebookRemindersWidget />
+            </motion.div>
 
-        {/* Quick Actions — subdued */}
-        <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
-          <p className="text-[9px] font-semibold text-muted-foreground/45 uppercase tracking-[0.35em] mb-6">Quick Actions</p>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
-              { label: 'Add Client', href: '/clients/new', icon: Users },
-              { label: 'View Schedule', href: '/schedule', icon: Clock },
-              { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
-              ...(['admin', 'front_desk'].includes(staff?.role || '') ? [{ label: 'Launch Kiosk', href: '/kiosk', icon: Play, external: true }] : []),
-            ].map((action: any) => (
-              action.external ? (
-                <a key={action.label} href="/kiosk" target="_blank" rel="noopener noreferrer">
-                  <motion.div
-                    whileHover={{ y: -3, scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.4 }}
-                    className="flex items-center gap-4 p-6 rounded-2xl card-minimal hover:shadow-sm"
-                  >
-                    <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center"
-                         style={{ boxShadow: '0 0 16px hsl(34 48% 60% / 0.06)' }}>
-                      <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
-                    </div>
-                    <span className="text-sm font-medium text-foreground">{action.label}</span>
-                  </motion.div>
-                </a>
-              ) : (
-              <Link key={action.label} to={action.href}>
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.4 }}
-                  className="flex items-center gap-4 p-6 rounded-2xl card-minimal hover:shadow-sm"
-                >
-                  <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center"
-                       style={{ boxShadow: '0 0 16px hsl(34 48% 60% / 0.06)' }}>
-                    <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{action.label}</span>
-                </motion.div>
-              </Link>
-              )))}
+            <motion.div {...fadeUp} transition={{ delay: 0.17 }}>
+              <TodayOpsWidget />
+            </motion.div>
 
-          </div>
-        </motion.div>
+            <motion.div {...fadeUp} transition={{ delay: 0.21 }}>
+              <p className="text-[9px] font-semibold text-muted-foreground/45 uppercase tracking-[0.35em] mb-6">Quick Actions</p>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'New Appointment', href: '/schedule/new', icon: Calendar },
+                  { label: 'Add Client', href: '/clients/new', icon: Users },
+                  { label: 'View Schedule', href: '/schedule', icon: Clock },
+                  { label: 'Quick Checkout', href: '/pos', icon: DollarSign },
+                ].map((action) => (
+                  <Link key={action.label} to={action.href}>
+                    <motion.div
+                      whileHover={{ y: -3, scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.4 }}
+                      className="flex items-center gap-4 p-6 rounded-2xl card-minimal hover:shadow-sm"
+                    >
+                      <div className="w-11 h-11 rounded-2xl bg-accent/40 flex items-center justify-center">
+                        <action.icon className="w-4.5 h-4.5 text-muted-foreground" />
+                      </div>
+                      <span className="text-sm font-medium text-foreground">{action.label}</span>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
       </div>
     </div>
   );
