@@ -363,7 +363,9 @@ export function Dashboard() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-foreground text-sm truncate">{apt.client_name}</p>
-                            <p className="text-xs text-muted-foreground truncate">{apt.service_name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {apt.service_name}{apt.provider_name ? ` · ${apt.provider_name}` : ''}
+                            </p>
                           </div>
                           <StatusBadge status={apt.status} />
                         </motion.div>
