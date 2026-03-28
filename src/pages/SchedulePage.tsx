@@ -340,7 +340,7 @@ export function SchedulePage() {
         onSelectedStaffChange={setSelectedStaffIds}
         isFullCalendar={isFullCalendar}
         onFullCalendarChange={setIsFullCalendar}
-        showStaffFilter={isOwner}
+        showStaffFilter={isOwner || (!isProvider && !isOwner)}
         onNewAppointment={() => { setNewApptClientId(null); setShowNewAppt(true); }}
       />
       <CalendarTimeGrid
