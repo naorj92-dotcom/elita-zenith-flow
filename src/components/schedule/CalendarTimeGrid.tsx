@@ -601,6 +601,10 @@ interface ProviderColumnProps {
 }
 
 function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, googleEvents: dayGoogle, isLast, nowTop, showStaffName, className, colWidth, onAptClick, onGoogleEventClick, onDragStart, draggingApt, dragGhostTop, isDropTarget, dropShadow, formStatusMap, providerColorFn, allStaff }: ProviderColumnProps) {
+  const columnProviderColor = providerColorFn && staffId
+    ? providerColorFn(staffId, staffIndex ?? 0)
+    : undefined;
+
   return (
     <div
       data-staff-col={staffId}
@@ -644,7 +648,10 @@ function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, goo
         const isCheckedIn = apt.status === 'checked_in';
 
         const aptStaffIdx = allStaff ? allStaff.findIndex(s => s.id === apt.staff_id) : -1;
-        const providerColor = providerColorFn && apt.staff_id ? providerColorFn(apt.staff_id, aptStaffIdx >= 0 ? aptStaffIdx : 0) : undefined;
+        const appointmentProviderColor = providerColorFn && apt.staff_id
+          ? providerColorFn(apt.staff_id, aptStaffIdx >= 0 ? aptStaffIdx : 0)
+          : undefined;
+        const providerColor = appointmentProviderColor || columnProviderColor;
         const providerBackground = providerColor ? withAlpha(providerColor, 0.32) : undefined;
         const providerOutline = providerColor ? withAlpha(providerColor, 0.58) : undefined;
         const providerBackgroundSoft = providerColor ? withAlpha(providerColor, 0.22) : undefined;
@@ -713,15 +720,28 @@ function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, goo
         const height = Math.max((durationMin / 60) * SLOT_HEIGHT, 24);
         const fakeApt = googleEventToAppointment(event);
         const isDragging = draggingApt === fakeApt.id;
+        const eventColor = columnProviderColor;
+        const eventBackground = eventColor ? withAlpha(eventColor, 0.28) : undefined;
+        const eventOutline = eventColor ? withAlpha(eventColor, 0.55) : undefined;
 
         return (
           <div
             key={event.id}
             className={cn(
-              'absolute left-0.5 right-0.5 rounded-md border-l-[3px] border-accent-foreground/20 bg-accent/60 px-1 py-0.5 overflow-hidden cursor-grab hover:shadow-md transition-shadow select-none',
+              'absolute left-0.5 right-0.5 rounded-md border-l-[4px] px-1 py-0.5 overflow-hidden cursor-grab hover:shadow-md transition-shadow select-none',
+              !eventColor && 'border-accent-foreground/20 bg-accent/60',
               isDragging && 'opacity-50 cursor-grabbing shadow-lg z-20'
             )}
-            style={{ top: isDragging && dragGhostTop !== null ? dragGhostTop : top, height }}
+            style={{
+              top: isDragging && dragGhostTop !== null ? dragGhostTop : top,
+              height,
+              ...(eventColor ? {
+                backgroundColor: eventBackground,
+                borderLeftColor: eventColor,
+                boxShadow: `inset 0 0 0 1px ${eventOutline}`,
+                color: 'hsl(var(--foreground))',
+              } : {}),
+            }}
             onClick={(e) => onGoogleEventClick?.(event, e)}
             onMouseDown={(e) => {
               if (e.button === 0) onDragStart?.(fakeApt, date, e);
