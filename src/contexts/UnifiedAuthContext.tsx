@@ -224,10 +224,32 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setIsLoading(false);
+        // Log failed login
+        supabase.from('security_logs').insert({
+          event_type: 'login_failed',
+          user_agent: navigator.userAgent,
+          metadata: {
+            email,
+            error: error.message,
+            timestamp: new Date().toISOString(),
+          },
+        });
         return { error: error.message };
       }
-      // Don't set isLoading=false here — onAuthStateChange will handle it
-      // after the role is fetched, preventing premature redirect to /setup
+      // Log successful login
+      supabase.auth.getUser().then(({ data }) => {
+        if (data.user) {
+          supabase.from('security_logs').insert({
+            user_id: data.user.id,
+            event_type: 'login_success',
+            user_agent: navigator.userAgent,
+            metadata: {
+              email,
+              timestamp: new Date().toISOString(),
+            },
+          });
+        }
+      });
       return { error: null };
     } catch (err: any) {
       setIsLoading(false);
@@ -255,6 +277,16 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
 
   // Sign out
   const signOut = useCallback(async () => {
+    // Log logout before clearing state
+    if (user) {
+      supabase.from('security_logs').insert({
+        user_id: user.id,
+        event_type: 'logout',
+        user_agent: navigator.userAgent,
+        metadata: { timestamp: new Date().toISOString() },
+      });
+    }
+
     // Clear local state first to unblock UI immediately
     setUser(null);
     setSession(null);
@@ -267,10 +299,9 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
     try {
       await supabase.auth.signOut();
     } catch (err) {
-      // Ignore errors (e.g. session_not_found) — state is already cleared
       console.warn('Sign out error (ignored):', err);
     }
-  }, []);
+  }, [user]);
 
 
   // Clock in
