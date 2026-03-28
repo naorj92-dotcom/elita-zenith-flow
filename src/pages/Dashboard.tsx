@@ -232,6 +232,8 @@ export function Dashboard() {
             </div>
           )}
 
+          {!isFrontDesk && (
+          <>
           <div className="divider-luxe mt-12 mb-10" />
 
           {/* Period Toggle */}
@@ -321,6 +323,8 @@ export function Dashboard() {
               </div>
             );
           })()}
+          </>
+          )}
         </div>
       </motion.div>
 
