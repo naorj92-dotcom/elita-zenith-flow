@@ -161,7 +161,7 @@ export function Dashboard() {
       setAppointments(todayFormatted);
     };
     fetchDashboardData();
-  }, [staff]);
+  }, [staff, isFrontDesk]);
 
   const firstName = staff?.first_name || 'there';
   const m = allMetrics[metricPeriod];
