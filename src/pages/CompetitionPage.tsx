@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { Trophy, Medal, TrendingUp, Calendar, Sparkles, ArrowUp, ArrowDown, Minus, Crown, Star, Clock, Target } from 'lucide-react';
+import { Trophy, Medal, TrendingUp, Calendar, Sparkles, ArrowUp, ArrowDown, Minus, Crown, Star, Clock, Target, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
@@ -20,8 +21,10 @@ interface StaffSales {
   total_sales: number;
   appointment_count: number;
   upsell_count: number;
-  weekly_trend: number[]; // 4 weeks of revenue
-  prev_total_sales: number; // for "most improved"
+  weekly_trend: number[];
+  prev_total_sales: number;
+  revenue_goal: number | null;
+  appointments_goal: number | null;
 }
 
 interface CompetitionSettings {
@@ -109,7 +112,9 @@ export function CompetitionPage() {
         ? endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 })
         : endOfMonth(subMonths(monthStart, 1));
 
-      const [txRes, prevTxRes, aptRes, upsellRes, staffRes, weeklyTxRes] = await Promise.all([
+      const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+
+      const [txRes, prevTxRes, aptRes, upsellRes, staffRes, weeklyTxRes, goalsRes] = await Promise.all([
         supabase.from('transactions').select('staff_id, amount, transaction_type')
           .gte('transaction_date', rangeStart.toISOString())
           .lte('transaction_date', rangeEnd.toISOString())
@@ -132,6 +137,10 @@ export function CompetitionPage() {
           .gte('transaction_date', subWeeks(new Date(), 4).toISOString())
           .lte('transaction_date', new Date().toISOString())
           .in('transaction_type', ['service', 'retail']),
+        // Weekly goals for current week
+        supabase.from('staff_weekly_goals')
+          .select('staff_id, revenue_goal, appointments_goal')
+          .eq('week_start', format(currentWeekStart, 'yyyy-MM-dd')),
       ]);
 
       const transactions = txRes.data || [];
@@ -140,6 +149,13 @@ export function CompetitionPage() {
       const upsells = upsellRes.data || [];
       const staffData = staffRes.data || [];
       const weeklyTx = weeklyTxRes.data || [];
+      const goalsData = goalsRes.data || [];
+
+      // Goals map
+      const goalsMap: Record<string, { revenue_goal: number; appointments_goal: number }> = {};
+      goalsData.forEach((g: any) => {
+        if (g.staff_id) goalsMap[g.staff_id] = { revenue_goal: g.revenue_goal, appointments_goal: g.appointments_goal };
+      });
 
       // Aggregate current
       const salesMap: Record<string, number> = {};
@@ -201,6 +217,8 @@ export function CompetitionPage() {
         upsell_count: upsellMap[s.id] || 0,
         weekly_trend: trendMap[s.id] || [0, 0, 0, 0],
         prev_total_sales: prevSalesMap[s.id] || 0,
+        revenue_goal: goalsMap[s.id]?.revenue_goal ?? null,
+        appointments_goal: goalsMap[s.id]?.appointments_goal ?? null,
       }));
 
       board.sort((a, b) => getSortValue(b) - getSortValue(a));
@@ -450,6 +468,13 @@ export function CompetitionPage() {
                   {leaderboard.map((staff, index) => {
                     const rank = index + 1;
                     const movedUp = didMoveUp(staff.staff_id);
+                    const goalPct = staff.revenue_goal ? Math.min((staff.total_sales / staff.revenue_goal) * 100, 120) : null;
+                    const goalBarColor = goalPct === null ? '' :
+                      goalPct >= 100 ? '[&>div]:bg-amber-500' :
+                      goalPct >= 80 ? '[&>div]:bg-success' :
+                      goalPct >= 50 ? '[&>div]:bg-amber-400' :
+                      '[&>div]:bg-destructive';
+                    const isMe = staff.staff_id === staffId;
                     return (
                       <motion.div
                         key={staff.staff_id}
@@ -461,80 +486,93 @@ export function CompetitionPage() {
                           boxShadow: movedUp ? '0 0 20px hsl(34 48% 56% / 0.3)' : 'none',
                         }}
                         transition={{ layout: { type: 'spring', damping: 25 }, delay: index * 0.03 }}
-                        className={`flex items-center gap-3 p-4 rounded-xl border transition-colors ${getRankStyles(rank)} ${
-                          staff.staff_id === staffId ? 'ring-2 ring-primary/30' : ''
+                        className={`p-4 rounded-xl border transition-colors ${getRankStyles(rank)} ${
+                          isMe ? 'ring-2 ring-primary/30' : ''
                         }`}
                       >
-                        {/* Rank */}
-                        <div className="w-10 flex items-center justify-center shrink-0">
-                          {getRankIcon(rank)}
-                        </div>
-
-                        {/* Avatar */}
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
-                          {staff.avatar_url ? (
-                            <img src={staff.avatar_url} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-primary font-semibold text-sm">
-                              {staff.first_name[0]}{staff.last_name[0]}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Name */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-heading font-semibold text-foreground truncate">
-                            {staff.first_name} {staff.last_name}
-                          </p>
-                        </div>
-
-                        {/* Metrics */}
-                        <div className="hidden md:flex items-center gap-6 text-sm">
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Revenue</p>
-                            <p className="font-semibold text-foreground">${staff.total_sales.toLocaleString()}</p>
+                        <div className="flex items-center gap-3">
+                          {/* Rank */}
+                          <div className="w-10 flex items-center justify-center shrink-0">
+                            {getRankIcon(rank)}
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Appts</p>
-                            <p className="font-semibold text-foreground">{staff.appointment_count}</p>
+
+                          {/* Avatar */}
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                            {staff.avatar_url ? (
+                              <img src={staff.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-primary font-semibold text-sm">
+                                {staff.first_name[0]}{staff.last_name[0]}
+                              </span>
+                            )}
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Upsells</p>
-                            <p className="font-semibold text-foreground">{staff.upsell_count}</p>
+
+                          {/* Name + Goal info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-heading font-semibold text-foreground truncate">
+                              {staff.first_name} {staff.last_name}
+                            </p>
+                            {staff.appointments_goal ? (
+                              <p className="text-[11px] text-muted-foreground mt-0.5">
+                                {staff.appointment_count} / {staff.appointments_goal} appts
+                              </p>
+                            ) : null}
+                          </div>
+
+                          {/* Revenue + Goal */}
+                          <div className="hidden md:flex items-center gap-4 text-sm">
+                            <div className="text-right min-w-[80px]">
+                              <p className="text-xs text-muted-foreground">Revenue</p>
+                              <p className="font-semibold text-foreground">${staff.total_sales.toLocaleString()}</p>
+                            </div>
+                            {staff.revenue_goal ? (
+                              <div className="text-right min-w-[70px]">
+                                <p className="text-xs text-muted-foreground">Goal</p>
+                                <p className="font-semibold text-foreground">${staff.revenue_goal.toLocaleString()}</p>
+                              </div>
+                            ) : null}
+                          </div>
+
+                          {/* Sparkline */}
+                          <div className="w-16 h-8 shrink-0 hidden sm:block">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={staff.weekly_trend.map((v, i) => ({ v, i }))}>
+                                <defs>
+                                  <linearGradient id={`grad-${staff.staff_id}`} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                                  </linearGradient>
+                                </defs>
+                                <Area type="monotone" dataKey="v" stroke="hsl(var(--primary))" strokeWidth={1.5} fill={`url(#grad-${staff.staff_id})`} />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+
+                          {/* Trend */}
+                          <div className="shrink-0">
+                            {staff.total_sales > staff.prev_total_sales ? (
+                              <ArrowUp className="w-4 h-4 text-success" />
+                            ) : staff.total_sales < staff.prev_total_sales ? (
+                              <ArrowDown className="w-4 h-4 text-destructive" />
+                            ) : (
+                              <Minus className="w-4 h-4 text-muted-foreground" />
+                            )}
                           </div>
                         </div>
 
-                        {/* Sparkline */}
-                        <div className="w-20 h-10 shrink-0 hidden sm:block">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={staff.weekly_trend.map((v, i) => ({ v, i }))}>
-                              <defs>
-                                <linearGradient id={`grad-${staff.staff_id}`} x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <Area
-                                type="monotone"
-                                dataKey="v"
-                                stroke="hsl(var(--primary))"
-                                strokeWidth={1.5}
-                                fill={`url(#grad-${staff.staff_id})`}
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-
-                        {/* Trend Arrow */}
-                        <div className="shrink-0">
-                          {staff.total_sales > staff.prev_total_sales ? (
-                            <ArrowUp className="w-4 h-4 text-success" />
-                          ) : staff.total_sales < staff.prev_total_sales ? (
-                            <ArrowDown className="w-4 h-4 text-destructive" />
-                          ) : (
-                            <Minus className="w-4 h-4 text-muted-foreground" />
-                          )}
-                        </div>
+                        {/* Goal Progress Bar */}
+                        {staff.revenue_goal ? (
+                          <div className="mt-3 ml-[52px]">
+                            <Progress value={Math.min(goalPct!, 100)} className={`h-2 ${goalBarColor}`} />
+                            {goalPct! >= 100 && (
+                              <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                                🎯 Goal reached!
+                              </p>
+                            )}
+                          </div>
+                        ) : isMe ? (
+                          <SetGoalInline staffId={staff.staff_id} onSaved={fetchLeaderboard} />
+                        ) : null}
                       </motion.div>
                     );
                   })}
@@ -573,6 +611,67 @@ export function CompetitionPage() {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+function SetGoalInline({ staffId, onSaved }: { staffId: string; onSaved: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [revGoal, setRevGoal] = useState('');
+  const [aptGoal, setAptGoal] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  if (!open) {
+    return (
+      <div className="mt-2 ml-[52px]">
+        <button
+          onClick={() => setOpen(true)}
+          className="text-[11px] text-primary hover:underline font-medium"
+        >
+          Set goal →
+        </button>
+      </div>
+    );
+  }
+
+  const handleSave = async () => {
+    setSaving(true);
+    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    const { error } = await supabase.from('staff_weekly_goals').upsert({
+      staff_id: staffId,
+      week_start: weekStart,
+      revenue_goal: Number(revGoal) || 0,
+      appointments_goal: Number(aptGoal) || 0,
+    }, { onConflict: 'staff_id,week_start' });
+    setSaving(false);
+    if (!error) {
+      setOpen(false);
+      onSaved();
+    }
+  };
+
+  return (
+    <div className="mt-3 ml-[52px] flex items-center gap-2 flex-wrap">
+      <Input
+        type="number"
+        placeholder="Revenue goal"
+        value={revGoal}
+        onChange={e => setRevGoal(e.target.value)}
+        className="w-28 h-8 text-xs"
+      />
+      <Input
+        type="number"
+        placeholder="Appts goal"
+        value={aptGoal}
+        onChange={e => setAptGoal(e.target.value)}
+        className="w-24 h-8 text-xs"
+      />
+      <Button size="sm" className="h-8 gap-1 text-xs" onClick={handleSave} disabled={saving}>
+        <Check className="w-3 h-3" /> Save
+      </Button>
+      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setOpen(false)}>
+        Cancel
+      </Button>
     </div>
   );
 }
