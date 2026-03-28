@@ -198,6 +198,7 @@ export default function ClientProfilePage() {
                     <Crown className="h-3 w-3" /> VIP
                   </Badge>
                 )}
+                <ClientStreakBadge clientId={client.id} />
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
                 <MapPin className="h-3.5 w-3.5" />

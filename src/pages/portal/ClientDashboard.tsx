@@ -457,4 +457,41 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function StreakBadge({ clientId }: { clientId?: string }) {
+  const { data: streak } = useQuery({
+    queryKey: ['client-visit-streak', clientId],
+    queryFn: async () => {
+      if (!clientId) return null;
+      const { data } = await supabase
+        .from('visit_streaks')
+        .select('current_streak, longest_streak')
+        .eq('client_id', clientId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!clientId,
+  });
+
+  const current = (streak as any)?.current_streak ?? 0;
+  if (current < 1) return null;
+
+  return (
+    <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="mt-6 px-1 relative z-10">
+      <div className={cn(
+        'flex items-center gap-3 px-5 py-3.5 rounded-2xl',
+        current >= 2
+          ? 'bg-gradient-to-r from-amber-500/12 to-orange-500/8 border border-amber-500/25'
+          : 'glass'
+      )}>
+        <Flame className="w-4.5 h-4.5 text-amber-500 shrink-0" />
+        <p className="text-sm font-medium text-foreground">
+          {current >= 2
+            ? `🔥 ${current}-month streak! Keep it going`
+            : '✨ Great start! Visit next month to build your streak'}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default ClientDashboard;
