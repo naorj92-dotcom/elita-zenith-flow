@@ -645,8 +645,9 @@ function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, goo
 
         const aptStaffIdx = allStaff ? allStaff.findIndex(s => s.id === apt.staff_id) : -1;
         const providerColor = providerColorFn && apt.staff_id ? providerColorFn(apt.staff_id, aptStaffIdx >= 0 ? aptStaffIdx : 0) : undefined;
-        const providerBackground = providerColor ? withAlpha(providerColor, 0.22) : undefined;
-        const providerOutline = providerColor ? withAlpha(providerColor, 0.42) : undefined;
+        const providerBackground = providerColor ? withAlpha(providerColor, 0.32) : undefined;
+        const providerOutline = providerColor ? withAlpha(providerColor, 0.58) : undefined;
+        const providerBackgroundSoft = providerColor ? withAlpha(providerColor, 0.22) : undefined;
 
         return (
           <div
@@ -661,9 +662,10 @@ function ProviderColumn({ date, staffId, staffIndex, appointments: dayAppts, goo
               top: isDragging && dragGhostTop !== null ? dragGhostTop : top,
               height,
               ...(providerColor ? {
-                backgroundColor: providerBackground,
+                background: `linear-gradient(135deg, ${providerBackground} 0%, ${providerBackgroundSoft} 100%)`,
                 borderLeftColor: providerColor,
                 borderLeftWidth: '4px',
+                borderColor: providerOutline,
                 boxShadow: `inset 0 0 0 1px ${providerOutline}`,
                 color: 'hsl(var(--foreground))',
               } : {}),
