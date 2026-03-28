@@ -350,9 +350,13 @@ export function CalendarTimeGrid({ dates, appointments, googleEvents, isLoading,
                       )}
                       style={{ width: staffColWidth, minWidth: staffColWidth }}
                     >
-                      <Avatar className={cn('border-2 border-background', isWeekView ? 'h-6 w-6' : 'h-7 w-7')}>
+                      <Avatar className={cn('border-2', isWeekView ? 'h-6 w-6' : 'h-7 w-7')}
+                        style={{ borderColor: providerColorFn ? providerColorFn(s.id, sIdx) : undefined }}
+                      >
                         <AvatarImage src={s.avatar_url || undefined} />
-                        <AvatarFallback className={cn('bg-primary/10 text-primary', isWeekView ? 'text-[8px]' : 'text-[10px]')}>
+                        <AvatarFallback className={cn('text-primary', isWeekView ? 'text-[8px]' : 'text-[10px]')}
+                          style={{ backgroundColor: providerColorFn ? `${providerColorFn(s.id, sIdx)}20` : undefined }}
+                        >
                           {s.first_name[0]}{s.last_name[0]}
                         </AvatarFallback>
                       </Avatar>
