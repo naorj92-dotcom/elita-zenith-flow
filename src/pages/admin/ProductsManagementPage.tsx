@@ -168,7 +168,7 @@ export function ProductsManagementPage() {
     },
   });
 
-
+  const handleOpenDialog = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
       setFormData({
