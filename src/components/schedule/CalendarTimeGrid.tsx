@@ -16,6 +16,7 @@ interface CalendarTimeGridProps {
   onClientChanged?: () => void;
   onStatusChange?: (id: string, status: string) => void;
   clientDetailsMap?: Record<string, { phone?: string | null; email?: string | null; visit_count?: number; total_spent?: number; date_of_birth?: string | null }>;
+  providerColorFn?: (staffId: string, index: number) => string;
 }
 
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 7);
