@@ -468,6 +468,13 @@ export function CompetitionPage() {
                   {leaderboard.map((staff, index) => {
                     const rank = index + 1;
                     const movedUp = didMoveUp(staff.staff_id);
+                    const goalPct = staff.revenue_goal ? Math.min((staff.total_sales / staff.revenue_goal) * 100, 120) : null;
+                    const goalBarColor = goalPct === null ? '' :
+                      goalPct >= 100 ? '[&>div]:bg-amber-500' :
+                      goalPct >= 80 ? '[&>div]:bg-success' :
+                      goalPct >= 50 ? '[&>div]:bg-amber-400' :
+                      '[&>div]:bg-destructive';
+                    const isMe = staff.staff_id === staffId;
                     return (
                       <motion.div
                         key={staff.staff_id}
@@ -479,80 +486,96 @@ export function CompetitionPage() {
                           boxShadow: movedUp ? '0 0 20px hsl(34 48% 56% / 0.3)' : 'none',
                         }}
                         transition={{ layout: { type: 'spring', damping: 25 }, delay: index * 0.03 }}
-                        className={`flex items-center gap-3 p-4 rounded-xl border transition-colors ${getRankStyles(rank)} ${
-                          staff.staff_id === staffId ? 'ring-2 ring-primary/30' : ''
+                        className={`p-4 rounded-xl border transition-colors ${getRankStyles(rank)} ${
+                          isMe ? 'ring-2 ring-primary/30' : ''
                         }`}
                       >
-                        {/* Rank */}
-                        <div className="w-10 flex items-center justify-center shrink-0">
-                          {getRankIcon(rank)}
-                        </div>
-
-                        {/* Avatar */}
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
-                          {staff.avatar_url ? (
-                            <img src={staff.avatar_url} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-primary font-semibold text-sm">
-                              {staff.first_name[0]}{staff.last_name[0]}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Name */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-heading font-semibold text-foreground truncate">
-                            {staff.first_name} {staff.last_name}
-                          </p>
-                        </div>
-
-                        {/* Metrics */}
-                        <div className="hidden md:flex items-center gap-6 text-sm">
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Revenue</p>
-                            <p className="font-semibold text-foreground">${staff.total_sales.toLocaleString()}</p>
+                        <div className="flex items-center gap-3">
+                          {/* Rank */}
+                          <div className="w-10 flex items-center justify-center shrink-0">
+                            {getRankIcon(rank)}
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Appts</p>
-                            <p className="font-semibold text-foreground">{staff.appointment_count}</p>
+
+                          {/* Avatar */}
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                            {staff.avatar_url ? (
+                              <img src={staff.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-primary font-semibold text-sm">
+                                {staff.first_name[0]}{staff.last_name[0]}
+                              </span>
+                            )}
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Upsells</p>
-                            <p className="font-semibold text-foreground">{staff.upsell_count}</p>
+
+                          {/* Name + Goal info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-heading font-semibold text-foreground truncate">
+                              {staff.first_name} {staff.last_name}
+                            </p>
+                            {staff.appointments_goal ? (
+                              <p className="text-[11px] text-muted-foreground mt-0.5">
+                                {staff.appointment_count} / {staff.appointments_goal} appts
+                              </p>
+                            ) : null}
+                          </div>
+
+                          {/* Revenue + Goal */}
+                          <div className="hidden md:flex items-center gap-4 text-sm">
+                            <div className="text-right min-w-[80px]">
+                              <p className="text-xs text-muted-foreground">Revenue</p>
+                              <p className="font-semibold text-foreground">${staff.total_sales.toLocaleString()}</p>
+                            </div>
+                            {staff.revenue_goal ? (
+                              <div className="text-right min-w-[70px]">
+                                <p className="text-xs text-muted-foreground">Goal</p>
+                                <p className="font-semibold text-foreground">${staff.revenue_goal.toLocaleString()}</p>
+                              </div>
+                            ) : null}
+                          </div>
+
+                          {/* Sparkline */}
+                          <div className="w-16 h-8 shrink-0 hidden sm:block">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={staff.weekly_trend.map((v, i) => ({ v, i }))}>
+                                <defs>
+                                  <linearGradient id={`grad-${staff.staff_id}`} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                                  </linearGradient>
+                                </defs>
+                                <Area type="monotone" dataKey="v" stroke="hsl(var(--primary))" strokeWidth={1.5} fill={`url(#grad-${staff.staff_id})`} />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+
+                          {/* Trend */}
+                          <div className="shrink-0">
+                            {staff.total_sales > staff.prev_total_sales ? (
+                              <ArrowUp className="w-4 h-4 text-success" />
+                            ) : staff.total_sales < staff.prev_total_sales ? (
+                              <ArrowDown className="w-4 h-4 text-destructive" />
+                            ) : (
+                              <Minus className="w-4 h-4 text-muted-foreground" />
+                            )}
                           </div>
                         </div>
 
-                        {/* Sparkline */}
-                        <div className="w-20 h-10 shrink-0 hidden sm:block">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={staff.weekly_trend.map((v, i) => ({ v, i }))}>
-                              <defs>
-                                <linearGradient id={`grad-${staff.staff_id}`} x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <Area
-                                type="monotone"
-                                dataKey="v"
-                                stroke="hsl(var(--primary))"
-                                strokeWidth={1.5}
-                                fill={`url(#grad-${staff.staff_id})`}
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-
-                        {/* Trend Arrow */}
-                        <div className="shrink-0">
-                          {staff.total_sales > staff.prev_total_sales ? (
-                            <ArrowUp className="w-4 h-4 text-success" />
-                          ) : staff.total_sales < staff.prev_total_sales ? (
-                            <ArrowDown className="w-4 h-4 text-destructive" />
-                          ) : (
-                            <Minus className="w-4 h-4 text-muted-foreground" />
-                          )}
-                        </div>
+                        {/* Goal Progress Bar */}
+                        {staff.revenue_goal ? (
+                          <div className="mt-3 ml-[52px]">
+                            <Progress value={Math.min(goalPct!, 100)} className={`h-2 ${goalBarColor}`} />
+                            {goalPct! >= 100 && (
+                              <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                                🎯 Goal reached!
+                              </p>
+                            )}
+                          </div>
+                        ) : isMe ? (
+                          <SetGoalInline staffId={staff.staff_id} onSaved={fetchLeaderboard} />
+                        ) : null}
+                      </motion.div>
+                    );
+                  })}
                       </motion.div>
                     );
                   })}
