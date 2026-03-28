@@ -149,6 +149,13 @@ export function CompetitionPage() {
       const upsells = upsellRes.data || [];
       const staffData = staffRes.data || [];
       const weeklyTx = weeklyTxRes.data || [];
+      const goalsData = goalsRes.data || [];
+
+      // Goals map
+      const goalsMap: Record<string, { revenue_goal: number; appointments_goal: number }> = {};
+      goalsData.forEach((g: any) => {
+        if (g.staff_id) goalsMap[g.staff_id] = { revenue_goal: g.revenue_goal, appointments_goal: g.appointments_goal };
+      });
 
       // Aggregate current
       const salesMap: Record<string, number> = {};
