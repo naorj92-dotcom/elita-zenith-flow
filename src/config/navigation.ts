@@ -279,17 +279,15 @@ export const CLIENT_NAVIGATION: NavCategory[] = [
 export const OWNER_MOBILE_NAV: NavItem[] = [
   { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Schedule', href: '/schedule', icon: Calendar },
-  { label: 'Clients', href: '/clients', icon: Users },
+  { label: 'Chat', href: '/messages', icon: MessageCircle },
   { label: 'POS', href: '/pos', icon: ShoppingCart },
-  { label: 'Reports', href: '/analytics', icon: BarChart3 },
 ];
 
 export const EMPLOYEE_MOBILE_NAV: NavItem[] = [
   { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Schedule', href: '/schedule', icon: Calendar },
-  { label: 'Clients', href: '/clients', icon: Users },
+  { label: 'Chat', href: '/messages', icon: MessageCircle },
   { label: 'POS', href: '/pos', icon: ShoppingCart },
-  { label: 'Clock', href: '/timeclock', icon: Clock },
 ];
 
 export const CLIENT_MOBILE_NAV: NavItem[] = [
