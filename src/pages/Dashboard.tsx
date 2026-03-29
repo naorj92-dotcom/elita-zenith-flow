@@ -386,10 +386,12 @@ export function Dashboard() {
               <p className="text-[9px] font-semibold text-muted-foreground/45 uppercase tracking-[0.35em] mb-6">Quick Actions</p>
               <div className="grid grid-cols-2 gap-4">
                 {[
+                  { label: 'Front Desk Board', href: '/front-desk', icon: LayoutDashboard },
                   { label: 'Open Calendar', href: '/schedule', icon: Calendar },
                   { label: 'Add Client', href: '/clients/new', icon: Users },
                   { label: 'Checkout', href: '/pos', icon: DollarSign },
-                  { label: 'Messages', href: '/messages', icon: Clock },
+                  { label: 'Messages', href: '/messages', icon: MessageCircle },
+                  { label: 'Waitlist', href: '/waitlist', icon: ClipboardList },
                 ].map((action) => (
                   <Link key={action.label} to={action.href}>
                     <motion.div

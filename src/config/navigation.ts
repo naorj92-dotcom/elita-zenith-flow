@@ -224,14 +224,14 @@ export const FRONT_DESK_NAVIGATION: NavCategory[] = [
     label: 'Home',
     icon: LayoutDashboard,
     items: [
-      { label: 'Front Desk', href: '/front-desk', icon: LayoutDashboard },
+      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     ],
   },
   {
     label: 'Schedule',
     icon: Calendar,
     items: [
-      { label: 'Front Desk', href: '/front-desk', icon: LayoutDashboard },
+      { label: 'Front Desk Board', href: '/front-desk', icon: LayoutDashboard },
       { label: 'Calendar', href: '/schedule', icon: Calendar },
       { label: 'Waitlist', href: '/waitlist', icon: ClipboardList },
     ],
@@ -338,7 +338,7 @@ export const PROVIDER_MOBILE_NAV: NavItem[] = [
 ];
 
 export const FRONT_DESK_MOBILE_NAV: NavItem[] = [
-  { label: 'Home', href: '/front-desk', icon: LayoutDashboard },
+  { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Schedule', href: '/schedule', icon: Calendar },
   { label: 'Chat', href: '/messages', icon: MessageCircle },
   { label: 'Clients', href: '/clients', icon: Users },
