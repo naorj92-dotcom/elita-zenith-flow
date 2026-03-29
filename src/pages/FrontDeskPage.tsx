@@ -40,7 +40,7 @@ const COLUMNS = [
 ] as const;
 
 export function FrontDeskPage() {
-  const { staff } = useAuth();
+  const { staff } = useUnifiedAuth();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
   const [appointments, setAppointments] = useState<FrontDeskAppointment[]>([]);
