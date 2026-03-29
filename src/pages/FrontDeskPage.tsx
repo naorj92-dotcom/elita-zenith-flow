@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { format, isToday, startOfDay, endOfDay, addDays, subDays } from 'date-fns';
 import { ChevronLeft, ChevronRight, Search, Plus, Filter, Clock, CheckCircle2, UserCheck, Activity, CircleDot } from 'lucide-react';
@@ -40,7 +40,7 @@ const COLUMNS = [
 ] as const;
 
 export function FrontDeskPage() {
-  const { staff } = useAuth();
+  const { staff } = useUnifiedAuth();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
   const [appointments, setAppointments] = useState<FrontDeskAppointment[]>([]);
