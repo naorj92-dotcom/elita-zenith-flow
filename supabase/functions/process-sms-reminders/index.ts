@@ -64,7 +64,7 @@ serve(async (req: Request) => {
     const results: Record<string, number> = {};
 
     // ─── TRIGGER 2: 48-hour reminder ───
-    if (await isTriggerEnabled(supabase, "appointment_reminder_48h")) {
+    if (await isTriggerEnabled(supabase, "48hr_appointment_reminder")) {
       const window48hStart = new Date(now.getTime() + 47 * 60 * 60 * 1000);
       const window48hEnd = new Date(now.getTime() + 49 * 60 * 60 * 1000);
 
