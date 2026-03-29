@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Gift, Search, Copy, Check } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Plus, Gift, Search, Copy, Check, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { giftCardSchema } from '@/lib/validations';
 
@@ -54,6 +55,7 @@ export function GiftCardsManagementPage() {
   const [formData, setFormData] = useState<GiftCardFormData>(initialFormData);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [deletingCard, setDeletingCard] = useState<any>(null);
 
   if (staff?.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
@@ -100,6 +102,19 @@ export function GiftCardsManagementPage() {
       resetForm();
     },
     onError: (error: any) => toast.error(error.message || 'Failed to create gift card'),
+  });
+
+  const deleteCardMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('gift_cards').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gift-cards'] });
+      toast.success('Gift card deleted');
+      setDeletingCard(null);
+    },
+    onError: (error: any) => toast.error(error.message || 'Failed to delete gift card'),
   });
 
   const resetForm = () => {
@@ -299,6 +314,7 @@ export function GiftCardsManagementPage() {
               <TableHead className="text-right">Balance</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Issued</TableHead>
+              <TableHead className="w-16">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -340,11 +356,16 @@ export function GiftCardsManagementPage() {
                 <TableCell className="text-muted-foreground">
                   {format(new Date(card.created_at), 'MMM d, yyyy')}
                 </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="icon" onClick={() => setDeletingCard(card)} className="text-destructive hover:text-destructive h-8 w-8">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
             {filteredCards?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   No gift cards found
                 </TableCell>
               </TableRow>
@@ -356,6 +377,27 @@ export function GiftCardsManagementPage() {
       {isLoading && (
         <div className="text-center py-12 text-muted-foreground">Loading gift cards...</div>
       )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingCard} onOpenChange={() => setDeletingCard(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Gift Card</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete gift card {deletingCard?.code}? This will void any remaining balance of ${deletingCard?.remaining_amount}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingCard && deleteCardMutation.mutate(deletingCard.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
