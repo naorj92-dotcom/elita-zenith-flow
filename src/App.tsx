@@ -129,6 +129,14 @@ function OwnerRoute({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>;
 }
 
+function DashboardRoute() {
+  const { isFrontDesk } = useUnifiedAuth();
+  if (isFrontDesk) {
+    return <Navigate to="/front-desk" replace />;
+  }
+  return <Dashboard />;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={
@@ -147,7 +155,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       
       {/* ========== HOME (All Staff) ========== */}
-      <Route path="/dashboard" element={<StaffRoute><Dashboard /></StaffRoute>} />
+      <Route path="/dashboard" element={<StaffRoute><DashboardRoute /></StaffRoute>} />
       <Route path="/competition" element={<StaffRoute><CompetitionPage /></StaffRoute>} />
       
       {/* ========== SCHEDULING (All Staff) ========== */}
