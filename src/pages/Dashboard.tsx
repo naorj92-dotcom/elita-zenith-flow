@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Calendar, Clock, DollarSign, Users, ChevronRight,
   Play, Square, ArrowUpRight, ArrowDownRight, Target, Flame, Trophy,
+  LayoutDashboard, MessageCircle, ClipboardList,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Link } from 'react-router-dom';
