@@ -121,25 +121,33 @@ const handler = async (req: Request): Promise<Response> => {
 
     const results = { sms: 'skipped', email: 'skipped', smsError: null as string | null, emailError: null as string | null };
 
-    // ─── SMS ───
+    // ─── SMS via send-sms function ───
     if (client.phone && !client.sms_opt_out) {
-      const smsBody = `Confirmed! ✨ Your ${serviceName} is booked for ${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)} at ${formatTime(apt.scheduled_at)} with ${providerFirst} at ${BUSINESS_NAME}.\n\nNeed to reschedule? Visit: ${PORTAL_URL}\n\nReply STOP to opt out.`;
+      const smsBody = `Confirmed! ✨ Your ${serviceName} is booked for ${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)} at ${formatTime(apt.scheduled_at)} with ${providerFirst} at ${BUSINESS_NAME}.\n\nManage your appointment: ${PORTAL_URL}\n\nReply STOP to opt out.`;
 
-      // SMS placeholder — log it (would need Twilio connector for actual sending)
-      console.log("SMS confirmation:", { to: client.phone, body: smsBody });
-      results.sms = 'sent';
-
-      // Log SMS
-      await supabase.from('notification_logs').insert({
-        client_id: client.id,
-        type: 'sms',
-        category: 'appointment_confirmation',
-        recipient: client.phone,
-        subject: null,
-        body: smsBody,
-        status: 'sent',
-        sent_at: new Date().toISOString(),
-      });
+      try {
+        const smsRes = await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({
+            to: client.phone,
+            body: smsBody,
+            client_id: client.id,
+            category: 'appointment_confirmation',
+          }),
+        });
+        const smsData = await smsRes.json();
+        results.sms = smsRes.ok ? 'sent' : 'failed';
+        if (!smsRes.ok) results.smsError = smsData.error || 'SMS send failed';
+        console.log("SMS result:", smsData);
+      } catch (smsErr: any) {
+        console.error("SMS call error:", smsErr);
+        results.sms = 'failed';
+        results.smsError = smsErr.message;
+      }
     }
 
     // ─── Email ───
