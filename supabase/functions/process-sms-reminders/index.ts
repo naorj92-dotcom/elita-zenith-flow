@@ -124,7 +124,7 @@ serve(async (req: Request) => {
     }
 
     // ─── TRIGGER 3: 2-hour reminder ───
-    if (await isTriggerEnabled(supabase, "appointment_reminder_2h")) {
+    if (await isTriggerEnabled(supabase, "2hr_same_day_reminder")) {
       const window2hStart = new Date(now.getTime() + 1.5 * 60 * 60 * 1000);
       const window2hEnd = new Date(now.getTime() + 2.5 * 60 * 60 * 1000);
 
