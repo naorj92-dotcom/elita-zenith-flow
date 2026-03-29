@@ -181,7 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
         const sanitizedSubject = sanitizeHtml(subject);
         
         const emailResponse = await resend.emails.send({
-          from: "Elita MedSpa <onboarding@resend.dev>",
+          from: "Elita MedSpa <noreply@elitamedspa.com>",
           to: [recipient],
           subject: sanitizedSubject,
           html: `

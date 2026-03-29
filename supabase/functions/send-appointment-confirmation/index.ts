@@ -255,7 +255,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         const emailResponse = await resend.emails.send({
-          from: `${BUSINESS_NAME} <onboarding@resend.dev>`,
+          from: "Elita MedSpa <noreply@elitamedspa.com>",
           to: [client.email],
           subject: `Your Elita appointment is confirmed ✨`,
           html: emailHtml,

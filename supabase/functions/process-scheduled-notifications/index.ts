@@ -24,7 +24,7 @@ async function sendEmail(resend: Resend, to: string, subject: string, body: stri
   const htmlBody = sanitizeHtml(body).replace(/\n/g, '<br>');
   const sanitizedSubject = sanitizeHtml(subject);
   return resend.emails.send({
-    from: "Elita MedSpa <onboarding@resend.dev>",
+    from: "Elita MedSpa <noreply@elitamedspa.com>",
     to: [to],
     subject: sanitizedSubject,
     html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
