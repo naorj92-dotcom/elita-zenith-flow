@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     mode === "production" &&
       VitePWA({
         registerType: "autoUpdate",
-        includeAssets: ["favicon.ico", "icon-192.png", "icon-512.png"],
+        devOptions: { enabled: false },
         manifest: {
           name: "Elita Medical Spa",
           short_name: "Elita",
