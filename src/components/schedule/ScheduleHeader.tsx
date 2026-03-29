@@ -32,10 +32,7 @@ interface ScheduleHeaderProps {
 }
 
 export function ScheduleHeader({
-  ...props
-}: ScheduleHeaderProps) {
-  const { selectedDate, view, onViewChange, onPrev, onNext, onToday, onSync, isSyncing, staffList = [], selectedStaffIds = [], onSelectedStaffChange, isFullCalendar = false, onFullCalendarChange, showStaffFilter = true, onNewAppointment, providerColors } = props;
-  const navigate = useNavigate();
+  selectedDate,
   view,
   onViewChange,
   onPrev,
@@ -52,6 +49,7 @@ export function ScheduleHeader({
   onNewAppointment,
   providerColors,
 }: ScheduleHeaderProps) {
+  const navigate = useNavigate();
   const formatHeaderDate = () => {
     if (view === 'day') {
       return selectedDate.toLocaleDateString('en-US', {
