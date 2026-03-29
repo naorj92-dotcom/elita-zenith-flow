@@ -36,7 +36,7 @@ export default function ProviderPerformanceReport({ dateRange, staffId }: Props)
     if (staffId) txQ = txQ.eq('staff_id', staffId);
 
     const [stRes, apRes, tcRes, ulRes, txRes] = await Promise.all([
-      supabase.from('staff').select('id, first_name, last_name, role'),
+      supabase.rpc('get_staff_public_info'),
       apQ, tcQ, ulQ, txQ,
     ]);
     setStaffList(stRes.data || []);

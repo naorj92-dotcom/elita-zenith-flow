@@ -68,12 +68,8 @@ export function SchedulePage() {
 
   useEffect(() => {
     const fetchStaff = async () => {
-      const { data } = await supabase
-        .from('staff')
-        .select('id, first_name, last_name, avatar_url, role')
-        .eq('is_active', true)
-        .in('role', ['provider', 'admin'])
-        .order('first_name', { ascending: true });
+      const { data: allStaff } = await supabase.rpc('get_staff_public_info');
+      const data = (allStaff || []).filter((s: any) => ['provider', 'admin'].includes(s.role));
       if (data) {
         setStaffList(data);
         // Providers only see their own calendar

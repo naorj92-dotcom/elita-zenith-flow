@@ -50,7 +50,7 @@ export function FrontDeskPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from('staff').select('id, first_name, last_name').eq('is_active', true).order('first_name').then(({ data }) => {
+    supabase.rpc('get_staff_public_info').then(({ data }) => {
       if (data) setStaffList(data);
     });
   }, []);

@@ -50,7 +50,7 @@ export function NewAppointmentDialog({ open, onOpenChange, onCreated, defaultCli
     Promise.all([
       supabase.from('clients').select('id, first_name, last_name').order('first_name').limit(500),
       supabase.from('services').select('id, name, duration_minutes, price, category, machine_type_id, required_room_type').eq('is_active', true).order('name'),
-      supabase.from('staff').select('id, first_name, last_name, role').eq('is_active', true).order('first_name'),
+      supabase.rpc('get_staff_public_info'),
       supabase.from('rooms').select('id, name').eq('is_active', true).order('name'),
     ]).then(([cRes, sRes, stRes, rRes]) => {
       setClients(cRes.data || []);
