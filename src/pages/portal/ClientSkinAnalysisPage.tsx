@@ -330,7 +330,7 @@ export function ClientSkinAnalysisPage() {
     return (
       <div className="space-y-5 max-w-lg mx-auto">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setStep('intro')}>← Back</Button>
+          <Button variant="ghost" size="sm" onClick={() => { stopCamera(); setStep('intro'); }}>← Back</Button>
           <h2 className="font-heading font-semibold">Take Your Photo</h2>
         </div>
 
@@ -338,28 +338,67 @@ export function ClientSkinAnalysisPage() {
           <CardContent className="p-5 space-y-4">
             {!imagePreview ? (
               <div className="space-y-3">
-                <div
-                  className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all"
-                  style={{ aspectRatio: '3/4' }}
-                  onClick={() => cameraInputRef.current?.click()}
-                >
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
-                    <Camera className="h-10 w-10 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground font-medium">Tap to take a selfie</p>
-                  </div>
-                  <FaceGuideOverlay />
-                </div>
+                {isLiveCamera ? (
+                  <>
+                    <div className="relative rounded-xl overflow-hidden bg-black" style={{ aspectRatio: '3/4' }}>
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover"
+                        style={{ transform: 'scaleX(-1)' }}
+                      />
+                      <FaceGuideOverlay />
+                    </div>
+                    <canvas ref={canvasRef} className="hidden" />
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 gap-2" onClick={() => { stopCamera(); }}>
+                        Cancel
+                      </Button>
+                      <Button
+                        className="flex-1 gap-2 bg-[hsl(25,30%,28%)] hover:bg-[hsl(25,30%,22%)] text-white"
+                        onClick={captureFromLiveCamera}
+                      >
+                        <Camera className="h-4 w-4" />
+                        Snap Photo
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all"
+                      style={{ aspectRatio: '3/4' }}
+                      onClick={startLiveCamera}
+                    >
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
+                        <Camera className="h-10 w-10 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground font-medium">Tap to open camera</p>
+                      </div>
+                      <FaceGuideOverlay />
+                    </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 gap-2" onClick={() => cameraInputRef.current?.click()}>
-                    <Camera className="h-4 w-4" />
-                    Camera
-                  </Button>
-                  <Button variant="outline" className="flex-1 gap-2" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="h-4 w-4" />
-                    Upload
-                  </Button>
-                </div>
+                    {cameraError && (
+                      <p className="text-xs text-destructive text-center">{cameraError}</p>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 gap-2" onClick={startLiveCamera}>
+                        <Camera className="h-4 w-4" />
+                        Live Camera
+                      </Button>
+                      <Button variant="outline" className="flex-1 gap-2" onClick={() => cameraInputRef.current?.click()}>
+                        <Camera className="h-4 w-4" />
+                        Take Photo
+                      </Button>
+                      <Button variant="outline" className="flex-1 gap-2" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="h-4 w-4" />
+                        Upload
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
