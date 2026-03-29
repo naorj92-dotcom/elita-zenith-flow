@@ -169,7 +169,7 @@ serve(async (req: Request) => {
     }
 
     // ─── TRIGGER 4: Post-visit followup (24h after completed) ───
-    if (await isTriggerEnabled(supabase, "post_visit_followup")) {
+    if (await isTriggerEnabled(supabase, "24hr_post_visit_followup")) {
       const window24hStart = new Date(now.getTime() - 25 * 60 * 60 * 1000);
       const window24hEnd = new Date(now.getTime() - 23 * 60 * 60 * 1000);
       const googleReviewUrl = await getGoogleReviewUrl(supabase);
