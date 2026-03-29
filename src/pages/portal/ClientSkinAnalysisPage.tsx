@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,8 +57,72 @@ export function ClientSkinAnalysisPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [comparingTo, setComparingTo] = useState<SavedAnalysis | null>(null);
+  const [isLiveCamera, setIsLiveCamera] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsLiveCamera(false);
+    setCameraError(null);
+  }, []);
+
+  const startLiveCamera = useCallback(async () => {
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 960 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setIsLiveCamera(true);
+    } catch {
+      setCameraError('Camera access denied. Please allow camera permissions or use Upload instead.');
+    }
+  }, []);
+
+  const captureFromLiveCamera = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    // Mirror the image since front camera is mirrored
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    setImagePreview(dataUrl);
+    stopCamera();
+  }, [stopCamera]);
+
+  // Clean up camera on unmount or step change
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (step !== 'capture') {
+      stopCamera();
+    }
+  }, [step, stopCamera]);
 
   const { data: pastAnalyses, isLoading: loadingPast } = useQuery({
     queryKey: ['skin-analyses', client?.id],
@@ -266,7 +330,7 @@ export function ClientSkinAnalysisPage() {
     return (
       <div className="space-y-5 max-w-lg mx-auto">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setStep('intro')}>← Back</Button>
+          <Button variant="ghost" size="sm" onClick={() => { stopCamera(); setStep('intro'); }}>← Back</Button>
           <h2 className="font-heading font-semibold">Take Your Photo</h2>
         </div>
 
@@ -274,28 +338,67 @@ export function ClientSkinAnalysisPage() {
           <CardContent className="p-5 space-y-4">
             {!imagePreview ? (
               <div className="space-y-3">
-                <div
-                  className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all"
-                  style={{ aspectRatio: '3/4' }}
-                  onClick={() => cameraInputRef.current?.click()}
-                >
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
-                    <Camera className="h-10 w-10 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground font-medium">Tap to take a selfie</p>
-                  </div>
-                  <FaceGuideOverlay />
-                </div>
+                {isLiveCamera ? (
+                  <>
+                    <div className="relative rounded-xl overflow-hidden bg-black" style={{ aspectRatio: '3/4' }}>
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover"
+                        style={{ transform: 'scaleX(-1)' }}
+                      />
+                      <FaceGuideOverlay />
+                    </div>
+                    <canvas ref={canvasRef} className="hidden" />
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 gap-2" onClick={() => { stopCamera(); }}>
+                        Cancel
+                      </Button>
+                      <Button
+                        className="flex-1 gap-2 bg-[hsl(25,30%,28%)] hover:bg-[hsl(25,30%,22%)] text-white"
+                        onClick={captureFromLiveCamera}
+                      >
+                        <Camera className="h-4 w-4" />
+                        Snap Photo
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className="relative border-2 border-dashed border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all"
+                      style={{ aspectRatio: '3/4' }}
+                      onClick={startLiveCamera}
+                    >
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
+                        <Camera className="h-10 w-10 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground font-medium">Tap to open camera</p>
+                      </div>
+                      <FaceGuideOverlay />
+                    </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 gap-2" onClick={() => cameraInputRef.current?.click()}>
-                    <Camera className="h-4 w-4" />
-                    Camera
-                  </Button>
-                  <Button variant="outline" className="flex-1 gap-2" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="h-4 w-4" />
-                    Upload
-                  </Button>
-                </div>
+                    {cameraError && (
+                      <p className="text-xs text-destructive text-center">{cameraError}</p>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 gap-2" onClick={startLiveCamera}>
+                        <Camera className="h-4 w-4" />
+                        Live Camera
+                      </Button>
+                      <Button variant="outline" className="flex-1 gap-2" onClick={() => cameraInputRef.current?.click()}>
+                        <Camera className="h-4 w-4" />
+                        Take Photo
+                      </Button>
+                      <Button variant="outline" className="flex-1 gap-2" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="h-4 w-4" />
+                        Upload
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
