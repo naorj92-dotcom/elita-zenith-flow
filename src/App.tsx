@@ -130,8 +130,8 @@ function OwnerRoute({ children }: { children: React.ReactNode }) {
 }
 
 function DashboardRoute() {
-  const { isFrontDesk } = useUnifiedAuth();
-  if (isFrontDesk) {
+  const { isFrontDesk, role, staff } = useUnifiedAuth();
+  if (role === 'employee' && (isFrontDesk || staff?.role === 'front_desk')) {
     return <Navigate to="/front-desk" replace />;
   }
   return <Dashboard />;
