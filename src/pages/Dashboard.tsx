@@ -385,7 +385,7 @@ export function Dashboard() {
             {/* Front Desk Quick Actions */}
             <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
               <p className="text-[9px] font-semibold text-muted-foreground/45 uppercase tracking-[0.35em] mb-6">Quick Actions</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {[
                   { label: 'Front Desk Board', href: '/front-desk', icon: LayoutDashboard },
                   { label: 'Open Calendar', href: '/schedule', icon: Calendar },
