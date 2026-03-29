@@ -296,7 +296,7 @@ export function DealsManagementPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deletingDeal && deleteMutation.mutate(deletingDeal.id).then(() => setDeletingDeal(null))}
+              onClick={() => deletingDeal && deleteMutation.mutate(deletingDeal.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
