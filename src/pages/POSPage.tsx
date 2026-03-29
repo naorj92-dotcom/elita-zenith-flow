@@ -87,11 +87,7 @@ export function POSPage() {
   const { data: staff = [] } = useQuery({
     queryKey: ['staff'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('staff')
-        .select('id, first_name, last_name')
-        .eq('is_active', true)
-        .order('first_name');
+      const { data, error } = await supabase.rpc('get_staff_public_info');
       if (error) throw error;
       return data;
     },

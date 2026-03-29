@@ -131,7 +131,7 @@ export function CompetitionPage() {
           .gte('created_at', rangeStart.toISOString())
           .lte('created_at', rangeEnd.toISOString())
           .eq('action', 'accepted'),
-        supabase.from('staff').select('id, first_name, last_name, avatar_url').eq('is_active', true),
+        supabase.rpc('get_staff_public_info'),
         // Weekly trend: last 4 weeks
         supabase.from('transactions').select('staff_id, amount, transaction_date')
           .gte('transaction_date', subWeeks(new Date(), 4).toISOString())
