@@ -72,6 +72,7 @@ export function SchedulePage() {
         .from('staff')
         .select('id, first_name, last_name, avatar_url, role')
         .eq('is_active', true)
+        .in('role', ['provider', 'admin'])
         .order('first_name', { ascending: true });
       if (data) {
         setStaffList(data);
