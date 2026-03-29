@@ -128,6 +128,7 @@ export function DealsManagementPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-deals'] });
       toast.success('Deal deleted');
+      setDeletingDeal(null);
     },
   });
 
