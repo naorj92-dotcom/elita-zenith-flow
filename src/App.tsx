@@ -18,6 +18,7 @@ const Dashboard = React.lazy(() => import("@/pages/Dashboard").then(m => ({ defa
 const StaffClientProfilePage = React.lazy(() => import("@/pages/ClientProfilePage"));
 const PayrollPage = React.lazy(() => import("@/pages/PayrollPage").then(m => ({ default: m.PayrollPage })));
 const SchedulePage = React.lazy(() => import("@/pages/SchedulePage").then(m => ({ default: m.SchedulePage })));
+const FrontDeskPage = React.lazy(() => import("@/pages/FrontDeskPage").then(m => ({ default: m.FrontDeskPage })));
 const ClientsPage = React.lazy(() => import("@/pages/ClientsPage").then(m => ({ default: m.ClientsPage })));
 const TimeClockPage = React.lazy(() => import("@/pages/TimeClockPage").then(m => ({ default: m.TimeClockPage })));
 const POSPage = React.lazy(() => import("@/pages/POSPage").then(m => ({ default: m.POSPage })));
@@ -152,6 +153,7 @@ function AppRoutes() {
       {/* ========== SCHEDULING (All Staff) ========== */}
       <Route path="/schedule" element={<StaffRoute><SchedulePage /></StaffRoute>} />
       <Route path="/schedule/:id" element={<StaffRoute><SchedulePage /></StaffRoute>} />
+      <Route path="/front-desk" element={<StaffRoute><FrontDeskPage /></StaffRoute>} />
       <Route path="/waitlist" element={<StaffRoute><WaitlistManagementPage /></StaffRoute>} />
       
       {/* ========== CLIENTS (All Staff) ========== */}
