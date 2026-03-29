@@ -214,7 +214,7 @@ serve(async (req: Request) => {
     }
 
     // ─── TRIGGER 5: Package expiry reminder (7 days before) ───
-    if (await isTriggerEnabled(supabase, "package_expiry_reminder")) {
+    if (await isTriggerEnabled(supabase, "package_expiry_warning")) {
       const in7days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       const in7daysStart = new Date(in7days.getTime() - 12 * 60 * 60 * 1000);
       const in7daysEnd = new Date(in7days.getTime() + 12 * 60 * 60 * 1000);
