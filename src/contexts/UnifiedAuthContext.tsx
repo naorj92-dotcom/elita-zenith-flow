@@ -65,20 +65,29 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
         .from('user_roles')
         .select('*')
         .eq('user_id', userId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .single();
+        .eq('is_active', true);
 
       if (error) {
         console.error('Error fetching user role:', error);
         return null;
       }
 
-      if (data) {
-        const role = data as UserRole;
+      if (data && data.length > 0) {
+        const rolePriority: Record<AppRole, number> = {
+          owner: 0,
+          employee: 1,
+          client: 2,
+        };
+
+        const role = [...data]
+          .sort((a, b) => {
+            const priorityDiff = rolePriority[a.role as AppRole] - rolePriority[b.role as AppRole];
+            if (priorityDiff !== 0) return priorityDiff;
+            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          })[0] as UserRole;
+
         setUserRole(role);
-        
+
         // Set permissions based on role
         const basePermissions = ROLE_PERMISSIONS[role.role];
         if (role.role === 'employee' && role.employee_type) {
