@@ -46,7 +46,7 @@ async function getGoogleReviewUrl(supabase: any): Promise<string> {
   const { data } = await supabase
     .from("notification_triggers")
     .select("google_review_url")
-    .eq("trigger_key", "post_visit_followup")
+    .eq("trigger_key", "24hr_post_visit_followup")
     .single();
   return data?.google_review_url || "https://g.page/review";
 }
