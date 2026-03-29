@@ -14,7 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Edit, Crown, Users, Sparkles, DollarSign, CalendarClock, XCircle } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Plus, Edit, Trash2, Crown, Users, Sparkles, DollarSign, CalendarClock, XCircle } from 'lucide-react';
 import { Json } from '@/integrations/supabase/types';
 import { format, addDays } from 'date-fns';
 
@@ -49,6 +50,7 @@ export function MembershipsManagementPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<MembershipFormData>(initialFormData);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (staff?.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
@@ -139,6 +141,19 @@ export function MembershipsManagementPage() {
       resetForm();
     },
     onError: () => toast.error('Failed to update membership'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('memberships').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['memberships'] });
+      toast.success('Membership tier deleted');
+      setDeletingId(null);
+    },
+    onError: () => toast.error('Failed to delete membership — it may have active subscribers'),
   });
 
   const resetForm = () => {
@@ -453,6 +468,9 @@ export function MembershipsManagementPage() {
                     <Edit className="h-4 w-4 mr-1" />
                     Edit
                   </Button>
+                  <Button variant="outline" size="sm" onClick={() => setDeletingId(membership.id)} className="text-destructive hover:text-destructive border-destructive/30">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -463,6 +481,27 @@ export function MembershipsManagementPage() {
       {isLoading && (
         <div className="text-center py-12 text-muted-foreground">Loading membership tiers...</div>
       )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Membership Tier</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this membership tier? Active subscribers will need to be migrated first. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingId && deleteMutation.mutate(deletingId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

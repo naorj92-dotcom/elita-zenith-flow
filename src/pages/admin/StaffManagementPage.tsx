@@ -12,7 +12,8 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Staff, StaffRole } from '@/types';
-import { Plus, Pencil, User, Phone, Mail, DollarSign, Percent, Loader2, ShieldCheck, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Plus, Pencil, Trash2, User, Phone, Mail, DollarSign, Percent, Loader2, ShieldCheck, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { staffSchema, validateInput } from '@/lib/validations';
 
@@ -59,6 +60,7 @@ export function StaffManagementPage() {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [showAuthPassword, setShowAuthPassword] = useState(false);
+  const [deletingStaff, setDeletingStaff] = useState<Staff | null>(null);
   
 
   // Fetch which staff already have auth accounts
@@ -169,6 +171,21 @@ export function StaffManagementPage() {
         description: error.message,
         variant: 'destructive' 
       });
+    },
+  });
+
+  const deleteStaffMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('staff').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Staff member deleted successfully' });
+      queryClient.invalidateQueries({ queryKey: ['admin-staff-list'] });
+      setDeletingStaff(null);
+    },
+    onError: (error: any) => {
+      toast({ title: 'Failed to delete staff member', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -460,9 +477,14 @@ export function StaffManagementPage() {
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => openEditDialog(staff)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(staff)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setDeletingStaff(staff)} className="text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-2 text-sm">
@@ -577,6 +599,27 @@ export function StaffManagementPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingStaff} onOpenChange={() => setDeletingStaff(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Staff Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {deletingStaff?.first_name} {deletingStaff?.last_name}? This will also remove their appointments and transaction history references. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingStaff && deleteStaffMutation.mutate(deletingStaff.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
