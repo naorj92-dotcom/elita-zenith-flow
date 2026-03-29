@@ -51,7 +51,9 @@ export function FrontDeskPage() {
 
   useEffect(() => {
     supabase.rpc('get_staff_public_info').then(({ data }) => {
-      if (data) setStaffList(data);
+      if (data) {
+        setStaffList((data as any[]).filter((s) => s.role === 'provider'));
+      }
     });
   }, []);
 
