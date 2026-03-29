@@ -40,6 +40,7 @@ export function SchedulePage() {
   const { isOwner, isProvider, staff: authStaff } = useUnifiedAuth();
   const { pullEvents } = useCalendarSync();
   const providerColors = useProviderColors();
+  const isProviderUser = isProvider && authStaff?.role === 'provider';
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date();
@@ -69,19 +70,20 @@ export function SchedulePage() {
   useEffect(() => {
     const fetchStaff = async () => {
       const { data: allStaff } = await supabase.rpc('get_staff_public_info');
-      const data = (allStaff || []).filter((s: any) => ['provider', 'admin'].includes(s.role));
+      const data = (allStaff || []).filter((s: any) => s.role === 'provider');
       if (data) {
         setStaffList(data);
         // Providers only see their own calendar
-        if (isProvider && authStaff) {
+        if (isProviderUser && authStaff) {
           setSelectedStaffIds([authStaff.id]);
         } else {
+          // Owners and front desk see all provider calendars only
           setSelectedStaffIds(data.map((s) => s.id));
         }
       }
     };
     fetchStaff();
-  }, [isProvider, authStaff]);
+  }, [isProviderUser, authStaff]);
 
   // Handle /schedule/new route and ?client= param
   useEffect(() => {
@@ -312,15 +314,15 @@ export function SchedulePage() {
   };
 
   // Providers only see their own staff column
-  const filteredStaff = isProvider && authStaff
+  const filteredStaff = isProviderUser && authStaff
     ? staffList.filter((s) => s.id === authStaff.id)
     : isFullCalendar
       ? staffList
       : staffList.filter((s) => selectedStaffIds.includes(s.id));
 
   // Filter appointments for providers
-  const filteredAppointments = isProvider && authStaff
-    ? appointments.filter(a => a.staff_id === authStaff.id)
+  const filteredAppointments = isProviderUser && authStaff
+    ? appointments.filter((a) => a.staff_id === authStaff.id)
     : appointments;
 
   return (
@@ -339,7 +341,7 @@ export function SchedulePage() {
         onSelectedStaffChange={setSelectedStaffIds}
         isFullCalendar={isFullCalendar}
         onFullCalendarChange={setIsFullCalendar}
-        showStaffFilter={isOwner || (!isProvider && !isOwner)}
+        showStaffFilter={!isProviderUser}
         onNewAppointment={() => { setNewApptClientId(null); setShowNewAppt(true); }}
         providerColors={providerColors}
       />
@@ -383,7 +385,7 @@ export function SchedulePage() {
             onCreated={fetchData}
             defaultClientId={newApptClientId}
             defaultDate={selectedDate}
-            defaultStaffId={isProvider && authStaff ? authStaff.id : undefined}
+            defaultStaffId={isProviderUser && authStaff ? authStaff.id : undefined}
           />
         </React.Suspense>
       )}
