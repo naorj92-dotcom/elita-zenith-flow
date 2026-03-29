@@ -27,12 +27,15 @@ export function DashboardDealsWidget() {
     },
   });
 
-  // Refresh deals periodically (realtime removed for security)
+  // Realtime for live spots-left updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ['client-active-deals-dashboard'] });
-    }, 60000);
-    return () => clearInterval(interval);
+    const channel = supabase
+      .channel('dashboard-deals-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'exclusive_deals' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['client-active-deals-dashboard'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
   if (deals.length === 0) return null;

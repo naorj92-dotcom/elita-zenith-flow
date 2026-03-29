@@ -52,12 +52,15 @@ export function ClientDealsPage() {
     },
   });
 
-  // Refetch deals periodically (realtime removed for security)
+  // Realtime subscription for live updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ['client-active-deals'] });
-    }, 60000);
-    return () => clearInterval(interval);
+    const channel = supabase
+      .channel('deals-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'exclusive_deals' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['client-active-deals'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
   if (isLoading) {
