@@ -57,8 +57,72 @@ export function ClientSkinAnalysisPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [comparingTo, setComparingTo] = useState<SavedAnalysis | null>(null);
+  const [isLiveCamera, setIsLiveCamera] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsLiveCamera(false);
+    setCameraError(null);
+  }, []);
+
+  const startLiveCamera = useCallback(async () => {
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 960 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setIsLiveCamera(true);
+    } catch {
+      setCameraError('Camera access denied. Please allow camera permissions or use Upload instead.');
+    }
+  }, []);
+
+  const captureFromLiveCamera = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    // Mirror the image since front camera is mirrored
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    setImagePreview(dataUrl);
+    stopCamera();
+  }, [stopCamera]);
+
+  // Clean up camera on unmount or step change
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (step !== 'capture') {
+      stopCamera();
+    }
+  }, [step, stopCamera]);
 
   const { data: pastAnalyses, isLoading: loadingPast } = useQuery({
     queryKey: ['skin-analyses', client?.id],
