@@ -164,12 +164,9 @@ export function ClientDashboard() {
         .lte('scheduled_at', weekOut.toISOString())
         .in('status', ['scheduled', 'confirmed', 'checked_in', 'in_progress']);
 
-      // Get active staff
-      const { data: staffList } = await supabase
-        .from('staff')
-        .select('id')
-        .eq('is_active', true)
-        .in('role', ['admin', 'provider']);
+      // Get active staff via secure RPC (excludes financial data)
+      const { data: staffList } = await supabase.rpc('get_staff_public_info');
+      const filteredStaff = (staffList || []).filter((s: any) => ['admin', 'provider'].includes(s.role));
 
       // Generate simple available slots (10am, 11am, 1pm, 2pm, 3pm for next 7 days)
       const slotHours = [10, 11, 13, 14, 15];
