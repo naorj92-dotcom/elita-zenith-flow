@@ -29,9 +29,7 @@ serve(async (req: Request) => {
       });
     }
 
-    const fromEmail = to === (Deno.env.get("RESEND_FROM_EMAIL") || "").split("<").pop()?.replace(">","")
-      ? Deno.env.get("RESEND_FROM_EMAIL") || "Elita MedSpa <onboarding@resend.dev>"
-      : "Elita MedSpa <onboarding@resend.dev>";
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Elita MedSpa <noreply@elitamedspa.com>";
 
     const emailResponse = await resend.emails.send({
       from: fromEmail,
