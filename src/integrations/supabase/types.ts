@@ -3141,7 +3141,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      products_public: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          name: string | null
+          price: number | null
+          quantity_in_stock: number | null
+          sku: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          price?: number | null
+          quantity_in_stock?: number | null
+          sku?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          price?: number | null
+          quantity_in_stock?: number | null
+          sku?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_commission: {
@@ -3160,6 +3201,20 @@ export type Database = {
       get_employee_type: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["employee_type"]
+      }
+      get_staff_public_info: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          email: string
+          first_name: string
+          hire_date: string
+          id: string
+          is_active: boolean
+          last_name: string
+          phone: string
+          role: Database["public"]["Enums"]["staff_role"]
+        }[]
       }
       get_user_role: {
         Args: { _user_id: string }
