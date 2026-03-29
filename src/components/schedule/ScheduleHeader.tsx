@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays, Palette } from 'lucide-react';
+import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays, Palette, LayoutDashboard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -31,7 +32,10 @@ interface ScheduleHeaderProps {
 }
 
 export function ScheduleHeader({
-  selectedDate,
+  ...props
+}: ScheduleHeaderProps) {
+  const { selectedDate, view, onViewChange, onPrev, onNext, onToday, onSync, isSyncing, staffList = [], selectedStaffIds = [], onSelectedStaffChange, isFullCalendar = false, onFullCalendarChange, showStaffFilter = true, onNewAppointment, providerColors } = props;
+  const navigate = useNavigate();
   view,
   onViewChange,
   onPrev,
