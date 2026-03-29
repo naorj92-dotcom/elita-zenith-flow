@@ -87,6 +87,7 @@ export const OWNER_NAVIGATION: NavCategory[] = [
     label: 'Scheduling',
     icon: Calendar,
     items: [
+      { label: 'Front Desk', href: '/front-desk', icon: LayoutDashboard },
       { label: 'Calendar', href: '/schedule', icon: Calendar },
       { label: 'Waitlist', href: '/waitlist', icon: ClipboardList },
     ],
@@ -230,6 +231,7 @@ export const FRONT_DESK_NAVIGATION: NavCategory[] = [
     label: 'Schedule',
     icon: Calendar,
     items: [
+      { label: 'Front Desk', href: '/front-desk', icon: LayoutDashboard },
       { label: 'Calendar', href: '/schedule', icon: Calendar },
       { label: 'Waitlist', href: '/waitlist', icon: ClipboardList },
     ],

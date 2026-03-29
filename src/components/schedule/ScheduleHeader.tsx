@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays, Palette } from 'lucide-react';
+import { Plus, RefreshCw, ChevronLeft, ChevronRight, Users, CalendarDays, Palette, LayoutDashboard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -48,6 +49,7 @@ export function ScheduleHeader({
   onNewAppointment,
   providerColors,
 }: ScheduleHeaderProps) {
+  const navigate = useNavigate();
   const formatHeaderDate = () => {
     if (view === 'day') {
       return selectedDate.toLocaleDateString('en-US', {
