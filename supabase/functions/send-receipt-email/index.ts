@@ -340,7 +340,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "Elite MedSpa <onboarding@resend.dev>",
+      from: "Elita MedSpa <noreply@elitamedspa.com>",
       to: [data.client_email],
       subject: `Your Elite MedSpa Receipt - ${data.receipt_number}`,
       html: emailHtml,
