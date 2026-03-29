@@ -37,11 +37,10 @@ export interface ScheduleStaff {
 
 export function SchedulePage() {
   const { staff } = useAuth();
-  const { isOwner, isProvider, isFrontDesk, staff: authStaff } = useUnifiedAuth();
+  const { isOwner, isProvider, staff: authStaff } = useUnifiedAuth();
   const { pullEvents } = useCalendarSync();
   const providerColors = useProviderColors();
   const isProviderUser = isProvider && authStaff?.role === 'provider';
-  const isFrontDeskUser = isFrontDesk || authStaff?.role === 'front_desk';
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date();
