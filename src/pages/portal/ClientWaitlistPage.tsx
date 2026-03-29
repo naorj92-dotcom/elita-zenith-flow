@@ -34,7 +34,8 @@ export function ClientWaitlistPage() {
   const { data: staff = [] } = useQuery({
     queryKey: ['waitlist-staff'],
     queryFn: async () => {
-      const { data } = await supabase.from('staff').select('id, first_name, last_name').eq('is_active', true).order('first_name');
+      const { data } = await supabase.rpc('get_staff_public_info');
+      return (data || []).sort((a: any, b: any) => (a.first_name || '').localeCompare(b.first_name || ''));
       return data || [];
     },
   });

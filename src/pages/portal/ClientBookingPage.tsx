@@ -68,7 +68,8 @@ export function ClientBookingPage() {
   const { data: providers, isLoading: loadingProviders } = useQuery({
     queryKey: ['booking-providers'],
     queryFn: async () => {
-      const { data } = await supabase.from('staff').select('*').eq('is_active', true).in('role', ['provider', 'admin']);
+      const { data } = await supabase.rpc('get_staff_public_info');
+      return (data || []).filter((s: any) => ['provider', 'admin'].includes(s.role));
       return data || [];
     },
     enabled: step === 'provider' || step === 'datetime' || step === 'confirm',
