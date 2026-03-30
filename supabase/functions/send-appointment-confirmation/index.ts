@@ -158,7 +158,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (aftercareTips.length > 0) {
         aftercareHtml = `
           <div style="background:#fdf8f0;border-left:3px solid #c9a96e;border-radius:6px;padding:18px 20px;margin:24px 0;">
-            <h3 style="margin:0 0 14px;color:#5c4a3a;font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:600;">Aftercare Tips</h3>
+            <h3 style="margin:0 0 14px;color:#5c4a3a;font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:600;">Your Personalized Aftercare</h3>
             ${aftercareTips.map((t, i) => `
               <div style="margin-bottom:${i < aftercareTips.length - 1 ? '12' : '0'}px;">
                 <strong style="color:#3d2e22;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.title)}</strong>
@@ -173,9 +173,9 @@ const handler = async (req: Request): Promise<Response> => {
       if (googleReviewUrl) {
         reviewCtaHtml = `
           <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:24px;margin:24px 0;text-align:center;">
-            <p style="margin:0 0 6px;color:#c9a96e;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;">WE'D LOVE YOUR FEEDBACK</p>
-            <p style="margin:0 0 18px;color:#3d2e22;font-size:15px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">How was your experience today?</p>
-            <a href="${googleReviewUrl}" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Leave a Review ⭐</a>
+            <p style="margin:0 0 6px;color:#c9a96e;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;">YOUR EXPERIENCE MATTERS</p>
+            <p style="margin:0 0 18px;color:#3d2e22;font-size:15px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">We'd love to hear about your visit</p>
+            <a href="${googleReviewUrl}" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Share Your Experience ⭐</a>
           </div>
         `;
       }
@@ -206,10 +206,11 @@ const handler = async (req: Request): Promise<Response> => {
                 Thank you for choosing ${BUSINESS_NAME}. We hope you had a wonderful experience during your ${sanitizeHtml(serviceName)} treatment${provider ? ` with ${sanitizeHtml(providerFull)}` : ''}.
               </p>
 
-              <!-- Visit Summary Card -->
+              <!-- Visit Summary -->
               <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:20px;margin-bottom:24px;">
+                <p style="margin:0 0 12px;color:#c9a96e;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;">TODAY'S TREATMENT</p>
                 <table style="width:100%;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                  <tr><td style="padding:6px 0;color:#7a6a5e;width:100px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Service</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
+                  <tr><td style="padding:6px 0;color:#7a6a5e;width:100px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Treatment</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
                   <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</td></tr>
                   ${provider ? `<tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Provider</td><td style="padding:6px 0;color:#3d2e22;">${sanitizeHtml(providerFull)}</td></tr>` : ''}
                 </table>
@@ -221,11 +222,11 @@ const handler = async (req: Request): Promise<Response> => {
 
               <!-- Rebook CTA -->
               <div style="text-align:center;margin:24px 0 16px;">
-                <a href="${PORTAL_URL}/book" style="display:inline-block;background:linear-gradient(135deg,#3d2e22,#5c4a3a);color:#faf6f0;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:500;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Book Your Next Visit →</a>
+                <a href="${PORTAL_URL}/book" style="display:inline-block;background:linear-gradient(135deg,#3d2e22,#5c4a3a);color:#faf6f0;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:500;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Book Your Next Session →</a>
               </div>
 
               <p style="margin:24px 0 0;color:#7a6a5e;font-size:13px;line-height:1.6;font-family:'Inter',Helvetica,Arial,sans-serif;text-align:center;">
-                Your skin journey is important to us. We look forward to seeing you again soon.
+                Your progress is important to us. We look forward to welcoming you again soon.
               </p>
 
               <!-- Footer -->
