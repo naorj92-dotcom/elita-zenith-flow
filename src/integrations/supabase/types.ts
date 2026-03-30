@@ -3287,6 +3287,30 @@ export type Database = {
             | Database["public"]["Enums"]["transaction_type"]
             | null
         }
+        Insert: {
+          amount?: number | null
+          appointment_id?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          transaction_date?: string | null
+          transaction_type?:
+            | Database["public"]["Enums"]["transaction_type"]
+            | null
+        }
+        Update: {
+          amount?: number | null
+          appointment_id?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          transaction_date?: string | null
+          transaction_type?:
+            | Database["public"]["Enums"]["transaction_type"]
+            | null
+        }
         Relationships: [
           {
             foreignKeyName: "transactions_appointment_id_fkey"
