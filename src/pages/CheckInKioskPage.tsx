@@ -91,7 +91,39 @@ export default function CheckInKioskPage() {
   const handleSelectAppointment = async (apt: KioskAppointment) => {
     setSelected(apt);
 
-    // Fetch pending forms for this appointment
+    // 1. Check service_form_links for any consent forms tied to this service
+    //    that haven't been assigned as client_forms yet
+    const { data: serviceFormLinks } = await supabase
+      .from('service_form_links')
+      .select('form_id')
+      .eq('service_id', apt.service_id);
+
+    if (serviceFormLinks && serviceFormLinks.length > 0) {
+      // Get already-assigned form_ids for this client + appointment
+      const { data: existingForms } = await supabase
+        .from('client_forms')
+        .select('form_id')
+        .eq('client_id', apt.client_id)
+        .eq('appointment_id', apt.id);
+
+      const existingFormIds = new Set((existingForms || []).map(f => f.form_id));
+
+      // Auto-assign missing service-linked forms
+      const missing = serviceFormLinks
+        .filter(sfl => !existingFormIds.has(sfl.form_id))
+        .map(sfl => ({
+          client_id: apt.client_id,
+          form_id: sfl.form_id,
+          appointment_id: apt.id,
+          status: 'pending' as const,
+        }));
+
+      if (missing.length > 0) {
+        await supabase.from('client_forms').insert(missing);
+      }
+    }
+
+    // 2. Fetch all pending forms for this client (appointment-linked + general)
     const { data: forms } = await supabase
       .from('client_forms')
       .select('id, form_id, forms(name, fields, requires_signature)')
