@@ -47,6 +47,8 @@ export default function CheckInKioskPage() {
   const [activeFormId, setActiveFormId] = useState<string | null>(null);
 
   const handleConfirmCheckInRef = useRef<() => void>(() => {});
+
+  const fetchTodayAppointments = useCallback(async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayEnd = new Date(today);
