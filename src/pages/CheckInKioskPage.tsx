@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -46,6 +46,8 @@ export default function CheckInKioskPage() {
   const [checking, setChecking] = useState(false);
   const [activeFormId, setActiveFormId] = useState<string | null>(null);
 
+  const handleConfirmCheckInRef = useRef<() => void>(() => {});
+
   const fetchTodayAppointments = useCallback(async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -90,6 +92,28 @@ export default function CheckInKioskPage() {
     const interval = setInterval(fetchTodayAppointments, 60000);
     return () => clearInterval(interval);
   }, [fetchTodayAppointments]);
+
+  // Auto-proceed to check-in when all forms are complete on the forms screen
+  const allFormsComplete = pendingForms.length > 0 && pendingForms.every(form => {
+    const responses = formResponses[form.id] || {};
+    return form.fields
+      .filter(f => f.required)
+      .every(f => {
+        const val = responses[f.id];
+        return val !== undefined && val !== null && val !== '';
+      });
+  });
+  const allSignaturesComplete = !pendingForms.some(f => f.requires_signature) || !!signatureData;
+
+  useEffect(() => {
+    if (screen === 'forms' && allFormsComplete && allSignaturesComplete && !checking) {
+      // Short delay so user sees the completion state before auto-proceeding
+      const timer = setTimeout(() => {
+        handleConfirmCheckInRef.current();
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [screen, allFormsComplete, allSignaturesComplete, checking]);
 
   const handleSelectAppointment = async (apt: KioskAppointment) => {
     setSelected(apt);
@@ -255,6 +279,7 @@ export default function CheckInKioskPage() {
       setChecking(false);
     }
   };
+  handleConfirmCheckInRef.current = handleConfirmCheckIn;
 
   const filteredAppointments = appointments.filter(apt => {
     if (!searchQuery) return true;
