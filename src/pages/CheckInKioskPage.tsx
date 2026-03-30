@@ -19,6 +19,7 @@ interface KioskAppointment {
   duration_minutes: number;
   status: string;
   client_id: string;
+  service_id: string;
   client_first_name: string;
   client_last_name: string;
   service_name: string;
