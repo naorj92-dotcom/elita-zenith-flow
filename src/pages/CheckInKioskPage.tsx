@@ -466,34 +466,58 @@ export default function CheckInKioskPage() {
                   const val = responses[f.id];
                   return val !== undefined && val !== null && val !== '';
                 });
+                const isExpanded = activeFormId === form.id;
+
                 return (
                   <Card key={form.id} className={thisFormComplete ? 'border-success/30' : ''}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-foreground">{form.form_name}</h3>
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-muted-foreground" />
+                          <h3 className="font-semibold text-foreground">{form.form_name}</h3>
+                        </div>
                         {thisFormComplete ? (
                           <span className="flex items-center gap-1 text-xs font-medium text-success">
                             <CheckCircle2 className="w-4 h-4" /> Complete
                           </span>
                         ) : (
-                          <span className="text-xs font-medium text-destructive">Required</span>
+                          <Button
+                            size="sm"
+                            variant={isExpanded ? 'secondary' : 'default'}
+                            onClick={() => setActiveFormId(isExpanded ? null : form.id)}
+                          >
+                            {isExpanded ? 'Collapse' : 'Fill Now'}
+                          </Button>
                         )}
                       </div>
-                      <div className="space-y-4">
-                        {form.fields.map(field => (
-                          <FormFieldRenderer
-                            key={field.id}
-                            field={field}
-                            value={formResponses[form.id]?.[field.id]}
-                            onChange={(val) =>
-                              setFormResponses(prev => ({
-                                ...prev,
-                                [form.id]: { ...prev[form.id], [field.id]: val },
-                              }))
-                            }
-                          />
-                        ))}
-                      </div>
+
+                      <AnimatePresence>
+                        {isExpanded && !thisFormComplete && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="space-y-4 pt-5 border-t mt-4">
+                              {form.fields.map(field => (
+                                <FormFieldRenderer
+                                  key={field.id}
+                                  field={field}
+                                  value={formResponses[form.id]?.[field.id]}
+                                  onChange={(val) =>
+                                    setFormResponses(prev => ({
+                                      ...prev,
+                                      [form.id]: { ...prev[form.id], [field.id]: val },
+                                    }))
+                                  }
+                                />
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </CardContent>
                   </Card>
                 );
