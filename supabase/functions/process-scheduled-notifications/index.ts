@@ -25,6 +25,29 @@ const BUSINESS_ADDRESS = "123 Luxury Lane, Suite 100, Beverly Hills, CA 90210";
 const BUSINESS_PHONE = "(310) 555-0123";
 
 function buildLuxuryEmail(opts: { headline: string; subheadline?: string; bodyHtml: string }): string {
+  const subheadlineHtml = opts.subheadline
+    ? `<p style="margin:8px 0 0;color:#c9a882;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:500;">${opts.subheadline}</p>`
+    : '';
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+  <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
+      <div style="background:linear-gradient(160deg,#2c1810 0%,#3d2e22 40%,#4a3728 100%);border-radius:12px 12px 0 0;padding:40px 30px;text-align:center;">
+        <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:500;">✦ ${BUSINESS_NAME.toUpperCase()} ✦</p>
+        <h1 style="margin:0;color:#faf6f0;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:500;letter-spacing:0.5px;">${opts.headline}</h1>
+        ${subheadlineHtml}
+        <div style="width:50px;height:1px;background:#c9a882;margin:16px auto 0;"></div>
+      </div>
+      <div style="background:#fffdf9;padding:36px 30px;border-radius:0 0 12px 12px;box-shadow:0 8px 24px rgba(60,46,34,0.08);">
+        ${opts.bodyHtml}
+        <div style="border-top:1px solid #e8ddd0;padding-top:24px;margin-top:28px;text-align:center;">
+          <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p>
+          <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
+          <p style="margin:0 0 12px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+          <p style="margin:0;color:#b8a99a;font-size:11px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.5;">You are receiving this email because you are a client of ${BUSINESS_NAME}.<br>If you no longer wish to receive these emails, please contact us to unsubscribe.</p>
+        </div>
+      </div>
+    </div>
+  </body></html>`;
 }
 
 function buildFormsListHtml(pendingForms: any[]): string {
