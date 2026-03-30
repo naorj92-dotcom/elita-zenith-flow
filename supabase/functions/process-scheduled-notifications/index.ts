@@ -38,11 +38,11 @@ function buildFormsListHtml(pendingForms: any[]): string {
 }
 
 function buildCtaButton(href: string, label: string): string {
-  return `<div style="text-align:center;margin:28px 0 20px;"><a href="${href}" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:12px;font-size:15px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">${label}</a></div>`;
+  return `<div style="text-align:center;margin:28px 0 20px;"><a href="${href}" style="display:inline-block;background:#6b4c3b;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:12px;font-size:15px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">${label}</a></div>`;
 }
 
 function buildNewAccountNote(portalUrl: string): string {
-  return `<div style="background:#f5f0e8;border-radius:12px;padding:16px 20px;margin-bottom:28px;text-align:center;"><p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.6;">Haven't created your client account yet?<br><a href="${portalUrl}/auth" style="color:#8b5cf6;text-decoration:none;font-weight:500;border-bottom:1px solid #d4c4f7;">Create one here</a> using the same email address.</p></div>`;
+  return `<div style="background:#f5f0e8;border-radius:12px;padding:16px 20px;margin-bottom:28px;text-align:center;"><p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.6;">Haven't created your client account yet?<br><a href="${portalUrl}/auth" style="color:#6b4c3b;text-decoration:none;font-weight:500;border-bottom:1px solid #c4a98b;">Create one here</a> using the same email address.</p></div>`;
 }
 
 function buildTimeNote(): string {
