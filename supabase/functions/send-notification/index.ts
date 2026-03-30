@@ -183,7 +183,7 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="text-align:center;margin:28px 0 20px;"><a href="${portalUrl}/forms" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Complete Your Forms Now →</a></div>
         <div style="background:#fdf8f0;border-left:3px solid #c9a96e;border-radius:6px;padding:14px 20px;margin-bottom:24px;"><p style="margin:0;color:#5c4a3a;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">⏱ <strong>Taking 3 minutes now means no paperwork at the spa!</strong></p><p style="margin:6px 0 0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">Complete your forms from your phone, tablet, or computer — then simply walk in and relax.</p></div>
         <div style="background:#f5f0e8;border-radius:8px;padding:16px 20px;margin-bottom:28px;text-align:center;"><p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.6;">Haven't created your client account yet?<br><a href="${portalUrl}/auth" style="color:#8b5cf6;text-decoration:none;font-weight:500;border-bottom:1px solid #d4c4f7;">Create one here</a> using the same email address.</p></div>
-        <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;"><p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p><p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p><p style="margin:0;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p></div>
+        <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;"><p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p><p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p><p style="margin:0 0 12px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p><p style="margin:0;color:#b8a99a;font-size:11px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">You are receiving this email because you are a client of ${BUSINESS_NAME}.<br>If you no longer wish to receive these emails, please contact us to unsubscribe.</p></div>
       </div></div></body></html>`;
 
       let status = 'pending';
@@ -283,8 +283,11 @@ const handler = async (req: Request): Promise<Response> => {
                 ${htmlBody}
               </div>
               <div style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 12px;">
-                <p>© ${new Date().getFullYear()} Elita MedSpa. All rights reserved.</p>
-                <p>Questions? Contact us at support@elitamedspa.com</p>
+                <p style="margin:0 0 4px;">Elita Medical Spa</p>
+                <p style="margin:0 0 3px;">123 Luxury Lane, Suite 100, Beverly Hills, CA 90210</p>
+                <p style="margin:0 0 3px;">(310) 555-0123</p>
+                <p style="margin:0;">© ${new Date().getFullYear()} Elita MedSpa. All rights reserved.</p>
+                <p style="margin:8px 0 0;color:#999;font-size:11px;">You are receiving this email because you are a client of Elita Medical Spa.<br>If you no longer wish to receive these emails, please contact us to unsubscribe.</p>
               </div>
             </div>
           `,

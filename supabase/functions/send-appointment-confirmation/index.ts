@@ -232,7 +232,8 @@ const handler = async (req: Request): Promise<Response> => {
               <div style="border-top:1px solid #e8ddd0;padding-top:24px;margin-top:28px;text-align:center;">
                 <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p>
                 <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
-                <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                <p style="margin:0 0 12px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                <p style="margin:0;color:#b8a99a;font-size:11px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.5;">You are receiving this email because you are a client of ${BUSINESS_NAME}.<br>If you no longer wish to receive these emails, please contact us to unsubscribe.</p>
               </div>
             </div>
           </div>
@@ -389,9 +390,10 @@ const handler = async (req: Request): Promise<Response> => {
 
               <!-- Divider & Footer -->
               <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;">
-                <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Elita Medical Spa</p>
+                <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p>
                 <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
-                <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                <p style="margin:0 0 12px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                <p style="margin:0;color:#b8a99a;font-size:11px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.5;">You are receiving this email because you are a client of ${BUSINESS_NAME}.<br>If you no longer wish to receive these emails, please contact us to unsubscribe.</p>
               </div>
             </div>
           </div>
@@ -498,9 +500,10 @@ const handler = async (req: Request): Promise<Response> => {
                   <p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.6;">Haven't created your client account yet?<br><a href="${PORTAL_URL}/auth" style="color:#6b4c3b;text-decoration:none;font-weight:500;border-bottom:1px solid #c4a98b;">Create one here</a> using the same email address.</p>
                 </div>
                 <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;">
-                  <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Elita Medical Spa</p>
+                  <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p>
                   <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
-                  <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                  <p style="margin:0 0 12px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                  <p style="margin:0;color:#b8a99a;font-size:11px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.5;">You are receiving this email because you are a client of ${BUSINESS_NAME}.<br>If you no longer wish to receive these emails, please contact us to unsubscribe.</p>
                 </div>
               </div>
             </div>
