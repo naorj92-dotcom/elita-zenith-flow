@@ -59,20 +59,6 @@ export function ExclusiveDealsWidget() {
                 <div className="flex-1">
                   <h4 className="font-semibold">{deal.title}</h4>
                   <p className="text-sm text-muted-foreground mt-0.5">{deal.description}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    {deal.original_price && deal.deal_price && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm line-through text-muted-foreground">${deal.original_price}</span>
-                        <span className="text-lg font-bold text-primary">${deal.deal_price}</span>
-                      </div>
-                    )}
-                    {deal.discount_percent && (
-                      <Badge className="bg-success/10 text-success border-success/20">
-                        <Tag className="h-3 w-3 mr-1" />
-                        {deal.discount_percent}% OFF
-                      </Badge>
-                    )}
-                  </div>
                   <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     <span>Expires {formatDistanceToNow(new Date(deal.expires_at), { addSuffix: true })}</span>

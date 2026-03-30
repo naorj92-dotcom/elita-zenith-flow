@@ -123,17 +123,6 @@ export function ClientDealsPage() {
                     <p className="text-sm text-muted-foreground leading-relaxed">{deal.description}</p>
                   )}
 
-                  <div className="flex items-center gap-3">
-                    {deal.original_price && deal.deal_price && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm line-through text-muted-foreground">${deal.original_price}</span>
-                        <span className="text-lg font-bold text-primary">${deal.deal_price}</span>
-                      </div>
-                    )}
-                    {deal.discount_amount && !deal.deal_price && (
-                      <span className="text-lg font-bold text-primary">${deal.discount_amount} off</span>
-                    )}
-                  </div>
 
                   <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center gap-3">

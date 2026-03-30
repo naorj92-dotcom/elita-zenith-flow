@@ -207,7 +207,7 @@ export function ClientBookingPage() {
                                 <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {service.duration_minutes} min</span>
                               </div>
                             </div>
-                            <span className="text-base font-semibold text-elita-camel ml-3">${service.price}</span>
+                            <span className="text-xs text-muted-foreground ml-3">{service.duration_minutes} min</span>
                           </div>
                         </button>
                       );

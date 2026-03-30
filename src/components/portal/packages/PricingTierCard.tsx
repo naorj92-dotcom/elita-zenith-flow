@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, TrendingDown } from 'lucide-react';
+import { Send, Star } from 'lucide-react';
 
 interface PricingTier {
   sessions: number;
@@ -18,9 +18,6 @@ interface PricingTierCardProps {
   onInquire: () => void;
 }
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
-
 export function PricingTierCard({ tier, isBestValue, isPopular, onPurchase, onInquire }: PricingTierCardProps) {
   return (
     <Card
@@ -34,7 +31,7 @@ export function PricingTierCard({ tier, isBestValue, isPopular, onPurchase, onIn
       {isBestValue && (
         <div className="bg-primary text-primary-foreground text-[10px] font-semibold text-center py-1.5 tracking-widest uppercase flex items-center justify-center gap-1">
           <Star className="h-3 w-3" />
-          Best Value
+          Recommended
         </div>
       )}
       {isPopular && !isBestValue && (
@@ -57,26 +54,17 @@ export function PricingTierCard({ tier, isBestValue, isPopular, onPurchase, onIn
         {/* Divider */}
         <div className="w-8 h-px bg-border" />
 
-        {/* Price */}
+        {/* Description */}
         <div className="text-center space-y-0.5">
-          <p className="text-2xl font-heading font-semibold text-foreground">
-            {formatCurrency(tier.total_price)}
+          <p className="text-sm text-muted-foreground">
+            {tier.sessions === 1
+              ? 'Try a single session'
+              : tier.sessions <= 3
+                ? 'Great for getting started'
+                : tier.sessions <= 6
+                  ? 'Ideal treatment course'
+                  : 'Full transformation program'}
           </p>
-          <p className="text-xs text-muted-foreground">
-            {formatCurrency(tier.price_per_session)} per session
-          </p>
-        </div>
-
-        {/* Savings badge */}
-        <div className="h-6 flex items-center">
-          {tier.value_percent > 0 ? (
-            <span className="inline-flex items-center gap-1 bg-success/10 text-success text-xs font-semibold px-2.5 py-1 rounded-full">
-              <TrendingDown className="h-3 w-3" />
-              Save {tier.value_percent}%
-            </span>
-          ) : (
-            <span className="text-[11px] text-muted-foreground">Single session rate</span>
-          )}
         </div>
 
         {/* CTA */}
@@ -87,8 +75,8 @@ export function PricingTierCard({ tier, isBestValue, isPopular, onPurchase, onIn
             variant={isBestValue ? 'default' : 'outline'}
             onClick={onPurchase}
           >
-            Get Started
-            <ArrowRight className="h-3.5 w-3.5" />
+            <Send className="h-3.5 w-3.5" />
+            I'm Interested
           </Button>
           <Button
             size="sm"
