@@ -158,11 +158,11 @@ const handler = async (req: Request): Promise<Response> => {
       if (aftercareTips.length > 0) {
         aftercareHtml = `
           <div style="background:#fdf8f0;border-left:3px solid #c9a882;border-radius:6px;padding:18px 20px;margin:24px 0;">
-            <h3 style="margin:0 0 14px;color:#5c4a3a;font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:600;">Your Personalized Aftercare</h3>
+            <h3 style="margin:0 0 14px;color:#5c4a3a;font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:600;">Your Personalized Aftercare</h3>
             ${aftercareTips.map((t, i) => `
               <div style="margin-bottom:${i < aftercareTips.length - 1 ? '12' : '0'}px;">
-                <strong style="color:#3d2e22;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.title)}</strong>
-                <p style="margin:3px 0 0;color:#7a6a5e;font-size:12px;line-height:1.5;font-family:'Inter',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.description)}</p>
+                <strong style="color:#3d2e22;font-size:13px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.title)}</strong>
+                <p style="margin:3px 0 0;color:#7a6a5e;font-size:12px;line-height:1.5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.description)}</p>
               </div>
             `).join('')}
           </div>
@@ -173,9 +173,9 @@ const handler = async (req: Request): Promise<Response> => {
       if (googleReviewUrl) {
         reviewCtaHtml = `
           <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:24px;margin:24px 0;text-align:center;">
-            <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;">YOUR EXPERIENCE MATTERS</p>
-            <p style="margin:0 0 18px;color:#3d2e22;font-size:15px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">We'd love to hear about your visit</p>
-            <a href="${googleReviewUrl}" style="display:inline-block;background:#6b4c3b;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:14px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Share Your Experience ⭐</a>
+            <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">YOUR EXPERIENCE MATTERS</p>
+            <p style="margin:0 0 18px;color:#3d2e22;font-size:15px;font-family:Georgia,'Times New Roman',serif;font-weight:500;">We'd love to hear about your visit</p>
+            <a href="${googleReviewUrl}" style="display:inline-block;background:#6b4c3b;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:14px;font-weight:600;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Share Your Experience ⭐</a>
           </div>
         `;
       }
@@ -186,30 +186,29 @@ const handler = async (req: Request): Promise<Response> => {
         <html>
         <head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
         </head>
-        <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Inter',Helvetica,Arial,sans-serif;">
+        <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
           <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
             <!-- Header -->
             <div style="background:linear-gradient(160deg,#2c1810 0%,#3d2e22 40%,#4a3728 100%);border-radius:16px 16px 0 0;padding:44px 30px;text-align:center;">
-              <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p>
-              <h1 style="margin:0;color:#faf6f0;font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:500;letter-spacing:1px;">Thank You for<br>Your Visit</h1>
+              <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p>
+              <h1 style="margin:0;color:#faf6f0;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:500;letter-spacing:1px;">Thank You for<br>Your Visit</h1>
               <div style="width:50px;height:1px;background:#c9a882;margin:16px auto 0;"></div>
             </div>
 
             <!-- Body -->
             <div style="background:#fffdf9;padding:36px 30px;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(60,46,34,0.08);">
-              <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">
+              <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:Georgia,'Times New Roman',serif;font-weight:500;">
                 Dear ${sanitizeHtml(client.first_name)},
               </p>
-              <p style="margin:0 0 22px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">
+              <p style="margin:0 0 22px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
                 Thank you for choosing ${BUSINESS_NAME}. We hope you had a wonderful experience during your ${sanitizeHtml(serviceName)} treatment${provider ? ` with ${sanitizeHtml(providerFull)}` : ''}.
               </p>
 
               <!-- Visit Summary -->
               <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:20px;margin-bottom:24px;">
-                <p style="margin:0 0 12px;color:#c9a882;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;">TODAY'S TREATMENT</p>
-                <table style="width:100%;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                <p style="margin:0 0 12px;color:#c9a882;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">TODAY'S TREATMENT</p>
+                <table style="width:100%;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
                   <tr><td style="padding:6px 0;color:#7a6a5e;width:100px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Treatment</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
                   <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</td></tr>
                   ${provider ? `<tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Provider</td><td style="padding:6px 0;color:#3d2e22;">${sanitizeHtml(providerFull)}</td></tr>` : ''}
@@ -222,18 +221,18 @@ const handler = async (req: Request): Promise<Response> => {
 
               <!-- Rebook CTA -->
               <div style="text-align:center;margin:24px 0 16px;">
-                <a href="${PORTAL_URL}/book" style="display:inline-block;background:linear-gradient(135deg,#3d2e22,#5c4a3a);color:#faf6f0;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:14px;font-weight:500;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Book Your Next Session →</a>
+                <a href="${PORTAL_URL}/book" style="display:inline-block;background:linear-gradient(135deg,#3d2e22,#5c4a3a);color:#faf6f0;text-decoration:none;padding:14px 36px;border-radius:12px;font-size:14px;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Book Your Next Session →</a>
               </div>
 
-              <p style="margin:24px 0 0;color:#7a6a5e;font-size:13px;line-height:1.6;font-family:'Inter',Helvetica,Arial,sans-serif;text-align:center;">
+              <p style="margin:24px 0 0;color:#7a6a5e;font-size:13px;line-height:1.6;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-align:center;">
                 Your progress is important to us. We look forward to welcoming you again soon.
               </p>
 
               <!-- Footer -->
               <div style="border-top:1px solid #e8ddd0;padding-top:24px;margin-top:28px;text-align:center;">
-                <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p>
-                <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
-                <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p>
+                <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
+                <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
               </div>
             </div>
           </div>
@@ -329,11 +328,11 @@ const handler = async (req: Request): Promise<Response> => {
       if (prepTips.length > 0) {
         prepHtml = `
           <div style="background:#fdf8f0;border-left:3px solid #c9a882;border-radius:6px;padding:18px 20px;margin:24px 0;">
-            <h3 style="margin:0 0 12px;color:#5c4a3a;font-family:'Playfair Display',Georgia,serif;font-size:15px;font-weight:600;">Preparation Tips</h3>
+            <h3 style="margin:0 0 12px;color:#5c4a3a;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:600;">Preparation Tips</h3>
             ${prepTips.map(t => `
               <div style="margin-bottom:10px;">
-                <strong style="color:#3d2e22;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.title)}</strong>
-                <p style="margin:3px 0 0;color:#7a6a5e;font-size:12px;line-height:1.5;font-family:'Inter',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.description)}</p>
+                <strong style="color:#3d2e22;font-size:13px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.title)}</strong>
+                <p style="margin:3px 0 0;color:#7a6a5e;font-size:12px;line-height:1.5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.description)}</p>
               </div>
             `).join('')}
           </div>
@@ -345,26 +344,25 @@ const handler = async (req: Request): Promise<Response> => {
         <html>
         <head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
         </head>
-        <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Inter',Helvetica,Arial,sans-serif;">
+        <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
           <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
             <!-- Elegant Header -->
             <div style="background:linear-gradient(160deg,#2c1810 0%,#3d2e22 40%,#4a3728 100%);border-radius:16px 16px 0 0;padding:40px 30px;text-align:center;">
-              <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p>
-              <h1 style="margin:0;color:#faf6f0;font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:500;letter-spacing:1px;">Your Appointment<br>is Confirmed</h1>
+              <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p>
+              <h1 style="margin:0;color:#faf6f0;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:500;letter-spacing:1px;">Your Appointment<br>is Confirmed</h1>
               <div style="width:50px;height:1px;background:#c9a882;margin:16px auto 0;"></div>
             </div>
 
             <!-- Body -->
             <div style="background:#fffdf9;padding:36px 30px;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(60,46,34,0.08);">
-              <p style="margin:0 0 24px;color:#3d2e22;font-size:15px;line-height:1.6;font-family:'Inter',Helvetica,Arial,sans-serif;">
+              <p style="margin:0 0 24px;color:#3d2e22;font-size:15px;line-height:1.6;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
                 Dear ${sanitizeHtml(client.first_name)}, we look forward to welcoming you.
               </p>
 
               <!-- Appointment Card -->
               <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:24px;margin-bottom:24px;">
-                <table style="width:100%;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                <table style="width:100%;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
                   <tr><td style="padding:8px 0;color:#7a6a5e;width:110px;vertical-align:top;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Service</td><td style="padding:8px 0;color:#3d2e22;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
                   <tr><td style="padding:8px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Duration</td><td style="padding:8px 0;color:#3d2e22;">${durationMin} minutes</td></tr>
                   <tr><td style="padding:8px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</td><td style="padding:8px 0;color:#3d2e22;font-weight:500;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</td></tr>
@@ -375,25 +373,25 @@ const handler = async (req: Request): Promise<Response> => {
 
               <!-- Location -->
               <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:14px 18px;margin-bottom:24px;">
-                <p style="margin:0;color:#3d2e22;font-size:13px;font-weight:500;font-family:'Inter',Helvetica,Arial,sans-serif;">📍 ${BUSINESS_NAME}</p>
-                <p style="margin:4px 0 0;color:#7a6a5e;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
+                <p style="margin:0;color:#3d2e22;font-size:13px;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">📍 ${BUSINESS_NAME}</p>
+                <p style="margin:4px 0 0;color:#7a6a5e;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
               </div>
 
               ${prepHtml}
 
               <!-- CTA -->
               <div style="text-align:center;margin:28px 0 16px;">
-                <a href="${calLink}" style="display:inline-block;background:#6b4c3b;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:12px;font-size:14px;font-weight:500;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Add to Google Calendar</a>
+                <a href="${calLink}" style="display:inline-block;background:#6b4c3b;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:12px;font-size:14px;font-weight:500;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Add to Google Calendar</a>
               </div>
               <div style="text-align:center;margin-bottom:24px;">
-                <a href="${cancelUrl}" style="color:#6b4c3b;text-decoration:none;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;border-bottom:1px solid #c4a98b;">Cancel or Reschedule</a>
+                <a href="${cancelUrl}" style="color:#6b4c3b;text-decoration:none;font-size:13px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;border-bottom:1px solid #c4a98b;">Cancel or Reschedule</a>
               </div>
 
               <!-- Divider & Footer -->
               <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;">
-                <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">Elita Medical Spa</p>
-                <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
-                <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Elita Medical Spa</p>
+                <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
+                <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
               </div>
             </div>
           </div>
@@ -449,7 +447,7 @@ const handler = async (req: Request): Promise<Response> => {
           const typeIcon = '✦';
           return `
             <tr>
-              <td style="padding:14px 20px;border-bottom:1px solid #f0ebe3;font-family:'Inter',Helvetica,Arial,sans-serif;">
+              <td style="padding:14px 20px;border-bottom:1px solid #f0ebe3;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
                 <span style="font-size:10px;color:#c9a882;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;">${typeIcon} ${typeLabel}</span>
                 <p style="margin:4px 0 0;font-size:14px;color:#3d2e22;font-weight:500;">${sanitizeHtml(form?.name || 'Required Form')}</p>
                 ${form?.description ? `<p style="margin:3px 0 0;font-size:12px;color:#7a6a5e;line-height:1.4;">${sanitizeHtml(form.description)}</p>` : ''}
@@ -463,47 +461,46 @@ const handler = async (req: Request): Promise<Response> => {
           <html>
           <head>
             <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
           </head>
-          <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Inter',Helvetica,Arial,sans-serif;">
+          <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
             <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
               <div style="background:linear-gradient(160deg,#2c1810 0%,#3d2e22 40%,#4a3728 100%);border-radius:16px 16px 0 0;padding:40px 30px;text-align:center;">
-                <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p>
-                <h1 style="margin:0;color:#faf6f0;font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:500;letter-spacing:0.5px;">Complete Your Forms<br>Before Your Visit</h1>
+                <p style="margin:0 0 6px;color:#c9a882;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p>
+                <h1 style="margin:0;color:#faf6f0;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:500;letter-spacing:0.5px;">Complete Your Forms<br>Before Your Visit</h1>
                 <div style="width:50px;height:1px;background:#c9a882;margin:16px auto 0;"></div>
               </div>
               <div style="background:#fffdf9;padding:36px 30px;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(60,46,34,0.08);">
-                <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">Dear ${sanitizeHtml(client.first_name)},</p>
-                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">You have an upcoming appointment — here are the details:</p>
+                <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:Georgia,'Times New Roman',serif;font-weight:500;">Dear ${sanitizeHtml(client.first_name)},</p>
+                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">You have an upcoming appointment — here are the details:</p>
                 <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:20px;margin-bottom:24px;">
-                  <table style="width:100%;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                  <table style="width:100%;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
                     <tr><td style="padding:6px 0;color:#7a6a5e;width:100px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Service</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
                     <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</td></tr>
                     <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Time</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${formatTime(apt.scheduled_at)}</td></tr>
                     <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Provider</td><td style="padding:6px 0;color:#3d2e22;">${sanitizeHtml(providerFull)}</td></tr>
                   </table>
                 </div>
-                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">To ensure a seamless experience, please complete the following form${pendingForms.length > 1 ? 's' : ''} before your visit:</p>
+                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">To ensure a seamless experience, please complete the following form${pendingForms.length > 1 ? 's' : ''} before your visit:</p>
                 <div style="border:1px solid #e8ddd0;border-radius:12px;overflow:hidden;margin-bottom:24px;">
                   <div style="background:#faf6f0;padding:12px 20px;border-bottom:1px solid #e8ddd0;">
-                    <p style="margin:0;font-size:12px;color:#7a6a5e;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-family:'Inter',Helvetica,Arial,sans-serif;">${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''} required</p>
+                    <p style="margin:0;font-size:12px;color:#7a6a5e;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''} required</p>
                   </div>
                   <table style="width:100%;">${formsList}</table>
                 </div>
                 <div style="text-align:center;margin:28px 0 20px;">
-                  <a href="${formsUrl}" style="display:inline-block;background:#6b4c3b;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:12px;font-size:15px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Complete Your Forms Now →</a>
+                  <a href="${formsUrl}" style="display:inline-block;background:#6b4c3b;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:12px;font-size:15px;font-weight:600;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Complete Your Forms Now →</a>
                 </div>
                 <div style="background:#fdf8f0;border-left:3px solid #c9a882;border-radius:6px;padding:14px 20px;margin-bottom:24px;">
-                  <p style="margin:0;color:#5c4a3a;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">⏱ <strong>Taking 3 minutes now means no paperwork at the spa!</strong></p>
-                  <p style="margin:6px 0 0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">Complete your forms from your phone, tablet, or computer — then simply walk in and relax.</p>
+                  <p style="margin:0;color:#5c4a3a;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.5;">⏱ <strong>Taking 3 minutes now means no paperwork at the spa!</strong></p>
+                  <p style="margin:6px 0 0;color:#7a6a5e;font-size:13px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.5;">Complete your forms from your phone, tablet, or computer — then simply walk in and relax.</p>
                 </div>
                 <div style="background:#f5f0e8;border-radius:12px;padding:16px 20px;margin-bottom:28px;text-align:center;">
-                  <p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.6;">Haven't created your client account yet?<br><a href="${PORTAL_URL}/auth" style="color:#6b4c3b;text-decoration:none;font-weight:500;border-bottom:1px solid #c4a98b;">Create one here</a> using the same email address.</p>
+                  <p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1.6;">Haven't created your client account yet?<br><a href="${PORTAL_URL}/auth" style="color:#6b4c3b;text-decoration:none;font-weight:500;border-bottom:1px solid #c4a98b;">Create one here</a> using the same email address.</p>
                 </div>
                 <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;">
-                  <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">Elita Medical Spa</p>
-                  <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
-                  <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+                  <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Elita Medical Spa</p>
+                  <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
+                  <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
                 </div>
               </div>
             </div>
