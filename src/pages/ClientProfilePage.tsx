@@ -247,7 +247,7 @@ export default function ClientProfilePage() {
                   { value: 'memberships', label: 'Memberships' },
                   { value: 'packages', label: 'Packages' },
                   { value: 'products', label: 'Products' },
-                  { value: 'forms', label: 'Forms & Charts' },
+                  { value: 'forms', label: 'Forms', count: forms.filter(f => f.status === 'pending').length },
                   { value: 'chart-history', label: 'Chart History' },
                   { value: 'gallery', label: 'Gallery' },
                   { value: 'files', label: 'Files' },
