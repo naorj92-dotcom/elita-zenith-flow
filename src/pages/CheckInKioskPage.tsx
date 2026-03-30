@@ -281,7 +281,7 @@ export default function CheckInKioskPage() {
   };
   handleConfirmCheckInRef.current = handleConfirmCheckIn;
 
-
+  const filteredAppointments = appointments.filter(apt => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     const name = `${apt.client_first_name} ${apt.client_last_name}`.toLowerCase();
