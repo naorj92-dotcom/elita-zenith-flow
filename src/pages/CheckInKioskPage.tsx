@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, CheckCircle2, Clock, User, Sparkles, ArrowLeft, ChevronLeft, AlertTriangle } from 'lucide-react';
+import { Search, CheckCircle2, Clock, User, Sparkles, ArrowLeft, ChevronLeft, AlertTriangle, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { FormFieldRenderer, FormField } from '@/components/forms/FormFieldRenderer';
 import { SignaturePad } from '@/components/forms/SignaturePad';
 import elitaLogo from '@/assets/elita-logo.png';
 
-type KioskScreen = 'welcome' | 'find' | 'confirm' | 'done';
+type KioskScreen = 'welcome' | 'find' | 'confirm' | 'forms' | 'done';
 
 interface KioskAppointment {
   id: string;
