@@ -11,12 +11,13 @@ const corsHeaders = {
 
 interface NotificationRequest {
   template_id?: string;
-  category: string;
-  type: 'email' | 'sms';
+  category?: string;
+  type: 'email' | 'sms' | 'forms_reminder';
   client_id: string;
-  variables: Record<string, string>;
+  variables?: Record<string, string>;
   custom_subject?: string;
   custom_body?: string;
+  appointment_id?: string | null;
 }
 
 function replaceVariables(text: string, variables: Record<string, string>): string {
@@ -33,10 +34,18 @@ function isValidUUID(str: string): boolean {
   return uuidRegex.test(str);
 }
 
+function sanitizeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
+
 // Validate input data
 function validateRequest(data: any): { valid: boolean; error?: string } {
   if (!data.client_id || !isValidUUID(data.client_id)) {
     return { valid: false, error: 'Invalid client_id format' };
+  }
+  if (data.type === 'forms_reminder') {
+    return { valid: true };
   }
   if (!data.category || typeof data.category !== 'string' || data.category.length > 100) {
     return { valid: false, error: 'Invalid category' };
@@ -106,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { template_id, category, type, client_id, variables, custom_subject, custom_body }: NotificationRequest = requestData;
+    const { template_id, category, type, client_id, variables, custom_subject, custom_body, appointment_id }: NotificationRequest = requestData;
 
     console.log("Received notification request:", { template_id, category, type, client_id, user_id: user.id });
 
@@ -125,9 +134,114 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // ── FORMS REMINDER (special type) ──
+    if (type === 'forms_reminder') {
+      if (!client.email) {
+        return new Response(
+          JSON.stringify({ error: "Client has no email address" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (client.email_opt_out) {
+        return new Response(
+          JSON.stringify({ error: "Client has opted out of email notifications" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Fetch pending forms for this client
+      const { data: pendingForms } = await supabase
+        .from('client_forms')
+        .select('id, form_id, forms(name, form_type)')
+        .eq('client_id', client_id)
+        .eq('status', 'pending');
+
+      if (!pendingForms || pendingForms.length === 0) {
+        return new Response(
+          JSON.stringify({ success: true, status: 'skipped', message: 'No pending forms' }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const portalUrl = "https://elita-zenith-flow.lovable.app/portal";
+      const firstName = sanitizeHtml(client.first_name || 'there');
+      const formListHtml = pendingForms.map((f: any) => {
+        const form = f.forms as any;
+        const typeBadge = form?.form_type === 'intake' ? '📝 Intake' :
+                          form?.form_type === 'consent' ? '✍️ Consent' :
+                          form?.form_type === 'contract' ? '📄 Contract' : '📋 Form';
+        return `<li style="padding: 8px 0; border-bottom: 1px solid #e5e0d8;">${typeBadge} — <strong>${sanitizeHtml(form?.name || 'Required Form')}</strong></li>`;
+      }).join('');
+
+      const subject = `📋 Action Required: Complete Your Forms Before Your Visit`;
+      const htmlBody = `
+        <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background: #faf8f5;">
+          <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #d4c5a9; font-size: 28px; margin: 0; letter-spacing: 2px;">ELITA MEDSPA</h1>
+            <p style="color: #a39882; font-size: 12px; margin-top: 8px; letter-spacing: 3px;">LUXURY AESTHETICS</p>
+          </div>
+          <div style="padding: 40px 30px;">
+            <p style="color: #3d3929; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+            <p style="color: #5a5343; font-size: 15px; line-height: 1.7;">
+              You have <strong>${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''}</strong> that need to be completed before your next visit. Taking a few minutes now means no paperwork at the spa!
+            </p>
+            <div style="margin: 25px 0; background: #f0ece4; border-radius: 10px; padding: 20px;">
+              <p style="font-weight: 600; color: #3d3929; margin: 0 0 10px;">Forms to complete:</p>
+              <ul style="list-style: none; padding: 0; margin: 0;">${formListHtml}</ul>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${portalUrl}/forms"
+                 style="display: inline-block; background: #8b5cf6; color: #ffffff; padding: 14px 36px;
+                        border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;
+                        letter-spacing: 0.5px;">
+                Complete Your Forms Now →
+              </a>
+            </div>
+            <p style="color: #8a8070; font-size: 13px; text-align: center; line-height: 1.6;">
+              Haven't created your client account yet?
+              <a href="${portalUrl}/auth" style="color: #8b5cf6; text-decoration: underline;">Create one here</a>
+              using the same email address.
+            </p>
+          </div>
+          <div style="background: #1a1a2e; padding: 25px; text-align: center;">
+            <p style="color: #a39882; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} Elita MedSpa. All rights reserved.</p>
+          </div>
+        </div>`;
+
+      let status = 'pending';
+      let errorMessage = null;
+      let sentAt = null;
+
+      try {
+        await resend.emails.send({
+          from: "Elita MedSpa <noreply@elitamedspa.com>",
+          to: [client.email],
+          subject,
+          html: htmlBody,
+        });
+        status = 'sent';
+        sentAt = new Date().toISOString();
+      } catch (e: any) {
+        status = 'failed';
+        errorMessage = e.message;
+      }
+
+      await supabase.from('notification_logs').insert({
+        client_id, type: 'email', category: 'forms_reminder',
+        recipient: client.email, subject, body: `${pendingForms.length} pending forms reminder`,
+        status, error_message: errorMessage, sent_at: sentAt,
+      });
+
+      return new Response(
+        JSON.stringify({ success: status === 'sent', status, message: status === 'sent' ? 'Forms reminder sent' : 'Failed to send reminder', error: errorMessage }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── STANDARD NOTIFICATION FLOW ──
     // Add client name to variables
     const enrichedVariables = {
-      ...variables,
+      ...(variables || {}),
       client_name: `${client.first_name} ${client.last_name}`,
     };
 
@@ -143,7 +257,6 @@ const handler = async (req: Request): Promise<Response> => {
         .single();
 
       if (templateError || !template) {
-        console.error("Template not found:", templateError);
         return new Response(
           JSON.stringify({ error: "Template not found" }),
           { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -161,7 +274,6 @@ const handler = async (req: Request): Promise<Response> => {
     const recipient = type === 'email' ? client.email : client.phone;
 
     if (!recipient) {
-      console.error(`No ${type} address for client`);
       return new Response(
         JSON.stringify({ error: `Client has no ${type} address` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
