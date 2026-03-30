@@ -11,12 +11,13 @@ const corsHeaders = {
 
 interface NotificationRequest {
   template_id?: string;
-  category: string;
-  type: 'email' | 'sms';
+  category?: string;
+  type: 'email' | 'sms' | 'forms_reminder';
   client_id: string;
-  variables: Record<string, string>;
+  variables?: Record<string, string>;
   custom_subject?: string;
   custom_body?: string;
+  appointment_id?: string | null;
 }
 
 function replaceVariables(text: string, variables: Record<string, string>): string {
@@ -33,10 +34,18 @@ function isValidUUID(str: string): boolean {
   return uuidRegex.test(str);
 }
 
+function sanitizeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
+
 // Validate input data
 function validateRequest(data: any): { valid: boolean; error?: string } {
   if (!data.client_id || !isValidUUID(data.client_id)) {
     return { valid: false, error: 'Invalid client_id format' };
+  }
+  if (data.type === 'forms_reminder') {
+    return { valid: true };
   }
   if (!data.category || typeof data.category !== 'string' || data.category.length > 100) {
     return { valid: false, error: 'Invalid category' };
