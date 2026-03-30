@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, CheckCircle2, Clock, User, Sparkles, ArrowLeft, ChevronLeft } from 'lucide-react';
+import { Search, CheckCircle2, Clock, User, Sparkles, ArrowLeft, ChevronLeft, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { FormFieldRenderer, FormField } from '@/components/forms/FormFieldRenderer';
