@@ -106,14 +106,30 @@ export default function CheckInKioskPage() {
   const allSignaturesComplete = !pendingForms.some(f => f.requires_signature) || !!signatureData;
 
   useEffect(() => {
-    if (screen === 'forms' && allFormsComplete && allSignaturesComplete && !checking) {
-      // Short delay so user sees the completion state before auto-proceeding
+    if (screen === 'forms' && allFormsComplete && allSignaturesComplete) {
+      // Auto-proceed back to confirm screen so user can check in
       const timer = setTimeout(() => {
-        handleConfirmCheckInRef.current();
+        // Save form responses before navigating
+        (async () => {
+          for (const form of pendingForms) {
+            const responses = formResponses[form.id] || {};
+            const updateData: Record<string, unknown> = {
+              responses,
+              status: 'completed',
+              signed_at: new Date().toISOString(),
+            };
+            if (signatureData) {
+              updateData.signature_data = signatureData;
+            }
+            await supabase.from('client_forms').update(updateData).eq('id', form.id);
+          }
+          setPendingForms([]);
+          setScreen('confirm');
+        })();
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [screen, allFormsComplete, allSignaturesComplete, checking]);
+  }, [screen, allFormsComplete, allSignaturesComplete]);
 
   const handleSelectAppointment = async (apt: KioskAppointment) => {
     setSelected(apt);
