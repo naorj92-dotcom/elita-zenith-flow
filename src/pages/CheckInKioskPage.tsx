@@ -54,7 +54,7 @@ export default function CheckInKioskPage() {
     const { data } = await supabase
       .from('appointments')
       .select(`
-        id, scheduled_at, duration_minutes, status, client_id,
+        id, scheduled_at, duration_minutes, status, client_id, service_id,
         clients (first_name, last_name),
         services (name),
         staff (first_name, last_name)
@@ -71,6 +71,7 @@ export default function CheckInKioskPage() {
         duration_minutes: apt.duration_minutes,
         status: apt.status,
         client_id: apt.client_id || '',
+        service_id: apt.service_id || '',
         client_first_name: apt.clients?.first_name || 'Walk',
         client_last_name: apt.clients?.last_name || 'in',
         service_name: apt.services?.name || 'Service',
