@@ -370,7 +370,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         const formListHtml = buildFormsListHtml(pendingForms);
 
-        const subject = '⏰ Reminder: Your Forms Are Still Incomplete - Appointment Tomorrow!';
+        const subject = `⏰ Don't forget! Forms needed before tomorrow's appointment`;
         const htmlBody = buildLuxuryEmail({
           headline: 'Your Forms Are<br>Still Incomplete',
           subheadline: 'Appointment Tomorrow',
