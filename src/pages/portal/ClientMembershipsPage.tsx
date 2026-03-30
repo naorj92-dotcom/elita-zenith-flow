@@ -242,11 +242,6 @@ export function ClientMembershipsPage() {
                 <p className="text-muted-foreground mb-2">
                   Join our membership program to unlock exclusive benefits
                 </p>
-                {estimatedSavings != null && estimatedSavings > 0 && (
-                  <p className="text-sm text-primary font-medium mb-4">
-                    Based on your visits, you could save ~${estimatedSavings}/month with a membership!
-                  </p>
-                )}
               </CardContent>
             </Card>
           )}
@@ -341,16 +336,6 @@ export function ClientMembershipsPage() {
             })}
           </div>
 
-          {!currentMembership && estimatedSavings != null && estimatedSavings > 0 && (
-            <Card className="mt-6 border-primary/20 bg-primary/5">
-              <CardContent className="py-4 flex items-center gap-3">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <p className="text-sm">
-                  Based on your recent visit history, a membership could save you approximately <strong>${estimatedSavings}/month</strong>.
-                </p>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
       </Tabs>
 
