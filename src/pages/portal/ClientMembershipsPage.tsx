@@ -173,7 +173,10 @@ export function ClientMembershipsPage() {
                     <h3 className="text-xl font-heading font-semibold">{currentMembership.memberships?.name}</h3>
                     <p className="text-muted-foreground">{currentMembership.memberships?.description}</p>
                   </div>
-                   <Badge variant="secondary" className="shrink-0">{currentMembership.memberships?.billing_period}</Badge>
+                   <div className="text-right">
+                     <p className="text-2xl font-heading font-semibold">${currentMembership.memberships?.price}</p>
+                     <p className="text-sm text-muted-foreground">/{currentMembership.memberships?.billing_period}</p>
+                   </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -294,6 +297,11 @@ export function ClientMembershipsPage() {
                     <CardDescription>{tier.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                     <div className="flex items-baseline gap-1">
+                       <span className="text-3xl font-heading font-semibold">${tier.price}</span>
+                       <span className="text-muted-foreground">/{tier.billing_period}</span>
+                     </div>
+
                      <div className="flex items-center gap-4 text-sm">
                       <span>{tier.monthly_service_credits === 99 ? 'Unlimited' : tier.monthly_service_credits} treatment{tier.monthly_service_credits !== 1 ? 's' : ''}/mo</span>
                       {tier.priority_booking && <Badge variant="outline" className="text-xs">VIP</Badge>}
