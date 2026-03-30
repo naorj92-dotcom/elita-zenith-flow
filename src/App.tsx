@@ -99,9 +99,11 @@ function OwnerRoute({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>;
 }
 
+const FrontDeskHome = React.lazy(() => import("@/components/dashboard/FrontDeskHome").then(m => ({ default: m.FrontDeskHome })));
+
 function DashboardRoute() {
   const { isFrontDesk } = useUnifiedAuth();
-  if (isFrontDesk) return <Navigate to="/front-desk" replace />;
+  if (isFrontDesk) return <FrontDeskHome />;
   return <Dashboard />;
 }
 
