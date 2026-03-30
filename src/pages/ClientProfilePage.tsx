@@ -677,72 +677,114 @@ function PackagesTab({ packages, clientId }: { packages: any[]; clientId?: strin
 
 // ─── Forms Tab ───────────────────────────────────────────
 function FormsTab({ forms }: { forms: any[] }) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [viewingId, setViewingId] = useState<string | null>(null);
 
   if (forms.length === 0) {
     return <EmptyState icon={FileText} title="No forms" description="No forms or consents on file." compact />;
   }
-  return (
-    <div className="space-y-2">
-      {forms.map((f) => {
-        const isExpanded = expandedId === f.id;
-        const fields = Array.isArray(f.forms?.fields) ? f.forms.fields : [];
-        const isCompleted = f.status === 'completed';
 
-        return (
-          <div key={f.id} className="rounded-lg border border-border bg-card overflow-hidden">
-            <button
-              onClick={() => setExpandedId(isExpanded ? null : f.id)}
-              className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/30 transition-colors"
-            >
-              <FileText className={cn("h-5 w-5 shrink-0", isCompleted ? "text-success" : "text-amber-500")} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{f.forms?.name || 'Form'}</p>
-                <p className="text-xs text-muted-foreground capitalize">{f.forms?.form_type} · {f.status}</p>
-              </div>
-              <Badge variant={isCompleted ? 'default' : 'secondary'} className="shrink-0 capitalize text-xs">
-                {f.status}
-              </Badge>
-              <span className="text-xs text-muted-foreground shrink-0">
-                {isValid(new Date(f.created_at)) ? format(new Date(f.created_at), 'MMM d, yyyy') : '—'}
-              </span>
-            </button>
-            {isExpanded && isCompleted && fields.length > 0 && (
-              <div className="border-t border-border px-4 py-3 space-y-3 bg-muted/10">
-                {fields.map((field: any) => {
-                  const value = f.responses?.[field.id];
-                  return (
-                    <div key={field.id} className="space-y-0.5">
-                      <p className="text-xs font-medium text-muted-foreground">{field.label}</p>
-                      <p className="text-sm text-foreground">
-                        {field.type === 'checkbox'
-                          ? (value ? '✓ Yes' : '✗ No')
-                          : value || <span className="text-muted-foreground italic">—</span>}
-                      </p>
-                    </div>
-                  );
-                })}
-                {f.signature_data && (
-                  <div className="pt-2 border-t border-border space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Signature</p>
-                    <img src={f.signature_data} alt="Signature" className="max-h-16 rounded" />
-                    {f.signed_at && (
-                      <p className="text-[10px] text-muted-foreground">
-                        Signed {format(new Date(f.signed_at), 'MMM d, yyyy h:mm a')}
-                      </p>
-                    )}
-                  </div>
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-success/10 text-success border-success/20';
+      case 'pending': return 'bg-warning/10 text-warning border-warning/20';
+      case 'expired': return 'bg-destructive/10 text-destructive border-destructive/20';
+      default: return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const getTypeStyle = (type: string) => {
+    switch (type) {
+      case 'intake': return 'bg-primary/10 text-primary border-primary/20';
+      case 'consent': return 'bg-info/10 text-info border-info/20';
+      case 'contract': return 'bg-accent/50 text-accent-foreground border-accent/30';
+      default: return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const viewingForm = viewingId ? forms.find(f => f.id === viewingId) : null;
+  const viewingFields = viewingForm ? (Array.isArray(viewingForm.forms?.fields) ? viewingForm.forms.fields : []) : [];
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-muted/50 text-muted-foreground text-xs uppercase tracking-wider">
+              <th className="text-left p-3 font-medium">Form Name</th>
+              <th className="text-left p-3 font-medium">Type</th>
+              <th className="text-left p-3 font-medium">Status</th>
+              <th className="text-left p-3 font-medium">Date Signed</th>
+              <th className="text-right p-3 font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {forms.map((f) => (
+              <tr key={f.id} className="hover:bg-muted/20 transition-colors">
+                <td className="p-3 font-medium">{f.forms?.name || 'Form'}</td>
+                <td className="p-3">
+                  <Badge variant="outline" className={cn('capitalize text-xs rounded-full', getTypeStyle(f.forms?.form_type))}>
+                    {f.forms?.form_type || 'custom'}
+                  </Badge>
+                </td>
+                <td className="p-3">
+                  <Badge variant="outline" className={cn('capitalize text-xs rounded-full', getStatusStyle(f.status))}>
+                    {f.status}
+                  </Badge>
+                </td>
+                <td className="p-3 text-muted-foreground text-xs">
+                  {f.signed_at && isValid(new Date(f.signed_at))
+                    ? format(new Date(f.signed_at), 'MMM d, yyyy')
+                    : '—'}
+                </td>
+                <td className="p-3 text-right">
+                  {f.status === 'completed' ? (
+                    <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setViewingId(f.id)}>
+                      <Eye className="h-3.5 w-3.5" /> View Responses
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">Awaiting submission</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* View Responses Dialog */}
+      <Dialog open={!!viewingId} onOpenChange={(open) => !open && setViewingId(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{viewingForm?.forms?.name || 'Form'} — Responses</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            {viewingFields.map((field: any) => {
+              const value = viewingForm?.responses?.[field.id];
+              return (
+                <div key={field.id} className="space-y-0.5">
+                  <p className="text-xs font-medium text-muted-foreground">{field.label}</p>
+                  <p className="text-sm text-foreground">
+                    {field.type === 'checkbox'
+                      ? (value ? '✓ Yes' : '✗ No')
+                      : value || <span className="text-muted-foreground italic">—</span>}
+                  </p>
+                </div>
+              );
+            })}
+            {viewingForm?.signature_data && (
+              <div className="pt-2 border-t border-border space-y-1">
+                <p className="text-xs font-medium text-muted-foreground">Signature</p>
+                <img src={viewingForm.signature_data} alt="Signature" className="max-h-16 rounded" />
+                {viewingForm.signed_at && (
+                  <p className="text-[10px] text-muted-foreground">
+                    Signed {format(new Date(viewingForm.signed_at), 'MMM d, yyyy h:mm a')}
+                  </p>
                 )}
               </div>
             )}
-            {isExpanded && !isCompleted && (
-              <div className="border-t border-border px-4 py-3 bg-muted/10">
-                <p className="text-sm text-muted-foreground italic">Form not yet completed by client.</p>
-              </div>
-            )}
           </div>
-        );
-      })}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
