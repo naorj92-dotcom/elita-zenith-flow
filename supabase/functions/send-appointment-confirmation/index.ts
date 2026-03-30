@@ -186,7 +186,6 @@ const handler = async (req: Request): Promise<Response> => {
         <html>
         <head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
         </head>
         <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
           <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
@@ -345,7 +344,6 @@ const handler = async (req: Request): Promise<Response> => {
         <html>
         <head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
         </head>
         <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
           <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
@@ -463,7 +461,6 @@ const handler = async (req: Request): Promise<Response> => {
           <html>
           <head>
             <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
           </head>
           <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
             <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
