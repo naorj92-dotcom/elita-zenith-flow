@@ -19,6 +19,7 @@ interface KioskAppointment {
   duration_minutes: number;
   status: string;
   client_id: string;
+  service_id: string;
   client_first_name: string;
   client_last_name: string;
   service_name: string;
@@ -53,7 +54,7 @@ export default function CheckInKioskPage() {
     const { data } = await supabase
       .from('appointments')
       .select(`
-        id, scheduled_at, duration_minutes, status, client_id,
+        id, scheduled_at, duration_minutes, status, client_id, service_id,
         clients (first_name, last_name),
         services (name),
         staff (first_name, last_name)
@@ -70,6 +71,7 @@ export default function CheckInKioskPage() {
         duration_minutes: apt.duration_minutes,
         status: apt.status,
         client_id: apt.client_id || '',
+        service_id: apt.service_id || '',
         client_first_name: apt.clients?.first_name || 'Walk',
         client_last_name: apt.clients?.last_name || 'in',
         service_name: apt.services?.name || 'Service',
@@ -91,7 +93,39 @@ export default function CheckInKioskPage() {
   const handleSelectAppointment = async (apt: KioskAppointment) => {
     setSelected(apt);
 
-    // Fetch pending forms for this appointment
+    // 1. Check service_form_links for any consent forms tied to this service
+    //    that haven't been assigned as client_forms yet
+    const { data: serviceFormLinks } = await supabase
+      .from('service_form_links')
+      .select('form_id')
+      .eq('service_id', apt.service_id);
+
+    if (serviceFormLinks && serviceFormLinks.length > 0) {
+      // Get already-assigned form_ids for this client + appointment
+      const { data: existingForms } = await supabase
+        .from('client_forms')
+        .select('form_id')
+        .eq('client_id', apt.client_id)
+        .eq('appointment_id', apt.id);
+
+      const existingFormIds = new Set((existingForms || []).map(f => f.form_id));
+
+      // Auto-assign missing service-linked forms
+      const missing = serviceFormLinks
+        .filter(sfl => !existingFormIds.has(sfl.form_id))
+        .map(sfl => ({
+          client_id: apt.client_id,
+          form_id: sfl.form_id,
+          appointment_id: apt.id,
+          status: 'pending' as const,
+        }));
+
+      if (missing.length > 0) {
+        await supabase.from('client_forms').insert(missing);
+      }
+    }
+
+    // 2. Fetch all pending forms for this client (appointment-linked + general)
     const { data: forms } = await supabase
       .from('client_forms')
       .select('id, form_id, forms(name, fields, requires_signature)')
