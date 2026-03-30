@@ -44,6 +44,7 @@ export default function CheckInKioskPage() {
   const [formResponses, setFormResponses] = useState<Record<string, Record<string, any>>>({});
   const [signatureData, setSignatureData] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
+  const [activeFormId, setActiveFormId] = useState<string | null>(null);
 
   const fetchTodayAppointments = useCallback(async () => {
     const today = new Date();
