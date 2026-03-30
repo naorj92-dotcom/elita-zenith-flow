@@ -165,48 +165,26 @@ const handler = async (req: Request): Promise<Response> => {
 
       const portalUrl = "https://elita-zenith-flow.lovable.app/portal";
       const firstName = sanitizeHtml(client.first_name || 'there');
-      const formListHtml = pendingForms.map((f: any) => {
+      const BUSINESS_NAME = "Elita Medical Spa";
+      const BUSINESS_ADDRESS = "123 Luxury Lane, Suite 100, Beverly Hills, CA 90210";
+      const BUSINESS_PHONE = "(310) 555-0123";
+
+      const formRows = pendingForms.map((f: any) => {
         const form = f.forms as any;
-        const typeBadge = form?.form_type === 'intake' ? '📝 Intake' :
-                          form?.form_type === 'consent' ? '✍️ Consent' :
-                          form?.form_type === 'contract' ? '📄 Contract' : '📋 Form';
-        return `<li style="padding: 8px 0; border-bottom: 1px solid #e5e0d8;">${typeBadge} — <strong>${sanitizeHtml(form?.name || 'Required Form')}</strong></li>`;
+        const typeLabel = form?.form_type === 'consent' ? 'Consent Form' : form?.form_type === 'contract' ? 'Contract' : form?.form_type === 'intake' ? 'Intake Form' : 'Form';
+        return `<tr><td style="padding:14px 20px;border-bottom:1px solid #f0ebe3;font-family:'Inter',Helvetica,Arial,sans-serif;"><span style="font-size:10px;color:#c9a96e;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;">✦ ${typeLabel}</span><p style="margin:4px 0 0;font-size:14px;color:#3d2e22;font-weight:500;">${sanitizeHtml(form?.name || 'Required Form')}</p></td></tr>`;
       }).join('');
 
       const subject = `📋 Action Required: Complete Your Forms Before Your Visit`;
-      const htmlBody = `
-        <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background: #faf8f5;">
-          <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
-            <h1 style="color: #d4c5a9; font-size: 28px; margin: 0; letter-spacing: 2px;">ELITA MEDSPA</h1>
-            <p style="color: #a39882; font-size: 12px; margin-top: 8px; letter-spacing: 3px;">LUXURY AESTHETICS</p>
-          </div>
-          <div style="padding: 40px 30px;">
-            <p style="color: #3d3929; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
-            <p style="color: #5a5343; font-size: 15px; line-height: 1.7;">
-              You have <strong>${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''}</strong> that need to be completed before your next visit. Taking a few minutes now means no paperwork at the spa!
-            </p>
-            <div style="margin: 25px 0; background: #f0ece4; border-radius: 10px; padding: 20px;">
-              <p style="font-weight: 600; color: #3d3929; margin: 0 0 10px;">Forms to complete:</p>
-              <ul style="list-style: none; padding: 0; margin: 0;">${formListHtml}</ul>
-            </div>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${portalUrl}/forms"
-                 style="display: inline-block; background: #8b5cf6; color: #ffffff; padding: 14px 36px;
-                        border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;
-                        letter-spacing: 0.5px;">
-                Complete Your Forms Now →
-              </a>
-            </div>
-            <p style="color: #8a8070; font-size: 13px; text-align: center; line-height: 1.6;">
-              Haven't created your client account yet?
-              <a href="${portalUrl}/auth" style="color: #8b5cf6; text-decoration: underline;">Create one here</a>
-              using the same email address.
-            </p>
-          </div>
-          <div style="background: #1a1a2e; padding: 25px; text-align: center;">
-            <p style="color: #a39882; font-size: 11px; margin: 0;">© ${new Date().getFullYear()} Elita MedSpa. All rights reserved.</p>
-          </div>
-        </div>`;
+      const htmlBody = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"></head><body style="margin:0;padding:0;background:#f5f0e8;font-family:'Inter',Helvetica,Arial,sans-serif;"><div style="max-width:600px;margin:0 auto;padding:32px 16px;"><div style="background:linear-gradient(160deg,#2c1810 0%,#3d2e22 40%,#4a3728 100%);border-radius:16px 16px 0 0;padding:40px 30px;text-align:center;"><p style="margin:0 0 6px;color:#c9a96e;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p><h1 style="margin:0;color:#faf6f0;font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:500;letter-spacing:0.5px;">Complete Your Forms<br>Before Your Visit</h1><div style="width:50px;height:1px;background:#c9a96e;margin:16px auto 0;"></div></div><div style="background:#fffdf9;padding:36px 30px;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(60,46,34,0.08);">
+        <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">Dear ${firstName},</p>
+        <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">To ensure a seamless experience, please complete the following form${pendingForms.length > 1 ? 's' : ''} before your visit:</p>
+        <div style="border:1px solid #e8ddd0;border-radius:12px;overflow:hidden;margin-bottom:24px;"><div style="background:#faf6f0;padding:12px 20px;border-bottom:1px solid #e8ddd0;"><p style="margin:0;font-size:12px;color:#7a6a5e;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-family:'Inter',Helvetica,Arial,sans-serif;">${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''} required</p></div><table style="width:100%;">${formRows}</table></div>
+        <div style="text-align:center;margin:28px 0 20px;"><a href="${portalUrl}/forms" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Complete Your Forms Now →</a></div>
+        <div style="background:#fdf8f0;border-left:3px solid #c9a96e;border-radius:6px;padding:14px 20px;margin-bottom:24px;"><p style="margin:0;color:#5c4a3a;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">⏱ <strong>Taking 3 minutes now means no paperwork at the spa!</strong></p><p style="margin:6px 0 0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">Complete your forms from your phone, tablet, or computer — then simply walk in and relax.</p></div>
+        <div style="background:#f5f0e8;border-radius:8px;padding:16px 20px;margin-bottom:28px;text-align:center;"><p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.6;">Haven't created your client account yet?<br><a href="${portalUrl}/auth" style="color:#8b5cf6;text-decoration:none;font-weight:500;border-bottom:1px solid #d4c4f7;">Create one here</a> using the same email address.</p></div>
+        <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;"><p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p><p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p><p style="margin:0;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p></div>
+      </div></div></body></html>`;
 
       let status = 'pending';
       let errorMessage = null;
