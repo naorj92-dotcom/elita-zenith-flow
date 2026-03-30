@@ -370,7 +370,7 @@ const handler = async (req: Request): Promise<Response> => {
           const formsEmailResponse = await resend.emails.send({
             from: "Elita MedSpa <noreply@elitamedspa.com>",
             to: [client.email],
-            subject: `📋 Complete your forms before your visit — ${sanitizeHtml(serviceName)}`,
+            subject: `📋 Action Required: Complete Your Forms for ${sanitizeHtml(serviceName)} on ${formatShortDate(apt.scheduled_at)}`,
             html: formsEmailHtml,
           });
           console.log("Forms reminder email sent:", formsEmailResponse);
@@ -387,7 +387,7 @@ const handler = async (req: Request): Promise<Response> => {
           type: 'email',
           category: 'forms_reminder',
           recipient: client.email,
-          subject: `Complete your forms before your visit — ${serviceName}`,
+          subject: `Action Required: Complete Your Forms for ${serviceName} on ${formatShortDate(apt.scheduled_at)}`,
           body: `Forms reminder: ${pendingForms.length} pending form(s) for ${serviceName} on ${formatShortDate(apt.scheduled_at)}`,
           status: results.formsEmail === 'sent' ? 'sent' : 'failed',
           error_message: results.formsEmailError,
