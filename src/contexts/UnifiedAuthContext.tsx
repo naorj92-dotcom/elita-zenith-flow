@@ -284,7 +284,7 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
         event_type: 'logout',
         user_agent: navigator.userAgent,
         metadata: { timestamp: new Date().toISOString() },
-      });
+      }).then(() => {});
     }
 
     // Clear local state first to unblock UI immediately
@@ -297,10 +297,13 @@ export function UnifiedAuthProvider({ children }: { children: ReactNode }) {
     setClockStatus(null);
     
     try {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' });
     } catch (err) {
       console.warn('Sign out error (ignored):', err);
     }
+
+    // Hard redirect to login to fully reset app state
+    window.location.href = '/login';
   }, [user]);
 
 
