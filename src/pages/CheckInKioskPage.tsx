@@ -91,6 +91,28 @@ export default function CheckInKioskPage() {
     return () => clearInterval(interval);
   }, [fetchTodayAppointments]);
 
+  // Auto-proceed to check-in when all forms are complete on the forms screen
+  const allFormsComplete = pendingForms.length > 0 && pendingForms.every(form => {
+    const responses = formResponses[form.id] || {};
+    return form.fields
+      .filter(f => f.required)
+      .every(f => {
+        const val = responses[f.id];
+        return val !== undefined && val !== null && val !== '';
+      });
+  });
+  const allSignaturesComplete = !pendingForms.some(f => f.requires_signature) || !!signatureData;
+
+  useEffect(() => {
+    if (screen === 'forms' && allFormsComplete && allSignaturesComplete && !checking) {
+      // Short delay so user sees the completion state before auto-proceeding
+      const timer = setTimeout(() => {
+        handleConfirmCheckInRef.current();
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [screen, allFormsComplete, allSignaturesComplete, checking]);
+
   const handleSelectAppointment = async (apt: KioskAppointment) => {
     setSelected(apt);
 
