@@ -86,11 +86,13 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    if (apt.status !== 'scheduled') {
-      return new Response(JSON.stringify({ message: "Appointment not in scheduled status, skipping confirmation" }), {
+    if (apt.status !== 'scheduled' && apt.status !== 'completed') {
+      return new Response(JSON.stringify({ message: "Appointment not in scheduled/completed status, skipping" }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const isCompleted = apt.status === 'completed';
 
     const client = apt.clients as any;
     const service = apt.services as any;
