@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, CheckCircle2, Clock, User, Sparkles, ArrowLeft, ChevronLeft } from 'lucide-react';
+import { Search, CheckCircle2, Clock, User, Sparkles, ArrowLeft, ChevronLeft, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { FormFieldRenderer, FormField } from '@/components/forms/FormFieldRenderer';
@@ -293,6 +293,32 @@ export default function CheckInKioskPage() {
   // SCREEN 3 — Confirm & Sign
   if (screen === 'confirm' && selected) {
     const anySignature = pendingForms.some(f => f.requires_signature);
+    const hasForms = pendingForms.length > 0;
+
+    // Validate: all required fields filled + signature if needed
+    const formsComplete = pendingForms.every(form => {
+      const responses = formResponses[form.id] || {};
+      return form.fields
+        .filter(f => f.required)
+        .every(f => {
+          const val = responses[f.id];
+          return val !== undefined && val !== null && val !== '';
+        });
+    });
+    const signatureComplete = !anySignature || !!signatureData;
+    const canCheckIn = !hasForms || (formsComplete && signatureComplete);
+
+    // Count completed vs total forms for progress
+    const completedFormCount = pendingForms.filter(form => {
+      const responses = formResponses[form.id] || {};
+      return form.fields
+        .filter(f => f.required)
+        .every(f => {
+          const val = responses[f.id];
+          return val !== undefined && val !== null && val !== '';
+        });
+    }).length;
+
     return (
       <div className="min-h-screen bg-background p-6 md:p-10 select-none">
         <div className="max-w-2xl mx-auto">
@@ -329,36 +355,86 @@ export default function CheckInKioskPage() {
               </CardContent>
             </Card>
 
-            {/* Pending Forms */}
-            {pendingForms.length > 0 && (
+            {/* Pending Forms — required before check-in */}
+            {hasForms && (
               <div className="space-y-6 mb-8">
-                {pendingForms.map(form => (
-                  <Card key={form.id}>
-                    <CardContent className="p-6">
-                      <h3 className="font-semibold text-foreground mb-4">{form.form_name}</h3>
-                      <div className="space-y-4">
-                        {form.fields.map(field => (
-                          <FormFieldRenderer
-                            key={field.id}
-                            field={field}
-                            value={formResponses[form.id]?.[field.id]}
-                            onChange={(val) =>
-                              setFormResponses(prev => ({
-                                ...prev,
-                                [form.id]: { ...prev[form.id], [field.id]: val },
-                              }))
-                            }
-                          />
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                {/* Progress indicator */}
+                <div className="flex items-center gap-3 px-1">
+                  <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                    <motion.div
+                      className="h-full bg-primary rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(completedFormCount / pendingForms.length) * 100}%` }}
+                      transition={{ duration: 0.4 }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                    {completedFormCount}/{pendingForms.length} forms complete
+                  </span>
+                </div>
+
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Forms Required Before Check-In</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Please complete all required fields below to proceed with check-in.
+                    </p>
+                  </div>
+                </div>
+
+                {pendingForms.map(form => {
+                  const responses = formResponses[form.id] || {};
+                  const thisFormComplete = form.fields.filter(f => f.required).every(f => {
+                    const val = responses[f.id];
+                    return val !== undefined && val !== null && val !== '';
+                  });
+                  return (
+                    <Card key={form.id} className={thisFormComplete ? 'border-success/30' : ''}>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-foreground">{form.form_name}</h3>
+                          {thisFormComplete ? (
+                            <span className="flex items-center gap-1 text-xs font-medium text-success">
+                              <CheckCircle2 className="w-4 h-4" /> Complete
+                            </span>
+                          ) : (
+                            <span className="text-xs font-medium text-amber-500">Required</span>
+                          )}
+                        </div>
+                        <div className="space-y-4">
+                          {form.fields.map(field => (
+                            <FormFieldRenderer
+                              key={field.id}
+                              field={field}
+                              value={formResponses[form.id]?.[field.id]}
+                              onChange={(val) =>
+                                setFormResponses(prev => ({
+                                  ...prev,
+                                  [form.id]: { ...prev[form.id], [field.id]: val },
+                                }))
+                              }
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
 
                 {anySignature && (
-                  <Card>
+                  <Card className={signatureData ? 'border-success/30' : ''}>
                     <CardContent className="p-6">
-                      <h3 className="font-semibold text-foreground mb-4">Signature</h3>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-foreground">Signature</h3>
+                        {signatureData ? (
+                          <span className="flex items-center gap-1 text-xs font-medium text-success">
+                            <CheckCircle2 className="w-4 h-4" /> Signed
+                          </span>
+                        ) : (
+                          <span className="text-xs font-medium text-amber-500">Required</span>
+                        )}
+                      </div>
                       <SignaturePad onSignatureChange={setSignatureData} />
                     </CardContent>
                   </Card>
@@ -370,10 +446,15 @@ export default function CheckInKioskPage() {
               size="lg"
               className="w-full h-16 text-lg rounded-2xl"
               onClick={handleConfirmCheckIn}
-              disabled={checking}
+              disabled={checking || !canCheckIn}
             >
-              {checking ? 'Checking in…' : 'Confirm Check-In'}
+              {checking ? 'Checking in…' : !canCheckIn ? 'Complete Forms to Check In' : 'Confirm Check-In'}
             </Button>
+            {!canCheckIn && (
+              <p className="text-xs text-amber-500 text-center mt-2">
+                Please fill in all required fields{anySignature && !signatureData ? ' and sign' : ''} above
+              </p>
+            )}
           </motion.div>
         </div>
       </div>
