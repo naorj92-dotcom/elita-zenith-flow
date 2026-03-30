@@ -314,18 +314,32 @@ const handler = async (req: Request): Promise<Response> => {
 
               <!-- Body -->
               <div style="background:#fffdf9;padding:36px 30px;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(60,46,34,0.08);">
-                <p style="margin:0 0 8px;color:#3d2e22;font-size:15px;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">
                   Dear ${sanitizeHtml(client.first_name)},
                 </p>
-                <p style="margin:0 0 24px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                  To ensure a seamless experience, please complete the following form${pendingForms.length > 1 ? 's' : ''} before your <strong style="color:#3d2e22;">${sanitizeHtml(serviceName)}</strong> appointment on <strong style="color:#3d2e22;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</strong>.
+                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                  You have an upcoming appointment — here are the details:
+                </p>
+
+                <!-- Appointment Summary -->
+                <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:20px;margin-bottom:24px;">
+                  <table style="width:100%;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                    <tr><td style="padding:6px 0;color:#7a6a5e;width:100px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Service</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
+                    <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</td></tr>
+                    <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Time</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${formatTime(apt.scheduled_at)}</td></tr>
+                    <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Provider</td><td style="padding:6px 0;color:#3d2e22;">${sanitizeHtml(providerFull)}</td></tr>
+                  </table>
+                </div>
+
+                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                  To ensure a seamless experience, please complete the following form${pendingForms.length > 1 ? 's' : ''} before your visit:
                 </p>
 
                 <!-- Forms List -->
-                <div style="border:1px solid #e8ddd0;border-radius:12px;overflow:hidden;margin-bottom:28px;">
+                <div style="border:1px solid #e8ddd0;border-radius:12px;overflow:hidden;margin-bottom:24px;">
                   <div style="background:#faf6f0;padding:12px 20px;border-bottom:1px solid #e8ddd0;">
                     <p style="margin:0;font-size:12px;color:#7a6a5e;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                      ${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''} pending
+                      ${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''} required
                     </p>
                   </div>
                   <table style="width:100%;">
@@ -333,29 +347,34 @@ const handler = async (req: Request): Promise<Response> => {
                   </table>
                 </div>
 
-                <!-- Why it matters -->
-                <div style="background:#fdf8f0;border-left:3px solid #c9a96e;border-radius:6px;padding:16px 20px;margin-bottom:28px;">
-                  <p style="margin:0 0 8px;color:#5c4a3a;font-size:13px;font-weight:600;font-family:'Playfair Display',Georgia,serif;">Why complete forms early?</p>
-                  <ul style="margin:0;padding-left:18px;color:#7a6a5e;font-size:13px;line-height:1.8;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                    <li>Skip the clipboard at check-in</li>
-                    <li>Your provider can prepare for your visit</li>
-                    <li>Begin your treatment right on time</li>
-                  </ul>
-                </div>
-
-                <!-- CTA -->
-                <div style="text-align:center;margin:28px 0 16px;">
-                  <a href="${formsUrl}" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:500;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
-                    Complete Forms Now
+                <!-- Primary CTA -->
+                <div style="text-align:center;margin:28px 0 20px;">
+                  <a href="${formsUrl}" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
+                    Complete Your Forms Now →
                   </a>
                 </div>
 
-                <p style="margin:0;text-align:center;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                  Forms can be completed on your phone, tablet, or computer.
-                </p>
+                <!-- Time note -->
+                <div style="background:#fdf8f0;border-left:3px solid #c9a96e;border-radius:6px;padding:14px 20px;margin-bottom:24px;">
+                  <p style="margin:0;color:#5c4a3a;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">
+                    ⏱ <strong>Taking 3 minutes now means no paperwork at the spa!</strong>
+                  </p>
+                  <p style="margin:6px 0 0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">
+                    Complete your forms from your phone, tablet, or computer — then simply walk in and relax.
+                  </p>
+                </div>
+
+                <!-- New account note -->
+                <div style="background:#f5f0e8;border-radius:8px;padding:16px 20px;margin-bottom:28px;text-align:center;">
+                  <p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.6;">
+                    Haven't created your client account yet?<br>
+                    <a href="${PORTAL_URL}/auth" style="color:#8b5cf6;text-decoration:none;font-weight:500;border-bottom:1px solid #d4c4f7;">Create one here</a>
+                    using the same email address.
+                  </p>
+                </div>
 
                 <!-- Footer -->
-                <div style="border-top:1px solid #e8ddd0;padding-top:24px;margin-top:28px;text-align:center;">
+                <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;">
                   <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">Elita Medical Spa</p>
                   <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
                   <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
