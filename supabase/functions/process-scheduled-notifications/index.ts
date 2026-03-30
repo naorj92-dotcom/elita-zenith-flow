@@ -304,7 +304,113 @@ const handler = async (req: Request): Promise<Response> => {
       results.push(`Package expiry: processed ${(packages || []).length} packages`);
     }
 
-    // ── TRIGGER 5: Membership Renewal Reminder (5 days) ──
+    // ── TRIGGER 6: Forms Incomplete — Appointment Tomorrow ──
+    {
+      const tomorrowStart = new Date(now);
+      tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+      tomorrowStart.setHours(0, 0, 0, 0);
+      const tomorrowEnd = new Date(tomorrowStart);
+      tomorrowEnd.setHours(23, 59, 59, 999);
+
+      const { data: appts } = await supabase
+        .from('appointments')
+        .select('id, scheduled_at, client_id, service_id, staff_id, clients(first_name, last_name, email, email_opt_out), services(name), staff(first_name)')
+        .in('status', ['scheduled', 'confirmed'])
+        .gte('scheduled_at', tomorrowStart.toISOString())
+        .lte('scheduled_at', tomorrowEnd.toISOString());
+
+      let formsReminderCount = 0;
+      for (const appt of appts || []) {
+        const client = appt.clients as any;
+        if (!client?.email || client.email_opt_out) continue;
+
+        const { data: pendingForms } = await supabase
+          .from('client_forms')
+          .select('id, form_id, forms(name, form_type)')
+          .eq('client_id', appt.client_id)
+          .eq('status', 'pending');
+
+        if (!pendingForms || pendingForms.length === 0) continue;
+
+        const service = appt.services as any;
+        const staff = appt.staff as any;
+        const schedDate = new Date(appt.scheduled_at);
+        const firstName = sanitizeHtml(client.first_name || 'there');
+        const serviceName = sanitizeHtml(service?.name || 'your appointment');
+        const providerName = sanitizeHtml(staff?.first_name || 'your provider');
+        const apptTime = schedDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const apptDate = schedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+        const formListHtml = pendingForms.map((f: any) => {
+          const form = f.forms as any;
+          const typeBadge = form?.form_type === 'intake' ? '📝 Intake' :
+                            form?.form_type === 'consent' ? '✍️ Consent' :
+                            form?.form_type === 'contract' ? '📄 Contract' : '📋 Form';
+          return `<li style="padding: 8px 0; border-bottom: 1px solid #e5e0d8;">${typeBadge} — <strong>${sanitizeHtml(form?.name || 'Required Form')}</strong></li>`;
+        }).join('');
+
+        const subject = '⏰ Reminder: Your Forms Are Still Incomplete - Appointment Tomorrow!';
+        const htmlBody = `
+          <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; background: #faf8f5;">
+            <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="color: #d4c5a9; font-size: 28px; margin: 0; letter-spacing: 2px;">ELITA MEDSPA</h1>
+              <p style="color: #a39882; font-size: 12px; margin-top: 8px; letter-spacing: 3px;">LUXURY AESTHETICS</p>
+            </div>
+            <div style="padding: 40px 30px;">
+              <p style="color: #3d3929; font-size: 16px; line-height: 1.6;">Hi ${firstName},</p>
+              <p style="color: #5a5343; font-size: 15px; line-height: 1.7;">
+                Your appointment for <strong>${serviceName}</strong> with <strong>${providerName}</strong> is <strong>tomorrow, ${apptDate} at ${apptTime}</strong>.
+              </p>
+              <p style="color: #5a5343; font-size: 15px; line-height: 1.7;">
+                You still have <strong>${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''}</strong> to complete. Taking 3 minutes now means no paperwork at the spa!
+              </p>
+              <div style="margin: 25px 0; background: #f0ece4; border-radius: 10px; padding: 20px;">
+                <p style="font-weight: 600; color: #3d3929; margin: 0 0 10px;">Forms to complete:</p>
+                <ul style="list-style: none; padding: 0; margin: 0;">${formListHtml}</ul>
+              </div>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${portalUrl}/forms"
+                   style="display: inline-block; background: #8b5cf6; color: #ffffff; padding: 14px 36px;
+                          border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;
+                          letter-spacing: 0.5px;">
+                  Complete Your Forms Now →
+                </a>
+              </div>
+              <p style="color: #8a8070; font-size: 13px; text-align: center; line-height: 1.6;">
+                Haven't created your client account yet?
+                <a href="${portalUrl}/auth" style="color: #8b5cf6; text-decoration: underline;">Create one here</a>
+                using the same email address.
+              </p>
+            </div>
+            <div style="background: #1a1a2e; padding: 25px; text-align: center;">
+              <p style="color: #a39882; font-size: 11px; margin: 0;">&copy; ${new Date().getFullYear()} Elita MedSpa. All rights reserved.</p>
+            </div>
+          </div>`;
+
+        if (resend) {
+          try {
+            await resend.emails.send({
+              from: "Elita MedSpa <noreply@elitamedspa.com>",
+              to: [client.email],
+              subject,
+              html: htmlBody,
+            });
+            await logNotification(supabase, {
+              client_id: appt.client_id, type: 'email', category: 'forms_incomplete_tomorrow',
+              recipient: client.email, subject, body: `${pendingForms.length} pending forms reminder`,
+              status: 'sent', sent_at: new Date().toISOString(),
+            });
+            formsReminderCount++;
+          } catch (e: any) {
+            await logNotification(supabase, {
+              client_id: appt.client_id, type: 'email', category: 'forms_incomplete_tomorrow',
+              recipient: client.email, subject, body: '', status: 'failed', error_message: e.message,
+            });
+          }
+        }
+      }
+      results.push(`Forms incomplete tomorrow: sent ${formsReminderCount} reminders`);
+    }
     const t5 = triggerMap.get('membership_renewal_reminder');
     if (t5) {
       const targetDate = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
