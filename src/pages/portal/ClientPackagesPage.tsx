@@ -58,48 +58,23 @@ export function ClientPackagesPage() {
   const completedPackages = packages?.filter(p => p.status === 'completed') || [];
   const expiredPackages = packages?.filter(p => p.status === 'expired') || [];
 
-  const getTiers = (pkg: any): PricingTier[] => {
-    if (pkg.pricing_tiers && Array.isArray(pkg.pricing_tiers) && pkg.pricing_tiers.length > 0) {
-      return pkg.pricing_tiers;
-    }
-    return [{ sessions: 1, total_price: pkg.price, price_per_session: pkg.price, value_percent: 0 }];
-  };
-
-  const handlePurchase = async (pkg: any, tier: PricingTier) => {
+  const handleInquire = async (pkg: any) => {
     if (!client?.id) return;
     try {
       const { error } = await supabase.from('purchase_requests' as any).insert({
         client_id: client.id,
         request_type: 'package',
         package_id: pkg.id,
-        tier_sessions: tier.sessions,
         status: 'interested',
-        notes: `INTEREST: ${pkg.name} — ${tier.sessions} session program`,
+        notes: `INTEREST: ${pkg.name}`,
       });
       if (error) throw error;
       setCelebrationMsg({
-        message: `${pkg.name} — ${tier.sessions} Sessions!`,
-        sub: "We'll contact you shortly to complete your purchase",
+        message: `${pkg.name}`,
+        sub: "Your provider will discuss this with you at your next visit",
       });
       setShowCelebration(true);
-      toast.success(`Purchase request submitted for ${pkg.name}!`);
-    } catch {
-      toast.error('Could not submit purchase request. Please try again.');
-    }
-  };
-
-  const handleInquire = async (pkg: any, tier: PricingTier) => {
-    if (!client?.id) return;
-    try {
-      const { error } = await supabase.from('purchase_requests' as any).insert({
-        client_id: client.id,
-        request_type: 'package',
-        package_id: pkg.id,
-        tier_sessions: tier.sessions,
-        notes: `INQUIRY: ${pkg.name} — ${tier.sessions} session program`,
-      });
-      if (error) throw error;
-      toast.success(`Interest submitted for ${pkg.name} — ${tier.sessions} session program!`);
+      toast.success(`Interest submitted for ${pkg.name}!`);
     } catch {
       toast.error('Could not submit your interest. Please try again.');
     }
@@ -246,9 +221,7 @@ export function ClientPackagesPage() {
                   key={groupName}
                   groupName={groupName}
                   packages={pkgs as any[]}
-                  onPurchase={handlePurchase}
                   onInquire={handleInquire}
-                  getTiers={getTiers}
                 />
               ))}
             </div>
