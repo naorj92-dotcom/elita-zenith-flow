@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useMemo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,8 +9,10 @@ import { ClientAuthProvider } from "@/contexts/ClientAuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ClientPortalLayout } from "@/components/layout/ClientPortalLayout";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
-import { OfflineBanner } from "@/components/pwa/OfflineBanner";
-import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+
+// Lazy-load PWA components — they're non-critical
+const OfflineBanner = React.lazy(() => import("@/components/pwa/OfflineBanner").then(m => ({ default: m.OfflineBanner })));
+const InstallPrompt = React.lazy(() => import("@/components/pwa/InstallPrompt").then(m => ({ default: m.InstallPrompt })));
 
 // Pages (lazy-loaded for code splitting)
 const LoginPage = React.lazy(() => import("@/pages/LoginPage").then(m => ({ default: m.LoginPage })));
@@ -72,78 +74,40 @@ const ResetPasswordPage = React.lazy(() => import("./pages/ResetPasswordPage"));
 const CheckInKioskPage = React.lazy(() => import("./pages/CheckInKioskPage"));
 const ClientPackagesManagementPage = React.lazy(() => import("./pages/ClientPackagesManagementPage").then(m => ({ default: m.ClientPackagesManagementPage })));
 
-const queryClient = new QueryClient();
+// Shared loading spinner — extracted to avoid re-creation
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+  </div>
+);
 
 // Protected route wrapper for staff (owner + employee)
 function StaffRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, role, isLoading } = useUnifiedAuth();
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!role) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  // Redirect clients to portal
-  if (role === 'client') {
-    return <Navigate to="/portal" replace />;
-  }
-  
+  if (isLoading) return <LoadingSpinner />;
+  if (!isAuthenticated || !role) return <Navigate to="/login" replace />;
+  if (role === 'client') return <Navigate to="/portal" replace />;
   return <AppLayout>{children}</AppLayout>;
 }
 
 // Owner-only route wrapper
 function OwnerRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isOwner, role, isLoading } = useUnifiedAuth();
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!role) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (!isOwner) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
+  if (isLoading) return <LoadingSpinner />;
+  if (!isAuthenticated || !role) return <Navigate to="/login" replace />;
+  if (!isOwner) return <Navigate to="/dashboard" replace />;
   return <AppLayout>{children}</AppLayout>;
 }
 
 function DashboardRoute() {
   const { isFrontDesk } = useUnifiedAuth();
-  if (isFrontDesk) {
-    return <Navigate to="/front-desk" replace />;
-  }
+  if (isFrontDesk) return <Navigate to="/front-desk" replace />;
   return <Dashboard />;
 }
 
 function AppRoutes() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    }>
+    <Suspense fallback={<LoadingSpinner />}>
     <Routes>
       {/* ========== PUBLIC FORMS ========== */}
       <Route path="/intake" element={<IntakeFormPage />} />
@@ -240,27 +204,40 @@ function AppRoutes() {
   );
 }
 
+// Stable QueryClient — survives HMR by living outside the component
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,   // 5 min — avoids refetching on every mount
+      retry: 1,
+      refetchOnWindowFocus: false, // prevent unnecessary refetches in preview
+    },
+  },
+});
+
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <UnifiedAuthProvider>
-            <ClientAuthProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <UnifiedAuthProvider>
+          <ClientAuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Suspense fallback={null}>
                 <OfflineBanner />
-                <ErrorBoundary>
-                  <AppRoutes />
-                </ErrorBoundary>
-              </BrowserRouter>
+              </Suspense>
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
+            </BrowserRouter>
+            <Suspense fallback={null}>
               <InstallPrompt />
-            </ClientAuthProvider>
-          </UnifiedAuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+            </Suspense>
+          </ClientAuthProvider>
+        </UnifiedAuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
