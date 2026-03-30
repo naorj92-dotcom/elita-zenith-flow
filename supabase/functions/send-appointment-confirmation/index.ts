@@ -119,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (tips) prepTips = tips;
     }
 
-    const results = { sms: 'skipped', email: 'skipped', smsError: null as string | null, emailError: null as string | null };
+    const results = { sms: 'skipped', email: 'skipped', formsEmail: 'skipped', smsError: null as string | null, emailError: null as string | null, formsEmailError: null as string | null };
 
     // ─── SMS via send-sms function ───
     if (client.phone && !client.sms_opt_out) {
@@ -150,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // ─── Email ───
+    // ─── Confirmation Email ───
     if (client.email && !client.email_opt_out) {
       const calLink = buildGoogleCalendarLink({
         title: `${serviceName} at ${BUSINESS_NAME}`,
@@ -183,66 +183,34 @@ const handler = async (req: Request): Promise<Response> => {
         <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
         <body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f3f4f6;">
           <div style="max-width:600px;margin:0 auto;padding:20px;">
-            <!-- Header -->
             <div style="background:linear-gradient(135deg,#8b5cf6 0%,#a855f7 100%);border-radius:16px 16px 0 0;padding:30px;text-align:center;">
               <h1 style="margin:0;color:white;font-size:24px;font-weight:300;letter-spacing:2px;">ELITA MEDICAL SPA</h1>
               <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:18px;">Your appointment is confirmed ✨</p>
             </div>
-
-            <!-- Content -->
             <div style="background:white;padding:30px;border-radius:0 0 16px 16px;box-shadow:0 4px 6px rgba(0,0,0,0.05);">
               <p style="margin:0 0 20px;color:#374151;font-size:15px;">
                 Hi ${sanitizeHtml(client.first_name)}, we look forward to seeing you!
               </p>
-
-              <!-- Appointment Details Card -->
               <div style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:20px;">
                 <table style="width:100%;font-size:14px;">
-                  <tr>
-                    <td style="padding:6px 0;color:#6b7280;width:120px;">Service</td>
-                    <td style="padding:6px 0;color:#374151;font-weight:500;">${sanitizeHtml(serviceName)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;color:#6b7280;">Duration</td>
-                    <td style="padding:6px 0;color:#374151;">${durationMin} minutes</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;color:#6b7280;">Date</td>
-                    <td style="padding:6px 0;color:#374151;font-weight:500;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;color:#6b7280;">Time</td>
-                    <td style="padding:6px 0;color:#374151;font-weight:500;">${formatTime(apt.scheduled_at)}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:6px 0;color:#6b7280;">Provider</td>
-                    <td style="padding:6px 0;color:#374151;">${sanitizeHtml(providerFull)}</td>
-                  </tr>
+                  <tr><td style="padding:6px 0;color:#6b7280;width:120px;">Service</td><td style="padding:6px 0;color:#374151;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
+                  <tr><td style="padding:6px 0;color:#6b7280;">Duration</td><td style="padding:6px 0;color:#374151;">${durationMin} minutes</td></tr>
+                  <tr><td style="padding:6px 0;color:#6b7280;">Date</td><td style="padding:6px 0;color:#374151;font-weight:500;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</td></tr>
+                  <tr><td style="padding:6px 0;color:#6b7280;">Time</td><td style="padding:6px 0;color:#374151;font-weight:500;">${formatTime(apt.scheduled_at)}</td></tr>
+                  <tr><td style="padding:6px 0;color:#6b7280;">Provider</td><td style="padding:6px 0;color:#374151;">${sanitizeHtml(providerFull)}</td></tr>
                 </table>
               </div>
-
-              <!-- Location -->
               <div style="background:#f0fdf4;border-radius:8px;padding:12px 16px;margin-bottom:20px;">
                 <p style="margin:0;color:#166534;font-size:13px;">📍 <strong>${BUSINESS_NAME}</strong></p>
                 <p style="margin:4px 0 0;color:#6b7280;font-size:12px;">${BUSINESS_ADDRESS}</p>
               </div>
-
               ${prepHtml}
-
-              <!-- Actions -->
               <div style="text-align:center;margin:24px 0;">
-                <a href="${calLink}" style="display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:500;margin-bottom:12px;">
-                  📅 Add to Google Calendar
-                </a>
+                <a href="${calLink}" style="display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:500;">📅 Add to Google Calendar</a>
               </div>
-
               <div style="text-align:center;margin-bottom:20px;">
-                <a href="${cancelUrl}" style="color:#8b5cf6;text-decoration:underline;font-size:13px;">
-                  Cancel or Reschedule (up to 24hrs before)
-                </a>
+                <a href="${cancelUrl}" style="color:#8b5cf6;text-decoration:underline;font-size:13px;">Cancel or Reschedule (up to 24hrs before)</a>
               </div>
-
-              <!-- Footer -->
               <div style="border-top:1px solid #e5e7eb;padding-top:20px;text-align:center;">
                 <p style="margin:0 0 5px;color:#6b7280;font-size:12px;">${BUSINESS_ADDRESS}</p>
                 <p style="margin:0;color:#6b7280;font-size:12px;">${BUSINESS_PHONE}</p>
@@ -268,7 +236,7 @@ const handler = async (req: Request): Promise<Response> => {
         results.emailError = emailErr.message;
       }
 
-      // Log email
+      // Log confirmation email
       await supabase.from('notification_logs').insert({
         client_id: client.id,
         type: 'email',
@@ -280,8 +248,132 @@ const handler = async (req: Request): Promise<Response> => {
         error_message: results.emailError,
         sent_at: results.email === 'sent' ? new Date().toISOString() : null,
       });
-    }
 
+      // ─── "Complete Your Forms" Email ───
+      // Check for pending forms linked to this client
+      const { data: pendingForms } = await supabase
+        .from('client_forms')
+        .select(`
+          id, status,
+          forms (id, name, form_type, description)
+        `)
+        .eq('client_id', client.id)
+        .eq('status', 'pending')
+        .limit(10);
+
+      if (pendingForms && pendingForms.length > 0) {
+        const formsUrl = `${PORTAL_URL}/forms`;
+
+        const formsList = pendingForms.map((pf: any) => {
+          const form = pf.forms;
+          const typeLabel = form?.form_type === 'consent' ? '📝 Consent' : '📋 Intake';
+          return `
+            <tr>
+              <td style="padding:10px 16px;border-bottom:1px solid #f3f4f6;">
+                <span style="font-size:12px;color:#8b5cf6;font-weight:600;">${typeLabel}</span>
+                <p style="margin:2px 0 0;font-size:14px;color:#374151;font-weight:500;">${sanitizeHtml(form?.name || 'Required Form')}</p>
+                ${form?.description ? `<p style="margin:2px 0 0;font-size:12px;color:#6b7280;">${sanitizeHtml(form.description)}</p>` : ''}
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        const formsEmailHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+          <body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f3f4f6;">
+            <div style="max-width:600px;margin:0 auto;padding:20px;">
+              <!-- Header -->
+              <div style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);border-radius:16px 16px 0 0;padding:30px;text-align:center;">
+                <h1 style="margin:0;color:white;font-size:24px;font-weight:300;letter-spacing:2px;">ELITA MEDICAL SPA</h1>
+                <p style="margin:8px 0 0;color:rgba(255,255,255,0.95);font-size:18px;">📋 Complete Your Forms Before Your Visit</p>
+              </div>
+
+              <!-- Content -->
+              <div style="background:white;padding:30px;border-radius:0 0 16px 16px;box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                <p style="margin:0 0 8px;color:#374151;font-size:15px;">
+                  Hi ${sanitizeHtml(client.first_name)},
+                </p>
+                <p style="margin:0 0 20px;color:#6b7280;font-size:14px;line-height:1.6;">
+                  To make your visit as smooth as possible, please complete the following form${pendingForms.length > 1 ? 's' : ''} before your <strong>${sanitizeHtml(serviceName)}</strong> appointment on <strong>${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</strong>.
+                </p>
+
+                <!-- Forms List -->
+                <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+                  <div style="background:#f9fafb;padding:10px 16px;border-bottom:1px solid #e5e7eb;">
+                    <p style="margin:0;font-size:13px;color:#6b7280;font-weight:600;">
+                      ${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''} pending
+                    </p>
+                  </div>
+                  <table style="width:100%;">
+                    ${formsList}
+                  </table>
+                </div>
+
+                <!-- Why it matters -->
+                <div style="background:#eff6ff;border-left:4px solid #3b82f6;border-radius:8px;padding:14px 16px;margin-bottom:24px;">
+                  <p style="margin:0;color:#1e40af;font-size:13px;font-weight:600;">💡 Why complete forms early?</p>
+                  <ul style="margin:8px 0 0;padding-left:18px;color:#374151;font-size:13px;line-height:1.6;">
+                    <li>Skip the clipboard at check-in</li>
+                    <li>Your provider can review your info beforehand</li>
+                    <li>Start your treatment right on time</li>
+                  </ul>
+                </div>
+
+                <!-- CTA -->
+                <div style="text-align:center;margin:24px 0;">
+                  <a href="${formsUrl}" style="display:inline-block;background:#f59e0b;color:white;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;letter-spacing:0.5px;">
+                    Complete Forms Now →
+                  </a>
+                </div>
+
+                <p style="margin:0;text-align:center;color:#9ca3af;font-size:12px;">
+                  Forms can be completed on your phone, tablet, or computer.
+                </p>
+
+                <!-- Footer -->
+                <div style="border-top:1px solid #e5e7eb;padding-top:20px;margin-top:24px;text-align:center;">
+                  <p style="margin:0 0 5px;color:#6b7280;font-size:12px;">${BUSINESS_ADDRESS}</p>
+                  <p style="margin:0;color:#6b7280;font-size:12px;">${BUSINESS_PHONE}</p>
+                </div>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+
+        try {
+          const formsEmailResponse = await resend.emails.send({
+            from: "Elita MedSpa <noreply@elitamedspa.com>",
+            to: [client.email],
+            subject: `📋 Complete your forms before your visit — ${sanitizeHtml(serviceName)}`,
+            html: formsEmailHtml,
+          });
+          console.log("Forms reminder email sent:", formsEmailResponse);
+          results.formsEmail = 'sent';
+        } catch (formsErr: any) {
+          console.error("Forms email error:", formsErr);
+          results.formsEmail = 'failed';
+          results.formsEmailError = formsErr.message;
+        }
+
+        // Log forms email
+        await supabase.from('notification_logs').insert({
+          client_id: client.id,
+          type: 'email',
+          category: 'forms_reminder',
+          recipient: client.email,
+          subject: `Complete your forms before your visit — ${serviceName}`,
+          body: `Forms reminder: ${pendingForms.length} pending form(s) for ${serviceName} on ${formatShortDate(apt.scheduled_at)}`,
+          status: results.formsEmail === 'sent' ? 'sent' : 'failed',
+          error_message: results.formsEmailError,
+          sent_at: results.formsEmail === 'sent' ? new Date().toISOString() : null,
+        });
+      } else {
+        console.log("No pending forms for client, skipping forms email");
+      }
+    }
     return new Response(JSON.stringify({ success: true, results }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
