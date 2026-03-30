@@ -303,7 +303,7 @@ export default function ClientProfilePage() {
 
               {/* FORMS */}
               <TabsContent value="forms" className="mt-0">
-                <FormsTab forms={forms} />
+                <FormsTab forms={forms} clientId={id} />
               </TabsContent>
 
               {/* GALLERY */}
@@ -676,8 +676,25 @@ function PackagesTab({ packages, clientId }: { packages: any[]; clientId?: strin
 }
 
 // ─── Forms Tab ───────────────────────────────────────────
-function FormsTab({ forms }: { forms: any[] }) {
+function FormsTab({ forms, clientId }: { forms: any[]; clientId?: string }) {
   const [viewingId, setViewingId] = useState<string | null>(null);
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+
+  const handleSendReminder = async (f: any) => {
+    if (!clientId) return;
+    setSendingReminder(f.id);
+    try {
+      const { error } = await supabase.functions.invoke('send-notification', {
+        body: { client_id: clientId, type: 'forms_reminder', appointment_id: f.appointment_id || null },
+      });
+      if (error) throw error;
+      toast.success('Reminder sent to client');
+    } catch {
+      toast.error('Failed to send reminder');
+    } finally {
+      setSendingReminder(null);
+    }
+  };
 
   if (forms.length === 0) {
     return <EmptyState icon={FileText} title="No forms" description="No forms or consents on file." compact />;
@@ -753,7 +770,16 @@ function FormsTab({ forms }: { forms: any[] }) {
                       <Eye className="h-3.5 w-3.5" /> View Responses
                     </Button>
                   ) : (
-                    <span className="text-xs text-muted-foreground italic">Awaiting submission</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs gap-1.5"
+                      disabled={sendingReminder === f.id}
+                      onClick={() => handleSendReminder(f)}
+                    >
+                      {sendingReminder === f.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                      Send Reminder
+                    </Button>
                   )}
                 </td>
               </tr>
