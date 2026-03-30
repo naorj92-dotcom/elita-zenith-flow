@@ -701,11 +701,22 @@ function FormsTab({ forms }: { forms: any[] }) {
     }
   };
 
+  const completed = forms.filter(f => f.status === 'completed').length;
+  const total = forms.length;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
   const viewingForm = viewingId ? forms.find(f => f.id === viewingId) : null;
   const viewingFields = viewingForm ? (Array.isArray(viewingForm.forms?.fields) ? viewingForm.forms.fields : []) : [];
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <p className="text-sm font-medium text-foreground">{completed} of {total} forms completed</p>
+        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="text-xs text-muted-foreground font-medium">{pct}%</span>
+      </div>
       <div className="rounded-lg border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
