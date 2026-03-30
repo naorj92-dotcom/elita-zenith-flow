@@ -121,7 +121,167 @@ const handler = async (req: Request): Promise<Response> => {
       if (tips) prepTips = tips;
     }
 
-    const results = { sms: 'skipped', email: 'skipped', formsEmail: 'skipped', smsError: null as string | null, emailError: null as string | null, formsEmailError: null as string | null };
+    const results = { sms: 'skipped', email: 'skipped', formsEmail: 'skipped', thankYouEmail: 'skipped', smsError: null as string | null, emailError: null as string | null, formsEmailError: null as string | null, thankYouError: null as string | null };
+
+    // ══════════════════════════════════════════════════════════
+    // COMPLETED → Thank You Email
+    // ══════════════════════════════════════════════════════════
+    if (isCompleted) {
+      if (!client.email || client.email_opt_out) {
+        return new Response(JSON.stringify({ success: true, results, message: 'Client has no email or opted out' }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Fetch Google review URL from notification_triggers
+      let googleReviewUrl = '';
+      const { data: reviewTrigger } = await supabase
+        .from('notification_triggers')
+        .select('google_review_url')
+        .eq('trigger_key', 'post_visit_follow_up')
+        .single();
+      if (reviewTrigger?.google_review_url) googleReviewUrl = reviewTrigger.google_review_url;
+
+      // Fetch aftercare tips for this service
+      let aftercareTips: { title: string; description: string }[] = [];
+      if (apt.service_id) {
+        const { data: tips } = await supabase
+          .from('aftercare_tips')
+          .select('title, description')
+          .eq('service_id', apt.service_id)
+          .order('day_number', { ascending: true })
+          .limit(4);
+        if (tips) aftercareTips = tips;
+      }
+
+      let aftercareHtml = '';
+      if (aftercareTips.length > 0) {
+        aftercareHtml = `
+          <div style="background:#fdf8f0;border-left:3px solid #c9a96e;border-radius:6px;padding:18px 20px;margin:24px 0;">
+            <h3 style="margin:0 0 14px;color:#5c4a3a;font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:600;">Aftercare Tips</h3>
+            ${aftercareTips.map((t, i) => `
+              <div style="margin-bottom:${i < aftercareTips.length - 1 ? '12' : '0'}px;">
+                <strong style="color:#3d2e22;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.title)}</strong>
+                <p style="margin:3px 0 0;color:#7a6a5e;font-size:12px;line-height:1.5;font-family:'Inter',Helvetica,Arial,sans-serif;">${sanitizeHtml(t.description)}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      let reviewCtaHtml = '';
+      if (googleReviewUrl) {
+        reviewCtaHtml = `
+          <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:24px;margin:24px 0;text-align:center;">
+            <p style="margin:0 0 6px;color:#c9a96e;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;">WE'D LOVE YOUR FEEDBACK</p>
+            <p style="margin:0 0 18px;color:#3d2e22;font-size:15px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">How was your experience today?</p>
+            <a href="${googleReviewUrl}" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Leave a Review ⭐</a>
+          </div>
+        `;
+      }
+
+      const thankYouSubject = '✨ Thank you for visiting Elita Medical Spa!';
+      const thankYouHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+        </head>
+        <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Inter',Helvetica,Arial,sans-serif;">
+          <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
+            <!-- Header -->
+            <div style="background:linear-gradient(160deg,#2c1810 0%,#3d2e22 40%,#4a3728 100%);border-radius:16px 16px 0 0;padding:44px 30px;text-align:center;">
+              <p style="margin:0 0 6px;color:#c9a96e;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p>
+              <h1 style="margin:0;color:#faf6f0;font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:500;letter-spacing:1px;">Thank You for<br>Your Visit</h1>
+              <div style="width:50px;height:1px;background:#c9a96e;margin:16px auto 0;"></div>
+            </div>
+
+            <!-- Body -->
+            <div style="background:#fffdf9;padding:36px 30px;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(60,46,34,0.08);">
+              <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">
+                Dear ${sanitizeHtml(client.first_name)},
+              </p>
+              <p style="margin:0 0 22px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                Thank you for choosing ${BUSINESS_NAME}. We hope you had a wonderful experience during your ${sanitizeHtml(serviceName)} treatment${provider ? ` with ${sanitizeHtml(providerFull)}` : ''}.
+              </p>
+
+              <!-- Visit Summary Card -->
+              <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:20px;margin-bottom:24px;">
+                <table style="width:100%;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;">
+                  <tr><td style="padding:6px 0;color:#7a6a5e;width:100px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Service</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
+                  <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Date</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${formatDay(apt.scheduled_at)}, ${formatShortDate(apt.scheduled_at)}</td></tr>
+                  ${provider ? `<tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Provider</td><td style="padding:6px 0;color:#3d2e22;">${sanitizeHtml(providerFull)}</td></tr>` : ''}
+                </table>
+              </div>
+
+              ${aftercareHtml}
+
+              ${reviewCtaHtml}
+
+              <!-- Rebook CTA -->
+              <div style="text-align:center;margin:24px 0 16px;">
+                <a href="${PORTAL_URL}/book" style="display:inline-block;background:linear-gradient(135deg,#3d2e22,#5c4a3a);color:#faf6f0;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:500;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Book Your Next Visit →</a>
+              </div>
+
+              <p style="margin:24px 0 0;color:#7a6a5e;font-size:13px;line-height:1.6;font-family:'Inter',Helvetica,Arial,sans-serif;text-align:center;">
+                Your skin journey is important to us. We look forward to seeing you again soon.
+              </p>
+
+              <!-- Footer -->
+              <div style="border-top:1px solid #e8ddd0;padding-top:24px;margin-top:28px;text-align:center;">
+                <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_NAME}</p>
+                <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
+                <p style="margin:0;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_PHONE}</p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      try {
+        await resend.emails.send({
+          from: "Elita MedSpa <noreply@elitamedspa.com>",
+          to: [client.email],
+          subject: thankYouSubject,
+          html: thankYouHtml,
+        });
+        results.thankYouEmail = 'sent';
+      } catch (e: any) {
+        results.thankYouEmail = 'failed';
+        results.thankYouError = e.message;
+      }
+
+      await supabase.from('notification_logs').insert({
+        client_id: client.id, type: 'email', category: 'post_visit_thank_you',
+        recipient: client.email, subject: thankYouSubject,
+        body: `Thank you email after ${serviceName} on ${formatShortDate(apt.scheduled_at)}`,
+        status: results.thankYouEmail === 'sent' ? 'sent' : 'failed',
+        error_message: results.thankYouError,
+        sent_at: results.thankYouEmail === 'sent' ? new Date().toISOString() : null,
+      });
+
+      return new Response(JSON.stringify({ success: true, results }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // SCHEDULED → Confirmation + Forms Emails (existing logic)
+    // ══════════════════════════════════════════════════════════
+
+    // Fetch aftercare/preparation tips for this service
+    let prepTips: { title: string; description: string }[] = [];
+    if (apt.service_id) {
+      const { data: tips } = await supabase
+        .from('aftercare_tips')
+        .select('title, description')
+        .eq('service_id', apt.service_id)
+        .order('day_number', { ascending: true })
+        .limit(3);
+      if (tips) prepTips = tips;
+    }
 
     // ─── SMS via send-sms function ───
     if (client.phone && !client.sms_opt_out) {
@@ -269,7 +429,6 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       // ─── "Complete Your Forms" Email ───
-      // Check for pending forms linked to this client
       const { data: pendingForms } = await supabase
         .from('client_forms')
         .select(`
@@ -286,7 +445,7 @@ const handler = async (req: Request): Promise<Response> => {
         const formsList = pendingForms.map((pf: any) => {
           const form = pf.forms;
           const typeLabel = form?.form_type === 'consent' ? 'Consent Form' : 'Intake Form';
-          const typeIcon = form?.form_type === 'consent' ? '✦' : '✦';
+          const typeIcon = '✦';
           return `
             <tr>
               <td style="padding:14px 20px;border-bottom:1px solid #f0ebe3;font-family:'Inter',Helvetica,Arial,sans-serif;">
@@ -307,23 +466,14 @@ const handler = async (req: Request): Promise<Response> => {
           </head>
           <body style="margin:0;padding:0;background:#f5f0e8;font-family:'Inter',Helvetica,Arial,sans-serif;">
             <div style="max-width:600px;margin:0 auto;padding:32px 16px;">
-              <!-- Header -->
               <div style="background:linear-gradient(160deg,#2c1810 0%,#3d2e22 40%,#4a3728 100%);border-radius:16px 16px 0 0;padding:40px 30px;text-align:center;">
                 <p style="margin:0 0 6px;color:#c9a96e;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;font-weight:500;">✦ ELITA MEDICAL SPA ✦</p>
                 <h1 style="margin:0;color:#faf6f0;font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:500;letter-spacing:0.5px;">Complete Your Forms<br>Before Your Visit</h1>
                 <div style="width:50px;height:1px;background:#c9a96e;margin:16px auto 0;"></div>
               </div>
-
-              <!-- Body -->
               <div style="background:#fffdf9;padding:36px 30px;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(60,46,34,0.08);">
-                <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">
-                  Dear ${sanitizeHtml(client.first_name)},
-                </p>
-                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                  You have an upcoming appointment — here are the details:
-                </p>
-
-                <!-- Appointment Summary -->
+                <p style="margin:0 0 8px;color:#3d2e22;font-size:16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;">Dear ${sanitizeHtml(client.first_name)},</p>
+                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">You have an upcoming appointment — here are the details:</p>
                 <div style="background:#faf6f0;border:1px solid #e8ddd0;border-radius:12px;padding:20px;margin-bottom:24px;">
                   <table style="width:100%;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;">
                     <tr><td style="padding:6px 0;color:#7a6a5e;width:100px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Service</td><td style="padding:6px 0;color:#3d2e22;font-weight:500;">${sanitizeHtml(serviceName)}</td></tr>
@@ -332,50 +482,23 @@ const handler = async (req: Request): Promise<Response> => {
                     <tr><td style="padding:6px 0;color:#7a6a5e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Provider</td><td style="padding:6px 0;color:#3d2e22;">${sanitizeHtml(providerFull)}</td></tr>
                   </table>
                 </div>
-
-                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                  To ensure a seamless experience, please complete the following form${pendingForms.length > 1 ? 's' : ''} before your visit:
-                </p>
-
-                <!-- Forms List -->
+                <p style="margin:0 0 20px;color:#7a6a5e;font-size:14px;line-height:1.7;font-family:'Inter',Helvetica,Arial,sans-serif;">To ensure a seamless experience, please complete the following form${pendingForms.length > 1 ? 's' : ''} before your visit:</p>
                 <div style="border:1px solid #e8ddd0;border-radius:12px;overflow:hidden;margin-bottom:24px;">
                   <div style="background:#faf6f0;padding:12px 20px;border-bottom:1px solid #e8ddd0;">
-                    <p style="margin:0;font-size:12px;color:#7a6a5e;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-family:'Inter',Helvetica,Arial,sans-serif;">
-                      ${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''} required
-                    </p>
+                    <p style="margin:0;font-size:12px;color:#7a6a5e;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-family:'Inter',Helvetica,Arial,sans-serif;">${pendingForms.length} form${pendingForms.length > 1 ? 's' : ''} required</p>
                   </div>
-                  <table style="width:100%;">
-                    ${formsList}
-                  </table>
+                  <table style="width:100%;">${formsList}</table>
                 </div>
-
-                <!-- Primary CTA -->
                 <div style="text-align:center;margin:28px 0 20px;">
-                  <a href="${formsUrl}" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">
-                    Complete Your Forms Now →
-                  </a>
+                  <a href="${formsUrl}" style="display:inline-block;background:#8b5cf6;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:8px;font-size:15px;font-weight:600;font-family:'Inter',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">Complete Your Forms Now →</a>
                 </div>
-
-                <!-- Time note -->
                 <div style="background:#fdf8f0;border-left:3px solid #c9a96e;border-radius:6px;padding:14px 20px;margin-bottom:24px;">
-                  <p style="margin:0;color:#5c4a3a;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">
-                    ⏱ <strong>Taking 3 minutes now means no paperwork at the spa!</strong>
-                  </p>
-                  <p style="margin:6px 0 0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">
-                    Complete your forms from your phone, tablet, or computer — then simply walk in and relax.
-                  </p>
+                  <p style="margin:0;color:#5c4a3a;font-size:14px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">⏱ <strong>Taking 3 minutes now means no paperwork at the spa!</strong></p>
+                  <p style="margin:6px 0 0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.5;">Complete your forms from your phone, tablet, or computer — then simply walk in and relax.</p>
                 </div>
-
-                <!-- New account note -->
                 <div style="background:#f5f0e8;border-radius:8px;padding:16px 20px;margin-bottom:28px;text-align:center;">
-                  <p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.6;">
-                    Haven't created your client account yet?<br>
-                    <a href="${PORTAL_URL}/auth" style="color:#8b5cf6;text-decoration:none;font-weight:500;border-bottom:1px solid #d4c4f7;">Create one here</a>
-                    using the same email address.
-                  </p>
+                  <p style="margin:0;color:#7a6a5e;font-size:13px;font-family:'Inter',Helvetica,Arial,sans-serif;line-height:1.6;">Haven't created your client account yet?<br><a href="${PORTAL_URL}/auth" style="color:#8b5cf6;text-decoration:none;font-weight:500;border-bottom:1px solid #d4c4f7;">Create one here</a> using the same email address.</p>
                 </div>
-
-                <!-- Footer -->
                 <div style="border-top:1px solid #e8ddd0;padding-top:24px;text-align:center;">
                   <p style="margin:0 0 4px;color:#7a6a5e;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'Inter',Helvetica,Arial,sans-serif;">Elita Medical Spa</p>
                   <p style="margin:0 0 3px;color:#a0917f;font-size:12px;font-family:'Inter',Helvetica,Arial,sans-serif;">${BUSINESS_ADDRESS}</p>
@@ -402,11 +525,8 @@ const handler = async (req: Request): Promise<Response> => {
           results.formsEmailError = formsErr.message;
         }
 
-        // Log forms email
         await supabase.from('notification_logs').insert({
-          client_id: client.id,
-          type: 'email',
-          category: 'forms_reminder',
+          client_id: client.id, type: 'email', category: 'forms_reminder',
           recipient: client.email,
           subject: `Complete Your Forms – ${serviceName} on ${formatShortDate(apt.scheduled_at)}`,
           body: `Forms reminder: ${pendingForms.length} pending form(s) for ${serviceName} on ${formatShortDate(apt.scheduled_at)}`,
