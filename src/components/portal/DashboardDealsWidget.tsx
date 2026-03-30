@@ -85,12 +85,6 @@ export function DashboardDealsWidget() {
                   )}
                 </div>
 
-                {deal.original_price && deal.deal_price && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs line-through text-muted-foreground">${deal.original_price}</span>
-                    <span className="text-base font-bold text-primary">${deal.deal_price}</span>
-                  </div>
-                )}
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

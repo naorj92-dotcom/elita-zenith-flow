@@ -110,7 +110,7 @@ export function ClientMembershipsPage() {
         request_type: 'membership',
         membership_id: tier.id,
         tier_total_price: tier.price,
-        notes: `${isUpgrade ? 'UPGRADE' : 'NEW ENROLLMENT'}: ${tier.name} — $${tier.price}/${tier.billing_period}`,
+        notes: `${isUpgrade ? 'UPGRADE' : 'NEW ENROLLMENT'}: ${tier.name}`,
       });
       if (error) throw error;
       toast.success(
@@ -173,10 +173,7 @@ export function ClientMembershipsPage() {
                     <h3 className="text-xl font-heading font-semibold">{currentMembership.memberships?.name}</h3>
                     <p className="text-muted-foreground">{currentMembership.memberships?.description}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-heading font-semibold">${currentMembership.memberships?.price}</p>
-                    <p className="text-sm text-muted-foreground">/{currentMembership.memberships?.billing_period}</p>
-                  </div>
+                   <Badge variant="secondary" className="shrink-0">{currentMembership.memberships?.billing_period}</Badge>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -245,11 +242,6 @@ export function ClientMembershipsPage() {
                 <p className="text-muted-foreground mb-2">
                   Join our membership program to unlock exclusive benefits
                 </p>
-                {estimatedSavings != null && estimatedSavings > 0 && (
-                  <p className="text-sm text-primary font-medium mb-4">
-                    Based on your visits, you could save ~${estimatedSavings}/month with a membership!
-                  </p>
-                )}
               </CardContent>
             </Card>
           )}
@@ -302,12 +294,7 @@ export function ClientMembershipsPage() {
                     <CardDescription>{tier.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-heading font-semibold">${tier.price}</span>
-                      <span className="text-muted-foreground">/{tier.billing_period}</span>
-                    </div>
-
-                    <div className="flex items-center gap-4 text-sm">
+                     <div className="flex items-center gap-4 text-sm">
                       <span>{tier.monthly_service_credits === 99 ? 'Unlimited' : tier.monthly_service_credits} treatment{tier.monthly_service_credits !== 1 ? 's' : ''}/mo</span>
                       {tier.priority_booking && <Badge variant="outline" className="text-xs">VIP</Badge>}
                     </div>
@@ -349,16 +336,6 @@ export function ClientMembershipsPage() {
             })}
           </div>
 
-          {!currentMembership && estimatedSavings != null && estimatedSavings > 0 && (
-            <Card className="mt-6 border-primary/20 bg-primary/5">
-              <CardContent className="py-4 flex items-center gap-3">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <p className="text-sm">
-                  Based on your recent visit history, a membership could save you approximately <strong>${estimatedSavings}/month</strong>.
-                </p>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
       </Tabs>
 

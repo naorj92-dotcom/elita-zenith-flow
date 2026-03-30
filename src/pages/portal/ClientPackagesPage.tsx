@@ -134,9 +134,8 @@ export function ClientPackagesPage() {
         request_type: 'package',
         package_id: pkg.id,
         tier_sessions: tier.sessions,
-        tier_total_price: tier.total_price,
         status: 'interested',
-        notes: `PURCHASE REQUEST: ${pkg.name} — ${tier.sessions} sessions, $${tier.total_price} total`,
+        notes: `INTEREST: ${pkg.name} — ${tier.sessions} session program`,
       });
       if (error) throw error;
       setCelebrationMsg({
@@ -158,8 +157,7 @@ export function ClientPackagesPage() {
         request_type: 'package',
         package_id: pkg.id,
         tier_sessions: tier.sessions,
-        tier_total_price: tier.total_price,
-        notes: `${pkg.name} — ${tier.sessions} sessions at $${tier.price_per_session}/session`,
+        notes: `INQUIRY: ${pkg.name} — ${tier.sessions} session program`,
       });
       if (error) throw error;
       toast.success(`Interest submitted for ${pkg.name} — ${tier.sessions} session program!`);
@@ -225,7 +223,7 @@ export function ClientPackagesPage() {
               </div>
               <h3 className="text-lg font-heading font-semibold text-foreground mb-1">No Packages Yet</h3>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                Browse our program pricing below to start your treatment journey.
+                Browse our treatment programs below to start your journey.
               </p>
             </CardContent>
           </Card>
@@ -295,11 +293,11 @@ export function ClientPackagesPage() {
             <div className="text-center space-y-2 py-4">
               <div className="inline-flex items-center gap-2 bg-primary/8 text-primary px-4 py-1.5 rounded-full text-sm font-medium">
                 <Sparkles className="h-4 w-4" />
-                Save More with Programs
+                Our Treatment Programs
               </div>
-              <h2 className="text-2xl font-heading font-semibold text-foreground">Program Pricing</h2>
+              <h2 className="text-2xl font-heading font-semibold text-foreground">Explore Programs</h2>
               <p className="text-muted-foreground max-w-md mx-auto text-sm">
-                Commit to more sessions and unlock better per-session pricing.
+                Let us know which program interests you — your provider will consult with you at your next visit.
               </p>
             </div>
 
